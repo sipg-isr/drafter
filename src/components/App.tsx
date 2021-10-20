@@ -1,13 +1,21 @@
 import React from 'react';
 import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
+import Row from 'react-bootstrap/Row';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Header from './Header';
+import { BrowserRouter } from 'react-router-dom';
 
 function App() {
   return (
-    <Container>
-      <Button>hello</Button>
-    </Container>
+    <BrowserRouter basename={process.env.PUBLIC_URL}>
+      <Header />
+      <Container>
+        <Row>
+          <hr />
+        </Row>
+        body
+      </Container>
+    </BrowserRouter>
   );
 }
 
