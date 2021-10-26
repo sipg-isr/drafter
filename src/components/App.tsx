@@ -1,11 +1,16 @@
 import React from 'react';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Header from './Header';
 import Editor from './Editor';
+import Models from './Models';
 import { BrowserRouter } from 'react-router-dom';
-import { Col } from 'react-bootstrap';
+import {
+  Row,
+  Container,
+  Col,
+  Tabs,
+  Tab
+} from 'react-bootstrap';
 
 function App() {
   return (
@@ -16,9 +21,11 @@ function App() {
           <hr />
         </Row>
         <Row>
-          <Col>
-            <Editor />
-          </Col>
+          <Tabs defaultValue="models">
+            <Tab eventKey="models" title="Models">
+              <Models />
+            </Tab>
+          </Tabs>
         </Row>
       </Container>
     </BrowserRouter>
