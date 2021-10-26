@@ -97,7 +97,7 @@ export default function Models({ models, setModels }: ModelsProps) {
           </tr>
         </thead>
         <tbody>
-          {models.map(model => <ModelView model={model} removeModel={() => {
+          {models.map(model => <ModelView key={model.name} model={model} removeModel={() => {
             setModels(models.remove(models.indexOf(model)))
           }} />)}
           <ModelAddingForm addModel={(model: Model) => {

@@ -3,7 +3,8 @@ import {
   forceSimulation,
   forceLink,
   forceManyBody,
-  forceX
+  forceX,
+  forceY
 } from 'd3-force';
 import {
   Col,
@@ -13,7 +14,7 @@ import {
   Form
 } from 'react-bootstrap';
 import { List } from 'immutable';
-import { Model, RemoteMethod } from '../types';
+import { Model, RemoteMethod, Node, AccessPoint } from '../types';
 import { FaPlus } from 'react-icons/fa';
 
 interface SidebarProps {
@@ -38,26 +39,31 @@ function Sidebar({ models, addNode }: SidebarProps) {
 }
 
 interface GraphProps {
-  nodes: List<Model>;
-  setNodes: (nodes: List<Model>) => void;
+  nodes: List<Node>;
+  setNodes: (nodes: List<Node>) => void;
 };
 function Graph({ nodes, setNodes }: GraphProps) {
-  const [simulation] = useState(forceSimulation<Model | RemoteMethod>().stop());
+  const [simulation] = useState(forceSimulation<Node | AccessPoint>().stop());
+
   // TODO make these configurable?
   const width = 400;
   const height = 800;
 
   useEffect(() => {
-    const methods = nodes.flatMap(node => node.methods);
-    console.log(nodes, methods);
-    simulation.nodes(nodes.concat(methods).toArray());
-    simulation.force('charge', forceManyBody().strength(-2000));
-    // simulation.alpha(1);
+    const accessPoints = nodes.flatMap(node => node.accessPoints);
+    simulation.nodes(nodes.concat(accessPoints).toArray());
+    simulation
+      .force('charge', forceManyBody().strength(-200))
+      .force('vertical-center', forceX(width / 2).strength(0.25))
+      .force('horizontal-center', forceY(height / 2).strength(0.25))
+    simulation.alpha(0.5);
     simulation.alphaTarget(0.0).restart();
-  }, [nodes]);
+    // Run this whenever a node is added or removed
+    // TODO also run it when connections are made or broken
+  }, [nodes.size]);
 
   simulation.on('tick', () => {
-    setNodes(List(nodes));
+    setNodes(List(nodes.toArray()));
   });
 
   return (
@@ -69,15 +75,17 @@ function Graph({ nodes, setNodes }: GraphProps) {
       }}
       viewBox={`0 0 ${width} ${height}`}
     >
-      {nodes.map(cn => <ModelSVG model={cn} />)}
+      {nodes.map(node =>
+        <ModelSVG key={`${node.id.name}-${node.x}-${node.y}`} node={node} />
+      )}
     </svg>
   );
 }
 
 interface ModelSVGProps {
-  model: Model;
+  node: Node;
 };
-function ModelSVG({ model: { x, y} } : ModelSVGProps) {
+function ModelSVG({ node: { x, y} } : ModelSVGProps) {
   return (
     <circle
       r={20}
@@ -93,17 +101,16 @@ interface EditorProps {
   models: List<Model>;
 };
 export default function Editor({ models }: EditorProps) {
-  const [nodes, setNodes] = useState<List<Model>>(List([{
-    name: 'hello',
-    image: 'none',
-    methods: []
-  }]));
+  const [nodes, setNodes] = useState<List<Node>>(List([]));
   return (
     <>
       <Row>
         <Col xs="2">
-          <Sidebar models={models} addNode={(node: Model) => {
-            setNodes(nodes.push(node))
+          <Sidebar models={models} addNode={(model: Model) => {
+            setNodes(nodes.push({
+              id: model,
+              accessPoints: model.methods.map(method => ({ id: method }))
+            }))
           }} />
         </Col>
         <Col><Graph nodes={nodes} setNodes={setNodes} /></Col>
