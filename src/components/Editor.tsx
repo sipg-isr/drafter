@@ -6,40 +6,51 @@ import {
   forceX
 } from 'd3-force';
 import {
+  Col,
+  Row,
+  ListGroup,
   Button,
   Form
 } from 'react-bootstrap';
-import { parse, Service } from 'protobufjs';
+import { List } from 'immutable';
+import { Model } from '../types';
 
-export default function Editor() {
+interface SidebarProps {
+  models: List<Model>;
+};
+function Sidebar({ models }: SidebarProps) {
+  return (
+    <>
+      <h6>Available models</h6>
+      <ListGroup>
+        {models.map(model =>
+        <ListGroup.Item>{model.name}</ListGroup.Item>
+        )}
+      </ListGroup>
+    </>
+  );
+}
+
+interface GraphProps {};
+function Graph() {
+  return (
+    <h6>Graph</h6>
+  );
+}
+
+interface EditorProps {
+  models: List<Model>;
+};
+export default function Editor({ models }: EditorProps) {
   const [text, setText] = useState('');
   return (
     <>
-      <Form.Control as="textarea"
-        value={text}
-        onChange={event => setText(event.target.value)}
-      />
-      <Button onClick={() => {
-        const { root } = parse(text);
-        // this is a bit of a hack to get only the services.
-        // We start with all the contained objects (nestedArray)
-        // Then we filter out only the ones whose JSON representations have a `methods` field
-        const services = root
-          .nestedArray
-          .filter(reflectionObject => reflectionObject.toJSON().methods)
-          .map(obj => obj as Service);
-
-        const [service] = services;
-        const methods = service
-          .methodsArray
-          .map(method => [
-            method.name,
-            root.lookupType(method.requestType).toJSON(),
-            root.lookupType(method.responseType).toJSON()
-          ]);
-
-        console.log(methods);
-      }}>Clicky</Button>
+      <Row>
+        <Col xs="2">
+          <Sidebar models={models} />
+        </Col>
+        <Col><Graph /></Col>
+      </Row>
     </>
   );
 };

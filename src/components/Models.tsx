@@ -80,11 +80,11 @@ function ModelAddingForm({ addModel }: ModelAddingFormProps) {
   );
 };
 
-export default function Models() {
-  // TODO make this an immutable data type and store it somewhere like, localStorage or idb-keyval
-  // write a custom hook to serialize / deserialize this
-  const [models, setModels] = useState<List<Model>>(List());
-
+interface ModelsProps {
+  models: List<Model>;
+  setModels: (models: List<Model>) => void;
+};
+export default function Models({ models, setModels }: ModelsProps) {
   return (
     <>
       <Table>

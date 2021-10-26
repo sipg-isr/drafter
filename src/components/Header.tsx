@@ -1,6 +1,9 @@
-import Navbar from 'react-bootstrap/Navbar';
-import Nav from 'react-bootstrap/Nav';
-import Container from 'react-bootstrap/Container';
+import {
+  Nav,
+  Navbar,
+  Container,
+  Tabs
+} from 'react-bootstrap';
 import { name, version } from '../../package.json';
 
 export default function Header() {
