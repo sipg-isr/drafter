@@ -20,7 +20,7 @@ function ModelView({ model: { name, image, methods }, removeModel }: ModelViewPr
       <td>{name}</td>
       <td><pre>{image}</pre></td>
       <td>{methods.map(method =>
-        <pre>{remoteMethodToString(method)}</pre>
+        <pre key={method.name}>{remoteMethodToString(method)}</pre>
       )}</td>
       <td><Button variant="danger" onClick={removeModel}><FaTrash /></Button></td>
     </tr>

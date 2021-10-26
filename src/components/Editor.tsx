@@ -76,23 +76,43 @@ function Graph({ nodes, setNodes }: GraphProps) {
       viewBox={`0 0 ${width} ${height}`}
     >
       {nodes.map(node =>
-        <ModelSVG key={`${node.id.name}-${node.x}-${node.y}`} node={node} />
+        <NodeSVG key={`${node.id.name}-${node.x}-${node.y}`} node={node} />
+      )}
+      {nodes.flatMap(node => node.accessPoints).map(ap =>
+        <AccessPointSVG key={`${Math.random()}`} accessPoint={ap} />
       )}
     </svg>
   );
 }
 
-interface ModelSVGProps {
+interface AccessPointSVGProps {
+  accessPoint: AccessPoint
+};
+function AccessPointSVG({ accessPoint: { x, y } }: AccessPointSVGProps) {
+  return (
+    <circle
+      r={10}
+      cx={x!}
+      cy={y!}
+      stroke="#f00"
+      strokeWidth="1px"
+      fillOpacity="0"
+    />
+  );
+};
+
+interface NodeSVGProps {
   node: Node;
 };
-function ModelSVG({ node: { x, y} } : ModelSVGProps) {
+function NodeSVG({ node: { x, y} } : NodeSVGProps) {
   return (
     <circle
       r={20}
       cx={x!}
       cy={y!}
       stroke="#000"
-      strokeWidth="4px"
+      strokeWidth="1px"
+      fillOpacity="0"
     />
   );
 };
