@@ -6,6 +6,7 @@ import {
 } from 'react-bootstrap';
 import { IType, parse, Service } from 'protobufjs';
 import { List } from 'immutable';
+import { FaPlus, FaTrash } from 'react-icons/fa';
 
 type MessageType = IType & { name: string };
 interface RemoteMethod {
@@ -30,6 +31,7 @@ interface Model {
 
 interface ModelViewProps {
   model: Model;
+  removeModel: () => void;
 };
 
 /**
@@ -62,7 +64,7 @@ function protobufToRemoteMethods(code: string): RemoteMethod[] | null {
   }
 };
 
-function ModelView({ model: { name, image, methods } }: ModelViewProps) {
+function ModelView({ model: { name, image, methods }, removeModel }: ModelViewProps) {
   return (
     <tr>
       <td>{name}</td>
@@ -70,7 +72,7 @@ function ModelView({ model: { name, image, methods } }: ModelViewProps) {
       <td>{methods.map(method =>
         <pre>{remoteMethodToString(method)}</pre>
       )}</td>
-      <td>TODO</td>
+      <td><Button variant="danger" onClick={removeModel}><FaTrash /></Button></td>
     </tr>
   );
 };
@@ -108,7 +110,9 @@ function ModelAddingForm({ addModel }: ModelAddingFormProps) {
           />
         </td>
         <td>
-          <Button onClick={() => {
+          <Button
+            variant="success"
+            onClick={() => {
             addModel({
               name,
               image,
@@ -119,7 +123,7 @@ function ModelAddingForm({ addModel }: ModelAddingFormProps) {
             setName('');
             setImage('');
             setProtobufCode('');
-          }}>Add model</Button>
+          }}><FaPlus /></Button>
         </td>
       </tr>
     </>
@@ -143,7 +147,9 @@ export default function Models() {
           </tr>
         </thead>
         <tbody>
-          {models.map(model => <ModelView model={model} />)}
+          {models.map(model => <ModelView model={model} removeModel={() => {
+            setModels(models.remove(models.indexOf(model)))
+          }} />)}
           <ModelAddingForm addModel={(model: Model) => {
             setModels(models.push(model));
           }} />
