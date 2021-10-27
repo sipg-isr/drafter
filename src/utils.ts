@@ -53,3 +53,17 @@ export function copyModel(model: Model): Model {
 export function objectToColor(obj: any): string {
   return `#${MD5(obj).slice(0,6)}`;
 }
+
+export function ellipsePolarToCartesian(
+  theta: number,
+  rx: number,
+  ry: number,
+  cx: number = 0,
+  cy: number = 0
+): [number, number] {
+  const { sin, cos } = Math;
+  return [
+    rx * cos(theta) + cx,
+    ry * sin(theta) + cy,
+  ];
+};

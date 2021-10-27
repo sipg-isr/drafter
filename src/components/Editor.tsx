@@ -15,7 +15,7 @@ import {
 } from 'react-bootstrap';
 import { List } from 'immutable';
 import { Model, RemoteMethod } from '../types';
-import { copyModel, objectToColor } from '../utils';
+import { copyModel, objectToColor, ellipsePolarToCartesian } from '../utils';
 import { forceParentModelAttraction } from '../forces';
 import { FaPlus } from 'react-icons/fa';
 
@@ -181,15 +181,16 @@ interface ModelSVGProps {
 };
 function ModelSVG({ model: { x, y, methods } } : ModelSVGProps) {
   // The radius of the main circle
-  const radius = 40;
-  const { sin, cos, PI } = Math;
-
+  const rx = 80;
+  const ry = 40;
+  const { PI } = Math;
   const interval = PI / methods.size;
 
   return (
     <g>
-      <circle
-        r={radius}
+      <ellipse
+        rx={rx}
+        ry={ry}
         cx={x!}
         cy={y!}
         stroke="#000"
@@ -197,12 +198,18 @@ function ModelSVG({ model: { x, y, methods } } : ModelSVGProps) {
         fillOpacity="0"
       />
       {methods.map((method, idx) => {
-        const [ix, iy] = [cos, sin].map(fn => radius * fn(interval * 2 * idx));
-        const [ox, oy] = [cos, sin].map(fn => radius * fn(interval * (2 * idx + 1)));
+        const [ix, iy] = ellipsePolarToCartesian(
+          2 * idx * interval,
+          rx, ry, x!, y!
+        );
+        const [ox, oy] = ellipsePolarToCartesian(
+          (2 * idx + 1) * interval,
+          rx, ry, x!, y!
+        );
         return (
           <>
-            <InputSVG method={method} cx={x! + ix} cy={y! + iy} />
-            <OutputSVG method={method} cx={x! + ox} cy={y! + oy} />
+            <InputSVG method={method} cx={ix} cy={iy} />
+            <OutputSVG method={method} cx={ox} cy={oy} />
           </>
         );
       })}
