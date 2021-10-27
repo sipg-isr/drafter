@@ -127,42 +127,52 @@ function InputSVG({ method, cx, cy }: InputSVGProps) {
   const outerRadius = 10;
   const innerRadius = 5;
   const inputColor = objectToColor(method.requestType);
+  return (
+    <g>
+      <circle
+        r={outerRadius}
+        cx={cx}
+        cy={cy}
+        fill='white'
+        stroke='black'
+        strokeWidth='1px'
+      />
+      <circle
+        r={innerRadius}
+        cx={cx}
+        cy={cy}
+        fill={inputColor}
+      />
+    </g>
+  );
+};
+
+interface OutputSVGProps {
+  method: RemoteMethod;
+  cx: number;
+  cy: number;
+};
+function OutputSVG({ method, cx, cy }: OutputSVGProps) {
+  const outerRadius = 10;
+  const innerRadius = 5;
   const outputColor = objectToColor(method.responseType);
   return (
-    <>
-      <g>
-        <circle
-          r={outerRadius}
-          cx={cx}
-          cy={cy + outerRadius + 5}
-          fill='white'
-          stroke='black'
-          strokeWidth='1px'
-        />
-        <circle
-          r={innerRadius}
-          cx={cx}
-          cy={cy + outerRadius + 5}
-          fill={inputColor}
-        />
-      </g>
-      <g>
-        <circle
-          r={outerRadius}
-          cx={cx}
-          cy={cy - outerRadius}
-          fill={outputColor}
-          stroke='black'
-          strokeWidth='1px'
-        />
-        <circle
-          r={innerRadius}
-          cx={cx}
-          cy={cy - outerRadius}
-          fill="white"
-        />
-      </g>
-    </>
+    <g>
+      <circle
+        r={outerRadius}
+        cx={cx}
+        cy={cy}
+        fill={outputColor}
+        stroke='black'
+        strokeWidth='1px'
+      />
+      <circle
+        r={innerRadius}
+        cx={cx}
+        cy={cy}
+        fill="white"
+      />
+    </g>
   );
 };
 
@@ -174,7 +184,7 @@ function ModelSVG({ model: { x, y, methods } } : ModelSVGProps) {
   const radius = 40;
   const { sin, cos, PI } = Math;
 
-  const interval = (2 * PI) / methods.size;
+  const interval = PI / methods.size;
 
   return (
     <g>
@@ -187,10 +197,13 @@ function ModelSVG({ model: { x, y, methods } } : ModelSVGProps) {
         fillOpacity="0"
       />
       {methods.map((method, idx) => {
-        const angle = interval * idx;
-        const [cx, cy] = [cos, sin].map(fn => radius * fn(angle));
+        const [ix, iy] = [cos, sin].map(fn => radius * fn(interval * 2 * idx));
+        const [ox, oy] = [cos, sin].map(fn => radius * fn(interval * (2 * idx + 1)));
         return (
-          <InputSVG method={method} cx={x! + cx} cy={y! + cy} />
+          <>
+            <InputSVG method={method} cx={x! + ix} cy={y! + iy} />
+            <OutputSVG method={method} cx={x! + ox} cy={y! + oy} />
+          </>
         );
       })}
     </g>
