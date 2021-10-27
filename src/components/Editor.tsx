@@ -14,21 +14,22 @@ import {
   Form
 } from 'react-bootstrap';
 import { List } from 'immutable';
-import { Model, RemoteMethod, Node, AccessPoint } from '../types';
+import { Model, RemoteMethod } from '../types';
+import { copyModel } from '../utils';
 import { FaPlus } from 'react-icons/fa';
 
 interface SidebarProps {
-  models: List<Model>;
-  addNode: (model: Model) => void;
+  availableModels: List<Model>;
+  addModelToEditor: (model: Model) => void;
 };
-function Sidebar({ models, addNode }: SidebarProps) {
+function Sidebar({ availableModels, addModelToEditor }: SidebarProps) {
   return (
     <>
       <h6>Available models</h6>
       <ListGroup>
-        {models.map(model =>
+        {availableModels.map(model =>
         <ListGroup.Item key={model.name}>
-          <Button onClick={() => addNode(model)}>
+          <Button onClick={() => addModelToEditor(model)}>
             <FaPlus />&nbsp;{model.name}
           </Button>
         </ListGroup.Item>
@@ -39,19 +40,19 @@ function Sidebar({ models, addNode }: SidebarProps) {
 }
 
 interface GraphProps {
-  nodes: List<Node>;
-  setNodes: (nodes: List<Node>) => void;
+  models: List<Model>;
+  setModels: (nodes: List<Model>) => void;
 };
-function Graph({ nodes, setNodes }: GraphProps) {
-  const [simulation] = useState(forceSimulation<Node | AccessPoint>().stop());
+function Graph({ models, setModels }: GraphProps) {
+  const [simulation] = useState(forceSimulation<Model | RemoteMethod>().stop());
 
   // TODO make these configurable?
   const width = 400;
   const height = 800;
 
   useEffect(() => {
-    const accessPoints = nodes.flatMap(node => node.accessPoints);
-    simulation.nodes(nodes.concat(accessPoints).toArray());
+    const methods = models.flatMap(model => model.methods);
+    simulation.nodes(models.concat(methods).toArray());
     simulation
       .force('charge', forceManyBody().strength(-200))
       .force('vertical-center', forceX(width / 2).strength(0.25))
@@ -60,10 +61,10 @@ function Graph({ nodes, setNodes }: GraphProps) {
     simulation.alphaTarget(0.0).restart();
     // Run this whenever a node is added or removed
     // TODO also run it when connections are made or broken
-  }, [nodes.size]);
+  }, [models.size]);
 
   simulation.on('tick', () => {
-    setNodes(List(nodes.toArray()));
+    setModels(List(models.toArray()));
   });
 
   return (
@@ -75,20 +76,20 @@ function Graph({ nodes, setNodes }: GraphProps) {
       }}
       viewBox={`0 0 ${width} ${height}`}
     >
-      {nodes.map(node =>
-        <NodeSVG key={`${node.id.name}-${node.x}-${node.y}`} node={node} />
+      {models.map(model =>
+        <ModelSVG key={`${model.name}-${model.x}-${model.y}`} model={model} />
       )}
-      {nodes.flatMap(node => node.accessPoints).map(ap =>
-        <AccessPointSVG key={`${Math.random()}`} accessPoint={ap} />
+      {models.flatMap(model => model.methods).map(method =>
+        <RemoteMethodSVG key={`${Math.random()}`} method={method} />
       )}
     </svg>
   );
 }
 
-interface AccessPointSVGProps {
-  accessPoint: AccessPoint
+interface RemoteMethodSVGProps {
+  method: RemoteMethod;
 };
-function AccessPointSVG({ accessPoint: { x, y } }: AccessPointSVGProps) {
+function RemoteMethodSVG({ method: { x, y } }: RemoteMethodSVGProps) {
   return (
     <circle
       r={10}
@@ -101,10 +102,10 @@ function AccessPointSVG({ accessPoint: { x, y } }: AccessPointSVGProps) {
   );
 };
 
-interface NodeSVGProps {
-  node: Node;
+interface ModelSVGProps {
+  model: Model;
 };
-function NodeSVG({ node: { x, y} } : NodeSVGProps) {
+function ModelSVG({ model: { x, y} } : ModelSVGProps) {
   return (
     <circle
       r={20}
@@ -118,22 +119,19 @@ function NodeSVG({ node: { x, y} } : NodeSVGProps) {
 };
 
 interface EditorProps {
-  models: List<Model>;
+  availableModels: List<Model>;
 };
-export default function Editor({ models }: EditorProps) {
-  const [nodes, setNodes] = useState<List<Node>>(List([]));
+export default function Editor({ availableModels }: EditorProps) {
+  const [models, setModels] = useState<List<Model>>(List([]));
   return (
     <>
       <Row>
         <Col xs="2">
-          <Sidebar models={models} addNode={(model: Model) => {
-            setNodes(nodes.push({
-              id: model,
-              accessPoints: model.methods.map(method => ({ id: method }))
-            }))
+          <Sidebar availableModels={availableModels} addModelToEditor={(model: Model) => {
+            setModels(models.push(copyModel(model)))
           }} />
         </Col>
-        <Col><Graph nodes={nodes} setNodes={setNodes} /></Col>
+        <Col><Graph models={models} setModels={setModels} /></Col>
       </Row>
     </>
   );

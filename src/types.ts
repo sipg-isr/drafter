@@ -5,7 +5,7 @@ export type MessageType = IType & { name: string };
 /**
  * An RPC method that can be called on a compute node
  */
-export interface RemoteMethod {
+export interface RemoteMethod extends SimulationNodeDatum {
   name: string;
   requestType: MessageType;
   responseType: MessageType
@@ -14,21 +14,10 @@ export interface RemoteMethod {
 /**
  * this defines a model, which is a template from which nodes in the editor can be made
  */
-export interface Model {
+export interface Model extends SimulationNodeDatum {
   name: string;
   // An identifying image name, like sipgisr/image-source:latest
   image: string;
   // A list of interfaces
   methods: RemoteMethod[];
 }
-
-export interface Node extends SimulationNodeDatum {
-  id: Model;
-  accessPoints: AccessPoint[];
-};
-
-export interface AccessPoint extends SimulationNodeDatum {
-  id: RemoteMethod;
-}
-
-// TODO also create nodes for the node remoteMethods

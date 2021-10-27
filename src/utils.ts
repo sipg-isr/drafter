@@ -1,4 +1,4 @@
-import { RemoteMethod } from './types';
+import { RemoteMethod, Model } from './types';
 import { parse, Service } from 'protobufjs';
 
 /**
@@ -38,4 +38,12 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
   return `${name}(${requestType.name}): ${responseType.name}`;
 }
 
-
+/**
+ * Given a model, copy it so that it can be used in the simulation
+ */
+export function copyModel(model: Model): Model {
+  return {
+    ...model,
+    methods: model.methods.map(method => ({ ...method }))
+  };
+};
