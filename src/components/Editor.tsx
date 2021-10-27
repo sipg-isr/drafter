@@ -18,6 +18,7 @@ import { Model, RemoteMethod } from '../types';
 import { copyModel, objectToColor, ellipsePolarToCartesian } from '../utils';
 import { forceParentModelAttraction } from '../forces';
 import { FaPlus } from 'react-icons/fa';
+import { truncate } from 'lodash'
 
 interface SidebarProps {
   availableModels: List<Model>;
@@ -179,15 +180,27 @@ function OutputSVG({ method, cx, cy }: OutputSVGProps) {
 interface ModelSVGProps {
   model: Model;
 };
-function ModelSVG({ model: { x, y, methods } } : ModelSVGProps) {
+function ModelSVG({ model: { name, x, y, methods } } : ModelSVGProps) {
+  const { PI, max } = Math;
+
+  const displayName = truncate(name, { length: 25 });
   // The radius of the main circle
-  const rx = 80;
-  const ry = 40;
-  const { PI } = Math;
+  const rx = max(displayName.length * 5, 50);
+  const ry = rx / 2;
   const interval = PI / methods.size;
 
   return (
     <g>
+      <text
+        textAnchor='middle'
+        stroke='#fff'
+        strokeWidth='0.5'
+        strokeOpacity='0.6'
+        fill='#000'
+        fontSize='16px'
+        x={x!}
+        y={y!}
+      >{displayName}</text>
       <ellipse
         rx={rx}
         ry={ry}
