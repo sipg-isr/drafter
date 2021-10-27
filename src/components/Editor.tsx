@@ -16,6 +16,7 @@ import {
 import { List } from 'immutable';
 import { Model, RemoteMethod } from '../types';
 import { copyModel } from '../utils';
+import { forceParentModelAttraction } from '../forces';
 import { FaPlus } from 'react-icons/fa';
 
 interface SidebarProps {
@@ -54,9 +55,10 @@ function Graph({ models, setModels }: GraphProps) {
     const methods = models.flatMap(model => model.methods);
     simulation.nodes(models.concat(methods).toArray());
     simulation
-      .force('charge', forceManyBody().strength(-200))
       .force('vertical-center', forceX(width / 2).strength(0.25))
       .force('horizontal-center', forceY(height / 2).strength(0.25))
+      .force('charge', forceManyBody().strength(-100))
+      .force('parent model attraction', forceParentModelAttraction(models, 1));
     simulation.alpha(0.5);
     simulation.alphaTarget(0.0).restart();
     // Run this whenever a node is added or removed

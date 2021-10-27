@@ -67,7 +67,7 @@ function ModelAddingForm({ addModel }: ModelAddingFormProps) {
               name,
               image,
               // TODO show an error message and abort if this is null
-              methods: protobufToRemoteMethods(protobufCode) || []
+              methods: List(protobufToRemoteMethods(protobufCode) || [])
             });
             // Clear all the fields
             setName('');
