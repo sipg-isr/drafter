@@ -1,5 +1,6 @@
 import { RemoteMethod, Model } from './types';
 import { parse, Service } from 'protobufjs';
+import { MD5 } from 'object-hash';
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's
@@ -47,3 +48,8 @@ export function copyModel(model: Model): Model {
     methods: model.methods.map(method => ({ ...method }))
   };
 };
+
+// Given an object, return a color value for it
+export function objectToColor(obj: any): string {
+  return `#${MD5(obj).slice(0,6)}`;
+}

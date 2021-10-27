@@ -15,7 +15,7 @@ import {
 } from 'react-bootstrap';
 import { List } from 'immutable';
 import { Model, RemoteMethod } from '../types';
-import { copyModel } from '../utils';
+import { copyModel, objectToColor } from '../utils';
 import { forceParentModelAttraction } from '../forces';
 import { FaPlus } from 'react-icons/fa';
 
@@ -118,19 +118,51 @@ function Graph({ models, setModels }: GraphProps) {
   );
 }
 
-interface RemoteMethodSVGProps {
+interface InputSVGProps {
   method: RemoteMethod;
+  cx: number;
+  cy: number;
 };
-function RemoteMethodSVG({ method: { x, y } }: RemoteMethodSVGProps) {
+function InputSVG({ method, cx, cy }: InputSVGProps) {
+  const outerRadius = 10;
+  const innerRadius = 5;
+  const inputColor = objectToColor(method.requestType);
+  const outputColor = objectToColor(method.responseType);
   return (
-    <circle
-      r={10}
-      cx={x!}
-      cy={y!}
-      stroke="#f00"
-      strokeWidth="1px"
-      fillOpacity="0"
-    />
+    <>
+      <g>
+        <circle
+          r={outerRadius}
+          cx={cx}
+          cy={cy + outerRadius + 5}
+          fill='white'
+          stroke='black'
+          strokeWidth='1px'
+        />
+        <circle
+          r={innerRadius}
+          cx={cx}
+          cy={cy + outerRadius + 5}
+          fill={inputColor}
+        />
+      </g>
+      <g>
+        <circle
+          r={outerRadius}
+          cx={cx}
+          cy={cy - outerRadius}
+          fill={outputColor}
+          stroke='black'
+          strokeWidth='1px'
+        />
+        <circle
+          r={innerRadius}
+          cx={cx}
+          cy={cy - outerRadius}
+          fill="white"
+        />
+      </g>
+    </>
   );
 };
 
@@ -158,7 +190,7 @@ function ModelSVG({ model: { x, y, methods } } : ModelSVGProps) {
         const angle = interval * idx;
         const [cx, cy] = [cos, sin].map(fn => radius * fn(angle));
         return (
-          <RemoteMethodSVG method={{...method, x: x! + cx, y: y! + cy}}/>
+          <InputSVG method={method} cx={x! + cx} cy={y! + cy} />
         );
       })}
     </g>
