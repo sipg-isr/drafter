@@ -45,7 +45,8 @@ interface GraphProps {
   setModels: (nodes: List<Model>) => void;
 };
 function Graph({ models, setModels }: GraphProps) {
-  const [simulation] = useState(forceSimulation<Model | RemoteMethod>().stop());
+  const [simulation] = useState(forceSimulation<Model>().stop());
+  const [drag, setDrag] = useState<[number, number, Model] | null>(null);
 
   // TODO make these configurable?
   const width = 400;
@@ -53,12 +54,12 @@ function Graph({ models, setModels }: GraphProps) {
 
   useEffect(() => {
     const methods = models.flatMap(model => model.methods);
-    simulation.nodes(models.concat(methods).toArray());
+    simulation.nodes(models.toArray());
     simulation
-      .force('vertical-center', forceX(width / 2).strength(0.25))
-      .force('horizontal-center', forceY(height / 2).strength(0.25))
+      .force('vertical-center', forceX(width / 2).strength(0.01))
+      .force('horizontal-center', forceY(height / 2).strength(0.01))
       .force('charge', forceManyBody().strength(-100))
-      .force('parent model attraction', forceParentModelAttraction(models, 1));
+      .force('parent model attraction', forceParentModelAttraction(models, 0.1));
     simulation.alpha(0.5);
     simulation.alphaTarget(0.0).restart();
     // Run this whenever a node is added or removed
@@ -77,12 +78,41 @@ function Graph({ models, setModels }: GraphProps) {
         border: '1px solid black'
       }}
       viewBox={`0 0 ${width} ${height}`}
+      onMouseMove={(e) => {
+        if (drag) {
+          const [offsetX, offsetY, node] = drag;
+        node.fx! = e.clientX + offsetX;
+        node.fy! = e.clientY + offsetY;
+        }
+      }}
+      onMouseUp={() => {
+        if (drag) {
+          const [, , node] = drag;
+          node.fx = node.fy = null;
+          setDrag(null);
+          simulation.alphaTarget(0);
+        }
+      }}
+      onMouseLeave={() => {
+        if (drag) {
+          const [, , node] = drag;
+          node.fx = node.fy = null;
+          setDrag(null);
+          simulation.alphaTarget(0);
+        }
+      }}
     >
       {models.map(model =>
-        <ModelSVG key={`${model.name}-${model.x}-${model.y}`} model={model} />
-      )}
-      {models.flatMap(model => model.methods).map(method =>
-        <RemoteMethodSVG key={`${Math.random()}`} method={method} />
+          <g
+            onMouseDown={(e) => {
+              setDrag([model.x! - e.clientX, model.y! - e.clientY, model]);
+              simulation.alphaTarget(0.3).restart();
+            }}
+            cursor='move'
+            key={`${model.name}-${model.x}-${model.y}`}
+          >
+            <ModelSVG  model={model} />
+          </g>
       )}
     </svg>
   );
@@ -107,16 +137,31 @@ function RemoteMethodSVG({ method: { x, y } }: RemoteMethodSVGProps) {
 interface ModelSVGProps {
   model: Model;
 };
-function ModelSVG({ model: { x, y} } : ModelSVGProps) {
+function ModelSVG({ model: { x, y, methods } } : ModelSVGProps) {
+  // The radius of the main circle
+  const radius = 40;
+  const { sin, cos, PI } = Math;
+
+  const interval = (2 * PI) / methods.size;
+
   return (
-    <circle
-      r={20}
-      cx={x!}
-      cy={y!}
-      stroke="#000"
-      strokeWidth="1px"
-      fillOpacity="0"
-    />
+    <g>
+      <circle
+        r={radius}
+        cx={x!}
+        cy={y!}
+        stroke="#000"
+        strokeWidth="1px"
+        fillOpacity="0"
+      />
+      {methods.map((method, idx) => {
+        const angle = interval * idx;
+        const [cx, cy] = [cos, sin].map(fn => radius * fn(angle));
+        return (
+          <RemoteMethodSVG method={{...method, x: x! + cx, y: y! + cy}}/>
+        );
+      })}
+    </g>
   );
 };
 
@@ -125,6 +170,7 @@ interface EditorProps {
 };
 export default function Editor({ availableModels }: EditorProps) {
   const [models, setModels] = useState<List<Model>>(List([]));
+
   return (
     <>
       <Row>
