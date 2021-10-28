@@ -5,12 +5,20 @@ import { List } from 'immutable';
 export type MessageType = IType & { name: string };
 
 /**
+ * A method in the editor can either be an input or an output from the node
+ */
+export enum Direction {
+  Input, Output
+}
+
+/**
  * An RPC method that can be called on a compute node
  */
 export interface RemoteMethod extends SimulationNodeDatum {
   name: string;
   requestType: MessageType;
   responseType: MessageType
+  direction?: Direction
 };
 
 /**

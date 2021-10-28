@@ -1,6 +1,7 @@
-import { RemoteMethod, Model } from './types';
+import { RemoteMethod, Model, Direction } from './types';
 import { parse, Service } from 'protobufjs';
 import { MD5 } from 'object-hash';
+import { List } from 'immutable';
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's
@@ -40,12 +41,17 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
 }
 
 /**
- * Given a model, copy it so that it can be used in the simulation
+ * Given a model, instantiate it so that it can be used in the simulation
  */
-export function copyModel(model: Model): Model {
+export function instantiateModel(model: Model): Model {
   return {
     ...model,
-    methods: model.methods.map(method => ({ ...method }))
+    methods: model.methods.reduce<List<RemoteMethod>>(
+      (acc, method) => acc
+        .push({ ...method, direction: Direction.Input })
+        .push({ ...method, direction: Direction.Output }),
+      List()
+    )
   };
 };
 

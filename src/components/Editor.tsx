@@ -11,11 +11,10 @@ import {
   Row,
   ListGroup,
   Button,
-  Form
 } from 'react-bootstrap';
 import { List } from 'immutable';
-import { Model, RemoteMethod } from '../types';
-import { copyModel, objectToColor, ellipsePolarToCartesian } from '../utils';
+import { Model, RemoteMethod, Direction } from '../types';
+import { instantiateModel, objectToColor, ellipsePolarToCartesian } from '../utils';
 import { forceParentModelAttraction } from '../forces';
 import { FaPlus } from 'react-icons/fa';
 import { truncate } from 'lodash'
@@ -41,20 +40,29 @@ function Sidebar({ availableModels, addModelToEditor }: SidebarProps) {
   );
 }
 
+/**
+ * Represents a model that is being dragged and its coordinates, or a lack of drag
+ */
+type Drag = [number, number, Model] | null;
+
 interface GraphProps {
   models: List<Model>;
   setModels: (nodes: List<Model>) => void;
 };
 function Graph({ models, setModels }: GraphProps) {
   const [simulation] = useState(forceSimulation<Model>().stop());
-  const [drag, setDrag] = useState<[number, number, Model] | null>(null);
+  const [drag, setDrag] = useState<Drag>(null);
+  const [selectedMethod, selectMethod] = useState<RemoteMethod | null>(null);
+
+  useEffect(() => {
+    console.log(selectedMethod);
+  }, [selectedMethod]);
 
   // TODO make these configurable?
   const width = 400;
   const height = 800;
 
   useEffect(() => {
-    const methods = models.flatMap(model => model.methods);
     simulation.nodes(models.toArray());
     simulation
       .force('vertical-center', forceX(width / 2).strength(0.01))
@@ -70,6 +78,10 @@ function Graph({ models, setModels }: GraphProps) {
   simulation.on('tick', () => {
     setModels(List(models.toArray()));
   });
+
+  const restartSimulation = () => {
+    simulation.alphaTarget(0.3).restart();
+  };
 
   return (
     <svg
@@ -104,37 +116,38 @@ function Graph({ models, setModels }: GraphProps) {
       }}
     >
       {models.map(model =>
-          <g
-            onMouseDown={(e) => {
-              setDrag([model.x! - e.clientX, model.y! - e.clientY, model]);
-              simulation.alphaTarget(0.3).restart();
-            }}
-            cursor='move'
-            key={`${model.name}-${model.x}-${model.y}`}
-          >
-            <ModelSVG  model={model} />
-          </g>
+            <ModelSVG
+              model={model}
+              selectMethod={selectMethod}
+              key={`${model.name}-${model.x}-${model.y}`}
+              drag={drag}
+              setDrag={setDrag}
+              restartSimulation={restartSimulation}
+            />
       )}
     </svg>
   );
 }
 
-interface InputSVGProps {
+interface MethodSVGProps {
   method: RemoteMethod;
   cx: number;
   cy: number;
 };
-function InputSVG({ method, cx, cy }: InputSVGProps) {
+function MethodSVG({ method, cx, cy }: MethodSVGProps) {
   const outerRadius = 10;
   const innerRadius = 5;
-  const inputColor = objectToColor(method.requestType);
+  // Input -> inner color
+  const innerColor = method.direction == Direction.Input ? objectToColor(method.requestType) : 'white';
+  // Output -> outer color
+  const outerColor = method.direction == Direction.Output ? objectToColor(method.responseType) : 'white';
   return (
     <g>
       <circle
         r={outerRadius}
         cx={cx}
         cy={cy}
-        fill='white'
+        fill={outerColor}
         stroke='black'
         strokeWidth='1px'
       />
@@ -142,36 +155,7 @@ function InputSVG({ method, cx, cy }: InputSVGProps) {
         r={innerRadius}
         cx={cx}
         cy={cy}
-        fill={inputColor}
-      />
-    </g>
-  );
-};
-
-interface OutputSVGProps {
-  method: RemoteMethod;
-  cx: number;
-  cy: number;
-};
-function OutputSVG({ method, cx, cy }: OutputSVGProps) {
-  const outerRadius = 10;
-  const innerRadius = 5;
-  const outputColor = objectToColor(method.responseType);
-  return (
-    <g>
-      <circle
-        r={outerRadius}
-        cx={cx}
-        cy={cy}
-        fill={outputColor}
-        stroke='black'
-        strokeWidth='1px'
-      />
-      <circle
-        r={innerRadius}
-        cx={cx}
-        cy={cy}
-        fill="white"
+        fill={innerColor}
       />
     </g>
   );
@@ -179,15 +163,26 @@ function OutputSVG({ method, cx, cy }: OutputSVGProps) {
 
 interface ModelSVGProps {
   model: Model;
+  selectMethod: (method: RemoteMethod) => void;
+  drag: Drag;
+  setDrag: (drag: Drag) => void;
+  restartSimulation: () => void;
 };
-function ModelSVG({ model: { name, x, y, methods } } : ModelSVGProps) {
+function ModelSVG({
+  model,
+  selectMethod,
+  drag,
+  setDrag,
+  restartSimulation
+} : ModelSVGProps) {
   const { PI, max } = Math;
+  const { name, x, y, methods } = model;
 
   const displayName = truncate(name, { length: 25 });
   // The radius of the main circle
   const rx = max(displayName.length * 5, 50);
   const ry = rx / 2;
-  const interval = PI / methods.size;
+  const interval = (2 * PI) / methods.size;
 
   return (
     <g>
@@ -209,21 +204,27 @@ function ModelSVG({ model: { name, x, y, methods } } : ModelSVGProps) {
         stroke="#000"
         strokeWidth="1px"
         fillOpacity="0"
+        cursor={drag ? 'grabbing' : 'grab'}
+        onMouseDown={(e) => {
+          setDrag([x! - e.clientX, y! - e.clientY, model]);
+          restartSimulation();
+        }}
       />
       {methods.map((method, idx) => {
-        const [ix, iy] = ellipsePolarToCartesian(
-          2 * idx * interval,
-          rx, ry, x!, y!
-        );
-        const [ox, oy] = ellipsePolarToCartesian(
-          (2 * idx + 1) * interval,
+        const [cx, cy] = ellipsePolarToCartesian(
+          idx * interval,
           rx, ry, x!, y!
         );
         return (
-          <>
-            <InputSVG method={method} cx={ix} cy={iy} />
-            <OutputSVG method={method} cx={ox} cy={oy} />
-          </>
+          <g
+            onClick={() => {
+              selectMethod(method)
+            }}
+            cursor="pointer"
+            key={method.name + method.direction + x} // TODO make this not a hack
+          >
+            <MethodSVG method={method} cx={cx} cy={cy} />
+          </g>
         );
       })}
     </g>
@@ -241,7 +242,7 @@ export default function Editor({ availableModels }: EditorProps) {
       <Row>
         <Col xs="2">
           <Sidebar availableModels={availableModels} addModelToEditor={(model: Model) => {
-            setModels(models.push(copyModel(model)))
+            setModels(models.push(instantiateModel(model)))
           }} />
         </Col>
         <Col><Graph models={models} setModels={setModels} /></Col>
