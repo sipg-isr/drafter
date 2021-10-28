@@ -2,6 +2,7 @@ import { RemoteMethod, Model, Direction } from './types';
 import { parse, Service } from 'protobufjs';
 import { MD5 } from 'object-hash';
 import { List } from 'immutable';
+import { sortBy } from 'lodash';
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's
@@ -55,7 +56,24 @@ export function instantiateModel(model: Model): Model {
   };
 };
 
-// Given an object, return a color value for it
+/**
+ * Can two methods be connected?
+ */
+export function compatibleMethods(left: RemoteMethod, right: RemoteMethod): boolean {
+  if (left.direction === undefined || right.direction === undefined) {
+    return false;
+  }
+  const [input, output] = sortBy([left, right], method => method.direction);
+  return (
+    output.direction === Direction.Output &&
+    input.direction === Direction.Input &&
+    output.responseType.name === input.requestType.name
+  );
+};
+
+/**
+ * Given an object, return a color value for it
+ */
 export function objectToColor(obj: any): string {
   return `#${MD5(obj).slice(0,6)}`;
 }

@@ -14,7 +14,11 @@ import {
 } from 'react-bootstrap';
 import { List } from 'immutable';
 import { Model, RemoteMethod, Direction } from '../types';
-import { instantiateModel, objectToColor, ellipsePolarToCartesian } from '../utils';
+import {
+  instantiateModel,
+  objectToColor,
+  ellipsePolarToCartesian,
+  compatibleMethods } from '../utils';
 import { forceParentModelAttraction } from '../forces';
 import { FaPlus } from 'react-icons/fa';
 import { truncate } from 'lodash'
@@ -48,6 +52,7 @@ type Drag = [number, number, Model] | null;
 interface GraphProps {
   models: List<Model>;
   setModels: (nodes: List<Model>) => void;
+  connections: List<[RemoteMethod, RemoteMethod]>
 };
 function Graph({ models, setModels }: GraphProps) {
   const [simulation] = useState(forceSimulation<Model>().stop());
@@ -55,7 +60,6 @@ function Graph({ models, setModels }: GraphProps) {
   const [selectedMethod, selectMethod] = useState<RemoteMethod | null>(null);
 
   useEffect(() => {
-    console.log(selectedMethod);
   }, [selectedMethod]);
 
   // TODO make these configurable?
@@ -118,6 +122,7 @@ function Graph({ models, setModels }: GraphProps) {
       {models.map(model =>
             <ModelSVG
               model={model}
+              selectedMethod={selectedMethod}
               selectMethod={selectMethod}
               key={`${model.name}-${model.x}-${model.y}`}
               drag={drag}
@@ -133,10 +138,11 @@ interface MethodSVGProps {
   method: RemoteMethod;
   cx: number;
   cy: number;
+  selected: boolean;
 };
-function MethodSVG({ method, cx, cy }: MethodSVGProps) {
-  const outerRadius = 10;
-  const innerRadius = 5;
+function MethodSVG({ method, cx, cy, selected }: MethodSVGProps) {
+  const outerRadius = 12;
+  const innerRadius = outerRadius / 2;
   // Input -> inner color
   const innerColor = method.direction == Direction.Input ? objectToColor(method.requestType) : 'white';
   // Output -> outer color
@@ -148,8 +154,8 @@ function MethodSVG({ method, cx, cy }: MethodSVGProps) {
         cx={cx}
         cy={cy}
         fill={outerColor}
-        stroke='black'
-        strokeWidth='1px'
+        stroke={selected ? 'green' : 'black'}
+        strokeWidth={ selected ? '2px' : '1px' }
       />
       <circle
         r={innerRadius}
@@ -163,13 +169,15 @@ function MethodSVG({ method, cx, cy }: MethodSVGProps) {
 
 interface ModelSVGProps {
   model: Model;
-  selectMethod: (method: RemoteMethod) => void;
+  selectedMethod: RemoteMethod | null;
+  selectMethod: (method: RemoteMethod | null) => void;
   drag: Drag;
   setDrag: (drag: Drag) => void;
   restartSimulation: () => void;
 };
 function ModelSVG({
   model,
+  selectedMethod,
   selectMethod,
   drag,
   setDrag,
@@ -217,13 +225,19 @@ function ModelSVG({
         );
         return (
           <g
-            onClick={() => {
-              selectMethod(method)
+            onMouseDown={() => console.log(Math.random())}
+            onClick={(e) => {
+              if (selectedMethod) {
+                compatibleMethods(selectedMethod, method)
+                selectMethod(null);
+              } else {
+                selectMethod(method)
+              }
             }}
             cursor="pointer"
             key={method.name + method.direction + x} // TODO make this not a hack
           >
-            <MethodSVG method={method} cx={cx} cy={cy} />
+            <MethodSVG selected={selectedMethod === method} method={method} cx={cx} cy={cy} />
           </g>
         );
       })}
@@ -231,11 +245,16 @@ function ModelSVG({
   );
 };
 
+/**
+ * An edge in the graph
+ */
+type Connection = [RemoteMethod, RemoteMethod];
 interface EditorProps {
   availableModels: List<Model>;
 };
 export default function Editor({ availableModels }: EditorProps) {
   const [models, setModels] = useState<List<Model>>(List([]));
+  const [connections, setConnections] = useState<List<Connection>>(List());
 
   return (
     <>
@@ -245,7 +264,7 @@ export default function Editor({ availableModels }: EditorProps) {
             setModels(models.push(instantiateModel(model)))
           }} />
         </Col>
-        <Col><Graph models={models} setModels={setModels} /></Col>
+        <Col><Graph connections={connections} models={models} setModels={setModels} /></Col>
       </Row>
     </>
   );
