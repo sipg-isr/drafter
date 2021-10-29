@@ -28,10 +28,13 @@ export default function Sidebar({
   return (
     <>
       <Row>
+        <h6>Available models</h6>
         <Table>
           <thead>
             <tr>
-              <th colSpan={3}>Available models</th>
+              <th>Model</th>
+              <th>Image</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -49,12 +52,14 @@ export default function Sidebar({
           </tbody>
         </Table>
       </Row>
-      <Row><hr /></Row>
       <Row>
+        <h6>Nodes</h6>
         <Table>
           <thead>
             <tr>
-              <th colSpan={3}>Nodes</th>
+              <th>Node</th>
+              <th>Model</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
