@@ -16,7 +16,6 @@ import {
 import { truncate } from 'lodash'
 import {
   Model,
-  RemoteMethod,
   Node,
   AccessPoint,
   Edge
@@ -28,6 +27,26 @@ import {
   ellipsePolarToCartesian,
   compatibleMethods
 } from '../utils';
+
+interface EdgeSVGProps {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+function EdgeSVG({
+  x1, x2, y1, y2
+}: EdgeSVGProps) {
+  return <line
+    x1={x1}
+    y1={y1}
+    x2={x2}
+    y2={y2}
+    stroke='#999'
+    strokeOpacity='0.6'
+    strokeWidth='10'
+  />
+}
 
 /**
  * Represents a model that is being dragged and its coordinates, or a lack of drag
@@ -97,44 +116,32 @@ function Graph({ nodes, setNodes }: GraphProps) {
           setDrag({
             ...drag,
             cursor: { x: e.clientX, y: e.clientY }
-      })
-      };
+          })
+        };
       }}
       onMouseUp={() => {
         if (drag) {
           const { element } = drag;
-      element.fx = element.fy = null;
-      setDrag(null);
-      restartSimulation();
-      }
+          element.fx = element.fy = null;
+          setDrag(null);
+          restartSimulation();
+        }
       }}
       onMouseLeave={() => {
         if (drag) {
           const { element } = drag;
-      element.fx = element.fy = null;
-      setDrag(null);
-      restartSimulation();
-      }
+          element.fx = element.fy = null;
+          setDrag(null);
+          restartSimulation();
+        }
       }}
     >
-      {nodes.map(node => <NodeSVG
-        node={node}
-        key={node.id}
-        drag={drag}
-        setDrag={setDrag}
-        edges={edges}
-        addEdge={(edge: Edge) => setEdges(edges.add(edge))}
-        restartSimulation={restartSimulation}
-      />)}
       {edges.map(({ requester, responder }) =>
-      <line
+      <EdgeSVG
         x1={requester.x!}
         y1={requester.y!}
         x2={responder.x!}
         y2={responder.y!}
-        stroke='#999'
-        strokeOpacity='0.6'
-        strokeWidth='10'
       />
       )}
       {(() => {
@@ -143,20 +150,26 @@ function Graph({ nodes, setNodes }: GraphProps) {
             offset,
             cursor,
             element
-      } = drag;
-      if ('requestType' in element ||
-      'responseType' in element) {
-        return <line
-          x1={element.x!}
-          y1={element.y!}
-          x2={cursor.x + offset.x}
-          y2={cursor.y + offset.y}
-          stroke='#999'
-          strokeOpacity='0.6'
-          strokeWidth='10'
-        />
-      }
-      }})()}
+          } = drag;
+          if ('requestType' in element || 'responseType' in element) {
+            return <EdgeSVG
+              x1={element.x!}
+              y1={element.y!}
+              x2={cursor.x + offset.x}
+              y2={cursor.y + offset.y}
+            />
+          }
+        }})()}
+      {nodes.map(node => <NodeSVG
+        node={node}
+        key={node.id}
+        drag={drag}
+        setDrag={setDrag}
+        edges={edges}
+        addEdge={(edge: Edge) => setEdges(edges.add(edge))}
+        removeEdge={(edge: Edge) => setEdges(edges.remove(edge))}
+        restartSimulation={restartSimulation}
+      />)}
     </svg>
   );
 }
@@ -166,8 +179,17 @@ interface AccessPointSVGProps {
   setDrag: (drag: Drag) => void;
   drag: Drag | null;
   addEdge: (edge: Edge) => void;
+  removeEdge: (edge: Edge) => void;
+  findEdge: () => Edge | null;
 };
-function AccessPointSVG({ accessPoint, drag, setDrag, addEdge }: AccessPointSVGProps) {
+function AccessPointSVG({
+  accessPoint,
+  drag,
+  setDrag,
+  addEdge,
+  removeEdge,
+  findEdge
+}: AccessPointSVGProps) {
   const outerRadius = 12;
   const innerRadius = outerRadius / 2;
   const { x, y } = accessPoint;
@@ -178,30 +200,44 @@ function AccessPointSVG({ accessPoint, drag, setDrag, addEdge }: AccessPointSVGP
   return (
     <g
       onMouseDown={(e) => {
-        setDrag({
-          element: accessPoint,
-          offset: {
-            x: x! - e.clientX,
-            y: y! - e.clientY
-      },
-      cursor: { x: e.clientX, y: e.clientY }
-      });
+        const edge = findEdge();
+        if (edge) {
+          removeEdge(edge);
+          const otherAp = edge.requester === accessPoint ? edge.responder : edge.requester;
+          setDrag({
+            element: otherAp,
+            offset: {
+              x: x! - e.clientX,
+              y: y! - e.clientY
+            },
+            cursor: { x: e.clientX, y: e.clientY }
+          });
+        } else {
+          setDrag({
+            element: accessPoint,
+            offset: {
+              x: x! - e.clientX,
+              y: y! - e.clientY
+            },
+            cursor: { x: e.clientX, y: e.clientY }
+          });
+        }
       }}
       onMouseUp={(e) => {
         if (drag) {
           const { element } = drag;
-      if ('requestType' in element && 'responseType' in accessPoint) {
-        addEdge({
-          requester: element,
-          responder: accessPoint
-      })
-      } else if ('responseType' in element && 'requestType' in accessPoint) {
-        addEdge({
-          requester: accessPoint,
-          responder: element
-      });
-      }
-      }
+          if ('requestType' in element && 'responseType' in accessPoint) {
+            addEdge({
+              requester: element,
+              responder: accessPoint
+            })
+          } else if ('responseType' in element && 'requestType' in accessPoint) {
+            addEdge({
+              requester: accessPoint,
+              responder: element
+            });
+          }
+        }
       }}
     >
       <circle
@@ -229,6 +265,7 @@ interface NodeSVGProps {
   restartSimulation: () => void;
   edges: Set<Edge>;
   addEdge: (edge: Edge) => void;
+  removeEdge: (edge: Edge) => void;
 };
 function NodeSVG({
   node,
@@ -236,7 +273,8 @@ function NodeSVG({
   setDrag,
   restartSimulation,
   edges,
-  addEdge
+  addEdge,
+  removeEdge
 } : NodeSVGProps) {
   const { PI, max } = Math;
   const { name, x, y, accessPoints } = node;
@@ -284,13 +322,13 @@ function NodeSVG({
             offset: {
               x: x! - e.clientX,
               y: y! - e.clientY
-        },
-        cursor: {
-          x: e.clientX, y: e.clientY
-        },
-        element: node
-        });
-        restartSimulation();
+            },
+            cursor: {
+              x: e.clientX, y: e.clientY
+            },
+            element: node
+          });
+          restartSimulation();
         }}
       />
       {accessPoints.map(([requester, responder], idx) =>
@@ -301,6 +339,9 @@ function NodeSVG({
               drag={drag}
               setDrag={setDrag}
               addEdge={addEdge}
+              removeEdge={removeEdge}
+              findEdge={() =>
+                edges.findKey(edge => edge.requester === requester) || null}
               key={requester.id}
             />
             <AccessPointSVG
@@ -308,6 +349,9 @@ function NodeSVG({
               drag={drag}
               setDrag={setDrag}
               addEdge={addEdge}
+              removeEdge={removeEdge}
+              findEdge={() =>
+                edges.findKey(edge => edge.responder === responder) || null}
               key={responder.id}
             />
           </g>
