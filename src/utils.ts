@@ -1,8 +1,7 @@
-import { RemoteMethod, Model, Direction } from './types';
+import { RemoteMethod, Model, Input, Output, Node, AccessPoint } from './types';
 import { parse, Service } from 'protobufjs';
 import { MD5 } from 'object-hash';
-import { List } from 'immutable';
-import { sortBy } from 'lodash';
+import  { v4 as uuid } from 'uuid'
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's
@@ -44,31 +43,29 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
 /**
  * Given a model, instantiate it so that it can be used in the simulation
  */
-export function instantiateModel(model: Model): Model {
+export function instantiateModel(model: Model, name: string): Node {
+  const accessPoints = model.methods.map(
+    ({ name, requestType, responseType }) => {
+      const input: Input = { name, requestType };
+      const output: Output = { name, responseType };
+      const result: [Input, Output] = [input, output];
+      return result;
+    }
+  ).toList();
   return {
-    ...model,
-    methods: model.methods.reduce<List<RemoteMethod>>(
-      (acc, method) => acc
-        .push({ ...method, direction: Direction.Input })
-        .push({ ...method, direction: Direction.Output }),
-      List()
-    )
+    name,
+    id: uuid(),
+    modelName: model.name,
+    image: model.image,
+    accessPoints
   };
 };
 
 /**
  * Can two methods be connected?
  */
-export function compatibleMethods(left: RemoteMethod, right: RemoteMethod): boolean {
-  if (left.direction === undefined || right.direction === undefined) {
-    return false;
-  }
-  const [input, output] = sortBy([left, right], method => method.direction);
-  return (
-    output.direction === Direction.Output &&
-    input.direction === Direction.Input &&
-    output.responseType.name === input.requestType.name
-  );
+export function compatibleMethods(input: Input, output: Output): boolean {
+  return (output.responseType.name === input.requestType.name);
 };
 
 /**

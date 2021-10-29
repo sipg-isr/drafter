@@ -4,7 +4,7 @@ import {
   Form,
   Button
 } from 'react-bootstrap';
-import { List } from 'immutable';
+import { List, Set } from 'immutable';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 // Import types
 import { Model } from '../types';
@@ -67,7 +67,7 @@ function ModelAddingForm({ addModel }: ModelAddingFormProps) {
               name,
               image,
               // TODO show an error message and abort if this is null
-              methods: List(protobufToRemoteMethods(protobufCode) || [])
+              methods: Set(protobufToRemoteMethods(protobufCode) || [])
             });
             // Clear all the fields
             setName('');

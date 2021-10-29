@@ -32,7 +32,7 @@ function App() {
               <Models models={models} setModels={setModels} />
             </Tab>
             <Tab style={{padding:15}} eventKey="editor" title="Editor">
-              <Editor availableModels={models} />
+              <Editor models={models} />
             </Tab>
           </Tabs>
         </Row>
