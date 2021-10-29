@@ -52,9 +52,19 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
  */
 export function instantiateModel(model: Model, name: string): Node {
   const accessPoints = model.methods.map(
-    ({ name, requestType, responseType }) => {
-      const requester: Requester = { name, requestType, id: uuid() };
-      const responder: Responder = { name, responseType, id: uuid() };
+    (remoteMethod) => {
+      const { requestType, responseType } = remoteMethod;
+      const requester: Requester = {
+        name: remoteMethodToString(remoteMethod),
+        requestType,
+        id: uuid()
+      };
+      const responder: Responder = {
+        name: remoteMethodToString(remoteMethod),
+        responseType,
+        id:
+        uuid()
+      };
       const result: [Requester, Responder] = [requester, responder];
       return result;
     }

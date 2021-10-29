@@ -240,6 +240,7 @@ function AccessPointSVG({
         }
       }}
     >
+      <title>{accessPoint.name}</title>
       <circle
         r={outerRadius}
         cx={x!}
