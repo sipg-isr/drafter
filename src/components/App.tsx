@@ -8,7 +8,6 @@ import { List } from 'immutable';
 import {
   Row,
   Container,
-  Col,
   Tabs,
   Tab
 } from 'react-bootstrap';

@@ -2,8 +2,6 @@ import { SimulationNodeDatum, SimulationLinkDatum } from 'd3-force';
 import { IType } from 'protobufjs';
 import { Set, List } from 'immutable';
 
-export type UUID = string;
-
 export type MessageType = IType & { name: string };
 
 /**
@@ -27,17 +25,27 @@ export interface Model {
   methods: Set<RemoteMethod>;
 }
 
-export interface Node extends SimulationNodeDatum {
+export type UUID = string;
+export interface Identified {
+  // A unique identifer for nodes in the graph
+  id: UUID;
+};
+
+export interface Node extends SimulationNodeDatum, Identified {
   // The name of the individual node
   name: string;
-  id: UUID;
   // The name of the model this node was created from
   modelName: string;
   // The image identifier of the model
   image: string;
-  accessPoints: List<[Input, Output]>;
+  accessPoints: List<[Requester, Responder]>;
 }
 
-export type Input = Pick<RemoteMethod,  'name' | 'requestType'>;
-export type Output = Pick<RemoteMethod, 'name' | 'responseType'>;
-export type AccessPoint = Input | Output;
+export type Requester  = Pick<RemoteMethod, 'name' | 'requestType'>  & SimulationNodeDatum & Identified;
+export type Responder = Pick<RemoteMethod, 'name' | 'responseType'> & SimulationNodeDatum & Identified;
+export type AccessPoint = Requester | Responder;
+
+export interface Edge {
+  requester: Requester;
+  responder: Responder;
+}

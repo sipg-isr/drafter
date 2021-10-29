@@ -64,7 +64,7 @@ export default function Sidebar({
           </thead>
           <tbody>
             {nodes.map(node =>
-            <tr key={node.name}>
+            <tr key={node.id}>
               <td>{node.name}</td>
               <td>{node.modelName}</td>
               <td>

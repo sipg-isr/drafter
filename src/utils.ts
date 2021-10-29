@@ -1,4 +1,11 @@
-import { RemoteMethod, Model, Input, Output, Node, AccessPoint } from './types';
+import {
+  RemoteMethod,
+  Model,
+  Requester,
+  Responder,
+  Node,
+  AccessPoint
+} from './types';
 import { parse, Service } from 'protobufjs';
 import { MD5 } from 'object-hash';
 import  { v4 as uuid } from 'uuid'
@@ -46,9 +53,9 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
 export function instantiateModel(model: Model, name: string): Node {
   const accessPoints = model.methods.map(
     ({ name, requestType, responseType }) => {
-      const input: Input = { name, requestType };
-      const output: Output = { name, responseType };
-      const result: [Input, Output] = [input, output];
+      const requester: Requester = { name, requestType, id: uuid() };
+      const responder: Responder = { name, responseType, id: uuid() };
+      const result: [Requester, Responder] = [requester, responder];
       return result;
     }
   ).toList();
@@ -64,8 +71,8 @@ export function instantiateModel(model: Model, name: string): Node {
 /**
  * Can two methods be connected?
  */
-export function compatibleMethods(input: Input, output: Output): boolean {
-  return (output.responseType.name === input.requestType.name);
+export function compatibleMethods(requester: Requester, responder: Responder): boolean {
+  return (requester.requestType.name === responder.responseType.name);
 };
 
 /**
