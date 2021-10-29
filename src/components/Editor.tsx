@@ -11,6 +11,7 @@ import {
   Row,
   ListGroup,
   Button,
+  Table
 } from 'react-bootstrap';
 import {
   List,
@@ -28,26 +29,70 @@ import {
   ellipsePolarToCartesian,
   compatibleMethods
 } from '../utils';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaTrash } from 'react-icons/fa';
 import { truncate } from 'lodash'
 
 interface SidebarProps {
-  availableModels: List<Model>;
+  models: List<Model>;
   addModelToEditor: (model: Model) => void;
+  nodes: Set<Node>;
+  removeNode: (node: Node) => void;
 };
-function Sidebar({ availableModels, addModelToEditor }: SidebarProps) {
+function Sidebar({
+  models,
+  addModelToEditor,
+  nodes,
+  removeNode
+}: SidebarProps) {
   return (
     <>
-      <h6>Available models</h6>
-      <ListGroup>
-        {availableModels.map(model =>
-        <ListGroup.Item key={model.name}>
-          <Button onClick={() => addModelToEditor(model)}>
-            <FaPlus />&nbsp;{model.name}
-          </Button>
-        </ListGroup.Item>
-        )}
-      </ListGroup>
+      <Row>
+        <Table>
+          <thead>
+            <tr>
+              <th colSpan={3}>Available models</th>
+            </tr>
+          </thead>
+          <tbody>
+          {models.map(model =>
+          <tr key={model.name}>
+            <td>{model.name}</td>
+            <td>{model.image}</td>
+            <td>
+              <Button onClick={() => addModelToEditor(model)}>
+              <FaPlus />
+              </Button>
+            </td>
+          </tr>
+          )}
+          </tbody>
+        </Table>
+      </Row>
+      <Row><hr /></Row>
+      <Row>
+        <Table>
+          <thead>
+            <tr>
+              <th colSpan={3}>Nodes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {nodes.map(node =>
+            <tr key={node.name}>
+              <td>{node.name}</td>
+              <td>{node.modelName}</td>
+              <td>
+                <Button
+                  variant="danger"
+                  onClick={() => removeNode(node)}>
+                  <FaTrash />
+                </Button>
+              </td>
+            </tr>
+            )}
+          </tbody>
+        </Table>
+      </Row>
     </>
   );
 }
@@ -103,8 +148,8 @@ function Graph({ nodes, setNodes }: GraphProps) {
       onMouseMove={(e) => {
         if (drag) {
           const [offsetX, offsetY, node] = drag;
-        node.fx! = e.clientX + offsetX;
-        node.fy! = e.clientY + offsetY;
+          node.fx! = e.clientX + offsetX;
+          node.fy! = e.clientY + offsetY;
         }
       }}
       onMouseUp={(e) => {
@@ -125,13 +170,13 @@ function Graph({ nodes, setNodes }: GraphProps) {
       }}
     >
       {nodes.map(node =>
-            <NodeSVG
-              node={node}
-              key={`${node.name}-${node.modelName}`}
-              drag={drag}
-              setDrag={setDrag}
-              restartSimulation={restartSimulation}
-            />
+      <NodeSVG
+        node={node}
+        key={`${node.name}-${node.modelName}`}
+        drag={drag}
+        setDrag={setDrag}
+        restartSimulation={restartSimulation}
+      />
       )}
     </svg>
   );
@@ -252,11 +297,18 @@ export default function Editor({ models }: EditorProps) {
   return (
     <>
       <Row>
-        <Col xs="2">
-          <Sidebar availableModels={models} addModelToEditor={(model: Model) => {
-            const node = instantiateModel(model, model.name)
-            setNodes(nodes.add(node))
-          }} />
+        <Col xs="4">
+          <Sidebar
+            models={models}
+            addModelToEditor={(model: Model) => {
+              const node = instantiateModel(model, model.name)
+              setNodes(nodes.add(node))
+            }}
+            nodes={nodes}
+            removeNode={(node: Node) => {
+              setNodes(nodes.remove(node))
+            }}
+          />
         </Col>
         <Col><Graph nodes={nodes} setNodes={setNodes} /></Col>
       </Row>
