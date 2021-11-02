@@ -6,10 +6,10 @@ import Models from './Models';
 import { BrowserRouter } from 'react-router-dom';
 import { List } from 'immutable';
 import {
-  Row,
   Container,
-  Tabs,
-  Tab
+  Row,
+  Tab,
+  Tabs
 } from 'react-bootstrap';
 import { Model } from '../types';
 
@@ -26,11 +26,11 @@ function App() {
           <hr />
         </Row>
         <Row>
-          <Tabs defaultValue="models">
-            <Tab eventKey="models" title="Models">
+          <Tabs defaultValue='models'>
+            <Tab eventKey='models' title='Models'>
               <Models models={models} setModels={setModels} />
             </Tab>
-            <Tab style={{padding:15}} eventKey="editor" title="Editor">
+            <Tab style={{padding:15}} eventKey='editor' title='Editor'>
               <Editor models={models} />
             </Tab>
           </Tabs>

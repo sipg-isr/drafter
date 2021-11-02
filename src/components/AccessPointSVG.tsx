@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   AccessPoint,
   Drag,
@@ -14,7 +15,7 @@ interface AccessPointSVGProps {
   addEdge: (edge: Edge) => void;
   removeEdge: (edge: Edge) => void;
   findEdge: () => Edge | null;
-};
+}
 export default function AccessPointSVG({
   accessPoint,
   drag,
@@ -63,7 +64,7 @@ export default function AccessPointSVG({
             addEdge({
               requester: element,
               responder: accessPoint
-            })
+            });
           } else if ('responseType' in element && 'requestType' in accessPoint) {
             addEdge({
               requester: accessPoint,
@@ -90,4 +91,4 @@ export default function AccessPointSVG({
       />
     </g>
   );
-};
+}

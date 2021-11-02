@@ -1,6 +1,6 @@
-import { SimulationNodeDatum, SimulationLinkDatum } from 'd3-force';
+import { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force';
 import { IType } from 'protobufjs';
-import { Set, List } from 'immutable';
+import { List, Set } from 'immutable';
 
 export type MessageType = IType & { name: string };
 
@@ -29,7 +29,7 @@ export type UUID = string;
 export interface Identified {
   // A unique identifer for nodes in the graph
   id: UUID;
-};
+}
 
 export interface Node extends SimulationNodeDatum, Identified {
   // The name of the individual node
@@ -56,7 +56,7 @@ export interface Edge {
 interface Coordinates {
   x: number;
   y: number;
-};
+}
 
 /**
  * Represents an active drag.

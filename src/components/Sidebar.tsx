@@ -1,6 +1,7 @@
+import React from 'react';
 import {
-  Row,
   Button,
+  Row,
   Table
 } from 'react-bootstrap';
 import {
@@ -10,7 +11,7 @@ import {
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import {
   Model,
-  Node,
+  Node
 } from '../types';
 
 interface SidebarProps {
@@ -18,7 +19,7 @@ interface SidebarProps {
   addModelToEditor: (model: Model) => void;
   nodes: Set<Node>;
   removeNode: (node: Node) => void;
-};
+}
 export default function Sidebar({
   models,
   addModelToEditor,
@@ -38,17 +39,17 @@ export default function Sidebar({
             </tr>
           </thead>
           <tbody>
-          {models.map(model =>
-          <tr key={model.name}>
-            <td>{model.name}</td>
-            <td><pre>{model.image}</pre></td>
-            <td>
-              <Button onClick={() => addModelToEditor(model)}>
-              <FaPlus />
-              </Button>
-            </td>
-          </tr>
-          )}
+            {models.map(model =>
+              <tr key={model.name}>
+                <td>{model.name}</td>
+                <td><pre>{model.image}</pre></td>
+                <td>
+                  <Button onClick={() => addModelToEditor(model)}>
+                    <FaPlus />
+                  </Button>
+                </td>
+              </tr>
+            )}
           </tbody>
         </Table>
       </Row>
@@ -64,17 +65,17 @@ export default function Sidebar({
           </thead>
           <tbody>
             {nodes.map(node =>
-            <tr key={node.id}>
-              <td>{node.name}</td>
-              <td>{node.modelName}</td>
-              <td>
-                <Button
-                  variant="danger"
-                  onClick={() => removeNode(node)}>
-                  <FaTrash />
-                </Button>
-              </td>
-            </tr>
+              <tr key={node.id}>
+                <td>{node.name}</td>
+                <td>{node.modelName}</td>
+                <td>
+                  <Button
+                    variant='danger'
+                    onClick={() => removeNode(node)}>
+                    <FaTrash />
+                  </Button>
+                </td>
+              </tr>
             )}
           </tbody>
         </Table>

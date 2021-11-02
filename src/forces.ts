@@ -4,7 +4,7 @@
  */
 
 import { Force } from 'd3';
-import { Model, RemoteMethod, Node } from './types';
+import { Model, Node, RemoteMethod } from './types';
 import { List } from 'immutable';
 
 /**
