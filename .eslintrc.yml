@@ -35,6 +35,8 @@ rules:
   sort-imports:
     - error
     - ignoreDeclarationSort: true
+  no-trailing-spaces:
+    - error
   # It is necessary here to disable the normal eslint rule before we can enable the typescript
   # no-use-before-define rule
   no-use-before-define:
