@@ -93,6 +93,7 @@ export default function Graph({ nodes, setNodes }: GraphProps) {
     >
       {edges.map(({ requester, responder }) =>
         <EdgeSVG
+          key={`edge-${requester.id}-${responder.id}`}
           x1={requester.x!}
           y1={requester.y!}
           x2={responder.x!}
