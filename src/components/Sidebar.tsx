@@ -11,7 +11,7 @@ import {
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import {
   Model,
-  Node,
+  Node
 } from '../types';
 
 interface SidebarProps {

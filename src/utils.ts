@@ -31,7 +31,7 @@ export function protobufToRemoteMethods(code: string): RemoteMethod[] | null {
       .map(method => ({
         name: method.name,
         requestType: { ...root.lookupType(method.requestType).toJSON(), name: method.requestType},
-        responseType: { ...root.lookupType(method.responseType).toJSON(), name: method.responseType},
+        responseType: { ...root.lookupType(method.responseType).toJSON(), name: method.responseType}
       }))
     );
   } catch (e: any) {
@@ -102,6 +102,6 @@ export function ellipsePolarToCartesian(
   const { sin, cos } = Math;
   return [
     rx * cos(theta) + cx,
-    ry * sin(theta) + cy,
+    ry * sin(theta) + cy
   ];
 }
