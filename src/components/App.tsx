@@ -6,10 +6,10 @@ import Models from './Models';
 import { BrowserRouter } from 'react-router-dom';
 import { List } from 'immutable';
 import {
-  Row,
   Container,
-  Tabs,
-  Tab
+  Row,
+  Tab,
+  Tabs
 } from 'react-bootstrap';
 import { Model } from '../types';
 

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import {
-  Table,
+  Button,
   Form,
-  Button
+  Table
 } from 'react-bootstrap';
 import { List, Set } from 'immutable';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 // Import types
 import { Model } from '../types';
-import { remoteMethodToString, protobufToRemoteMethods } from '../utils';
+import { protobufToRemoteMethods, remoteMethodToString } from '../utils';
 
 interface ModelViewProps {
   model: Model;

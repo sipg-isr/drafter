@@ -32,6 +32,11 @@ rules:
   comma-dangle:
     - error
     - never
+  sort-imports:
+    - error
+    - ignoreDeclarationSort: true
+  # It is necessary here to disable the normal eslint rule before we can enable the typescript
+  # no-use-before-define rule
   no-use-before-define:
     - off
   '@typescript-eslint/no-use-before-define':

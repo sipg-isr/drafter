@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-  forceSimulation,
   forceManyBody,
+  forceSimulation,
   forceX,
   forceY
 } from 'd3-force';
@@ -9,9 +9,9 @@ import {
   Set
 } from 'immutable';
 import {
-  Node,
+  Drag,
   Edge,
-  Drag
+  Node
 } from '../types';
 import EdgeSVG from './EdgeSVG';
 import NodeSVG from './NodeSVG';

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Set
 } from 'immutable';
@@ -6,14 +5,15 @@ import {
   truncate
 } from 'lodash';
 import {
-  Node,
   Drag,
-  Edge
+  Edge,
+  Node
 } from '../types';
 import {
   ellipsePolarToCartesian
 } from '../utils';
 import AccessPointSVG from './AccessPointSVG';
+import React from 'react';
 
 interface NodeSVGProps {
   node: Node;

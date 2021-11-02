@@ -1,6 +1,6 @@
-import { SimulationNodeDatum, SimulationLinkDatum } from 'd3-force';
+import { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force';
 import { IType } from 'protobufjs';
-import { Set, List } from 'immutable';
+import { List, Set } from 'immutable';
 
 export type MessageType = IType & { name: string };
 

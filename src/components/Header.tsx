@@ -1,8 +1,8 @@
 import React from 'react';
 import {
+  Container,
   Nav,
   Navbar,
-  Container,
   Tabs
 } from 'react-bootstrap';
 import { name, version } from '../../package.json';
