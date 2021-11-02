@@ -41,7 +41,7 @@ export default function Sidebar({
           {models.map(model =>
           <tr key={model.name}>
             <td>{model.name}</td>
-            <td>{model.image}</td>
+            <td><pre>{model.image}</pre></td>
             <td>
               <Button onClick={() => addModelToEditor(model)}>
               <FaPlus />

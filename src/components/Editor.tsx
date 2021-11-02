@@ -71,7 +71,7 @@ function Graph({ nodes, setNodes }: GraphProps) {
   const [edges, setEdges] = useState<Set<Edge>>(Set());
 
   // TODO make these configurable?
-  const width = 400;
+  const width = 600;
   const height = 800;
 
   useEffect(() => {
@@ -299,24 +299,14 @@ function NodeSVG({
 
   return (
     <g>
-      <text
-        textAnchor='middle'
-        stroke='#fff'
-        strokeWidth='0.5'
-        strokeOpacity='0.6'
-        fill='#000'
-        fontSize='16px'
-        x={x!}
-        y={y!}
-      >{displayName}</text>
       <ellipse
         rx={rx}
         ry={ry}
         cx={x!}
         cy={y!}
+        fill="#fff"
         stroke="#000"
         strokeWidth="1px"
-        fillOpacity="0"
         cursor={drag ? 'grabbing' : 'grab'}
         onMouseDown={(e) => {
           setDrag({
@@ -332,6 +322,16 @@ function NodeSVG({
           restartSimulation();
         }}
       />
+      <text
+        textAnchor='middle'
+        stroke='#fff'
+        strokeWidth='0.5'
+        strokeOpacity='0.6'
+        fill='#000'
+        fontSize='16px'
+        x={x!}
+        y={y!}
+      >{displayName}</text>
       {accessPoints.map(([requester, responder], idx) =>
         (
           <g key={requester.id + responder.id}>
@@ -376,7 +376,7 @@ export default function Editor({ models }: EditorProps) {
   return (
     <>
       <Row>
-        <Col xs="4">
+        <Col>
           <Sidebar
             models={models}
             addModelToEditor={(model: Model) => {
