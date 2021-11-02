@@ -49,3 +49,28 @@ export interface Edge {
   requester: Requester;
   responder: Responder;
 }
+
+/**
+ * Represents a model that is being dragged and its coordinates, or a lack of drag
+ */
+interface Coordinates {
+  x: number;
+  y: number;
+};
+
+/**
+ * Represents an active drag.
+ */
+export interface Drag {
+  /** the original offset between the cursor beginning and the coordinates in the SVG grid */
+  offset: Coordinates;
+  /** the current location of the cursor */
+  cursor: Coordinates;
+  /** the element being dragged */
+  element: Node | AccessPoint;
+}
+
+/**
+ * An edge in the graph
+ */
+type Connection = [AccessPoint, AccessPoint];
