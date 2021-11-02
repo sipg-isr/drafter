@@ -8,7 +8,7 @@ import {
 } from './types';
 import { parse, Service } from 'protobufjs';
 import { MD5 } from 'object-hash';
-import  { v4 as uuid } from 'uuid'
+import  { v4 as uuid } from 'uuid';
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's
@@ -38,7 +38,7 @@ export function protobufToRemoteMethods(code: string): RemoteMethod[] | null {
     // I really hate exceptions, so we just return null here. TODO make this more sophisticated
     return null;
   }
-};
+}
 
 /**
  * Convert a Remote Method to a human-readable string
@@ -76,14 +76,14 @@ export function instantiateModel(model: Model, name: string): Node {
     image: model.image,
     accessPoints
   };
-};
+}
 
 /**
  * Can two methods be connected?
  */
 export function compatibleMethods(requester: Requester, responder: Responder): boolean {
   return (requester.requestType.name === responder.responseType.name);
-};
+}
 
 /**
  * Given an object, return a color value for it
@@ -96,12 +96,12 @@ export function ellipsePolarToCartesian(
   theta: number,
   rx: number,
   ry: number,
-  cx: number = 0,
-  cy: number = 0
+  cx = 0,
+  cy = 0
 ): [number, number] {
   const { sin, cos } = Math;
   return [
     rx * cos(theta) + cx,
     ry * sin(theta) + cy,
   ];
-};
+}

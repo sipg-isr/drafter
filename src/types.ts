@@ -29,7 +29,7 @@ export type UUID = string;
 export interface Identified {
   // A unique identifer for nodes in the graph
   id: UUID;
-};
+}
 
 export interface Node extends SimulationNodeDatum, Identified {
   // The name of the individual node
@@ -56,7 +56,7 @@ export interface Edge {
 interface Coordinates {
   x: number;
   y: number;
-};
+}
 
 /**
  * Represents an active drag.

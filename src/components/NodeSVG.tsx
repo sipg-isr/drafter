@@ -12,7 +12,7 @@ import {
 import {
   ellipsePolarToCartesian
 } from '../utils';
-import AccessPointSVG from './AccessPointSVG'
+import AccessPointSVG from './AccessPointSVG';
 
 interface NodeSVGProps {
   node: Node;
@@ -22,7 +22,7 @@ interface NodeSVGProps {
   edges: Set<Edge>;
   addEdge: (edge: Edge) => void;
   removeEdge: (edge: Edge) => void;
-};
+}
 export default function NodeSVG({
   node,
   drag,
@@ -59,9 +59,9 @@ export default function NodeSVG({
         ry={ry}
         cx={x!}
         cy={y!}
-        fill="#fff"
-        stroke="#000"
-        strokeWidth="1px"
+        fill='#fff'
+        stroke='#000'
+        strokeWidth='1px'
         cursor={drag ? 'grabbing' : 'grab'}
         onMouseDown={(e) => {
           setDrag({
@@ -115,4 +115,4 @@ export default function NodeSVG({
       )}
     </g>
   );
-};
+}

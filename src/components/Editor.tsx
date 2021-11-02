@@ -19,7 +19,7 @@ import {
 
 interface EditorProps {
   models: List<Model>;
-};
+}
 export default function Editor({ models }: EditorProps) {
   const [nodes, setNodes] = useState<Set<Node>>(Set());
 
@@ -30,12 +30,12 @@ export default function Editor({ models }: EditorProps) {
           <Sidebar
             models={models}
             addModelToEditor={(model: Model) => {
-              const node = instantiateModel(model, model.name)
-              setNodes(nodes.add(node))
+              const node = instantiateModel(model, model.name);
+              setNodes(nodes.add(node));
             }}
             nodes={nodes}
             removeNode={(node: Node) => {
-              setNodes(nodes.remove(node))
+              setNodes(nodes.remove(node));
             }}
           />
         </Col>
@@ -43,4 +43,4 @@ export default function Editor({ models }: EditorProps) {
       </Row>
     </>
   );
-};
+}

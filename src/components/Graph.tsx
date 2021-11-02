@@ -19,7 +19,7 @@ import NodeSVG from './NodeSVG';
 interface GraphProps {
   nodes: Set<Node>;
   setNodes: (nodes: Set<Node>) => void;
-};
+}
 export default function Graph({ nodes, setNodes }: GraphProps) {
   const [simulation] = useState(forceSimulation<Node>().stop());
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -34,7 +34,7 @@ export default function Graph({ nodes, setNodes }: GraphProps) {
     simulation
       .force('vertical-center', forceX(width / 2).strength(0.01))
       .force('horizontal-center', forceY(height / 2).strength(0.01))
-      .force('charge', forceManyBody().strength(-100))
+      .force('charge', forceManyBody().strength(-100));
     simulation.alpha(0.5);
     simulation.alphaTarget(0.0).restart();
     // Run this whenever a node is added or removed
@@ -71,8 +71,8 @@ export default function Graph({ nodes, setNodes }: GraphProps) {
           setDrag({
             ...drag,
             cursor: { x: e.clientX, y: e.clientY }
-          })
-        };
+          });
+        }
       }}
       onMouseUp={() => {
         if (drag) {
@@ -92,12 +92,12 @@ export default function Graph({ nodes, setNodes }: GraphProps) {
       }}
     >
       {edges.map(({ requester, responder }) =>
-      <EdgeSVG
-        x1={requester.x!}
-        y1={requester.y!}
-        x2={responder.x!}
-        y2={responder.y!}
-      />
+        <EdgeSVG
+          x1={requester.x!}
+          y1={requester.y!}
+          x2={responder.x!}
+          y2={responder.y!}
+        />
       )}
       {(() => {
         if (drag) {
@@ -112,7 +112,7 @@ export default function Graph({ nodes, setNodes }: GraphProps) {
               y1={element.y!}
               x2={cursor.x + offset.x}
               y2={cursor.y + offset.y}
-            />
+            />;
           }
         }})()}
       {nodes.map(node => <NodeSVG
