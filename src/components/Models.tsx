@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Button,
   Form,
@@ -54,7 +54,7 @@ function ModelAddingForm({ addModel }: ModelAddingFormProps) {
     } else {
       return null;
     }
-  }
+  };
   return (
     <>
       <tr>
@@ -129,4 +129,4 @@ export default function Models({ models, setModels }: ModelsProps) {
   );
 }
 
-FileList
+FileList;
