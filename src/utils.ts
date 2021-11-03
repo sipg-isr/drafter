@@ -1,3 +1,7 @@
+import { Service, parse } from 'protobufjs';
+import { MD5 } from 'object-hash';
+import { List, Set } from 'immutable';
+import  { v4 as uuid } from 'uuid';
 import {
   Model,
   Node,
@@ -5,10 +9,6 @@ import {
   Requester,
   Responder
 } from './types';
-import { Service, parse } from 'protobufjs';
-import { MD5 } from 'object-hash';
-import { Set } from 'immutable';
-import  { v4 as uuid } from 'uuid';
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's
@@ -104,4 +104,29 @@ export function ellipsePolarToCartesian(
     rx * cos(theta) + cx,
     ry * sin(theta) + cy
   ];
+}
+
+/**
+ * A function that takes a react ref to a file input tag and outputs the plain-text value of the
+ * currently-uploaded file
+ */
+export async function fileContent(element: HTMLInputElement): Promise<string | null> {
+  // Get the set of files associated with the current file input
+  // Note that we coerce to undefined in case of a falsy value here because the `Set`
+  // constructor does not accept null.
+  const files = List(element?.files || undefined);
+  if (files) {
+    // If the thing actually exists...
+    // We should make sure it has exactly one file
+    if (files.size === 1) {
+      // We can assert-nonnull here because we know the files list has a first element
+      const file = files.first()!;
+      return file.text();
+    } else {
+      console.error(`Attempted to upload more than one protobuf file for a model. Files were [${files.map(file => file.name).join(', ')}]}`);
+      return null;
+    }
+  } else {
+    return null;
+  }
 }

@@ -5,18 +5,19 @@ import Editor from './Editor';
 import Models from './Models';
 import { BrowserRouter } from 'react-router-dom';
 import { List } from 'immutable';
+import { filter } from 'lodash';
 import {
   Container,
   Row,
   Tab,
   Tabs
 } from 'react-bootstrap';
-import { Model } from '../types';
+import { ModelViewState } from './ModelView';
 
 function App() {
   // TODO store this somewhere like localStorage or idb-keyval
   // write a custom hook to serialize / deserialize this
-  const [models, setModels] = useState<List<Model>>(List());
+  const [modelEntries, setModelEntries] = useState<List<ModelViewState>>(List());
 
   return (
     <BrowserRouter basename={process.env.PUBLIC_URL}>
@@ -28,10 +29,10 @@ function App() {
         <Row>
           <Tabs defaultValue='models'>
             <Tab eventKey='models' title='Models'>
-              <Models models={models} setModels={setModels} />
+              <Models models={modelEntries} setModels={setModelEntries} />
             </Tab>
             <Tab style={{padding:15}} eventKey='editor' title='Editor'>
-              <Editor models={models} />
+              <Editor models={modelEntries.filter(model => model.model).map(model => model.model!)} />
             </Tab>
           </Tabs>
         </Row>

@@ -13,22 +13,25 @@ export interface RemoteMethod {
   responseType: MessageType
 }
 
+export type UUID = string;
+/**
+ * Any object that has a UUID identifier
+ */
+export interface Identified {
+  // A unique identifer for nodes in the graph
+  id: UUID;
+}
+
 /**
  * this defines a model, which is a template from which nodes in the editor can be made
  */
-export interface Model {
+export interface Model extends Identified {
   // The human-readable name of the model
   name: string;
   // An image name, like sipgisr/image-source:latest
   image: string;
   // A set of interfaces
   methods: Set<RemoteMethod>;
-}
-
-export type UUID = string;
-export interface Identified {
-  // A unique identifer for nodes in the graph
-  id: UUID;
 }
 
 export interface Node extends SimulationNodeDatum, Identified {
