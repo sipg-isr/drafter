@@ -1,6 +1,6 @@
 import { Service, parse } from 'protobufjs';
 import { MD5 } from 'object-hash';
-import { Set, List } from 'immutable';
+import { List, Set } from 'immutable';
 import  { v4 as uuid } from 'uuid';
 import {
   Model,
@@ -129,4 +129,4 @@ export async function fileContent(element: HTMLInputElement): Promise<string | n
   } else {
     return null;
   }
-};
+}

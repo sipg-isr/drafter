@@ -1,19 +1,19 @@
 import React, { useRef, useState } from 'react';
 import {
-  ButtonGroup,
   Button,
-  Form,
+  ButtonGroup,
+  Form
 } from 'react-bootstrap';
 import { List, Set } from 'immutable';
 import { v4 as uuid } from 'uuid';
 import { Model } from '../types';
-import { protobufToRemoteMethods, fileContent, remoteMethodToString } from '../utils';
-import { FaCheck, FaPen, FaTrash, FaTimes } from 'react-icons/fa';
+import { fileContent, protobufToRemoteMethods, remoteMethodToString } from '../utils';
+import { FaCheck, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
 
 interface Edit {
   kind: 'Edit';
   model: Model | null;
-};
+}
 
 interface Display {
   kind: 'Display';
@@ -26,7 +26,7 @@ interface DisplayModelProps {
   setState: (state: ModelViewState) => void;
   removeModel: () => void;
   state: Display;
-};
+}
 function DisplayModel({ setState, state: { model }, removeModel}: DisplayModelProps) {
   return (
     <>
@@ -55,7 +55,7 @@ function DisplayModel({ setState, state: { model }, removeModel}: DisplayModelPr
     </>
   );
 
-};
+}
 
 interface EditModelProps {
   setState: (state: ModelViewState) => void;
@@ -129,12 +129,12 @@ interface ModelViewProps {
   setState: (state: ModelViewState) => void;
   removeModel: () => void;
   state: ModelViewState;
-};
+}
 export default function ModelView({ state, setState, removeModel }: ModelViewProps) {
   if (state.kind === 'Display') {
-    return <DisplayModel state={state} setState={setState} removeModel={removeModel} />
+    return <DisplayModel state={state} setState={setState} removeModel={removeModel} />;
   } else if (state.kind === 'Edit') {
-    return <EditModel state={state} setState={setState} removeModel={removeModel} />
+    return <EditModel state={state} setState={setState} removeModel={removeModel} />;
   } else {
     throw new Error(`Unexpected Model View State ${state}`);
   }
