@@ -39,7 +39,7 @@ export default function Models({ models, setModels }: ModelsProps) {
           <tr>
             <td colSpan={4} style={{textAlign: 'center'}}>
               <Button
-                variant='success'
+                variant='primary'
                 onClick={() => addModel({ kind: 'Edit', model: null})}
               ><FaPlus /></Button>
             </td>

@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
+  ButtonGroup,
   Button,
   Form,
 } from 'react-bootstrap';
@@ -7,7 +8,7 @@ import { List, Set } from 'immutable';
 import { v4 as uuid } from 'uuid';
 import { Model } from '../types';
 import { protobufToRemoteMethods, fileContent, remoteMethodToString } from '../utils';
-import { FaCheck, FaPen, FaTrash } from 'react-icons/fa';
+import { FaCheck, FaPen, FaTrash, FaTimes } from 'react-icons/fa';
 
 interface Edit {
   kind: 'Edit';
@@ -34,19 +35,21 @@ function DisplayModel({ setState, state: { model }, removeModel}: DisplayModelPr
         <td>{model.image}</td>
         <td>{model.methods.map(method => <pre key={`${model.id}-${method.name}`}>{remoteMethodToString(method)}</pre>)}</td>
         <td style={{whiteSpace: 'nowrap'}}>
-          <Button
-            variant='primary'
-            onClick={() =>
-              setState({
-                kind: 'Edit',
-                model
-              })
-            }
-          ><FaPen /></Button>
-          <Button
-            variant='danger'
-            onClick={removeModel}
-          ><FaTrash /></Button>
+          <ButtonGroup>
+            <Button
+              variant='primary'
+              onClick={() =>
+                setState({
+                  kind: 'Edit',
+                  model
+                })
+              }
+            ><FaPen /></Button>
+            <Button
+              variant='danger'
+              onClick={removeModel}
+            ><FaTrash /></Button>
+          </ButtonGroup>
         </td>
       </tr>
     </>
@@ -90,24 +93,32 @@ function EditModel({ setState, state: { model }, removeModel }: EditModelProps) 
           />
         </td>
         <td style={{whiteSpace: 'nowrap'}}>
-          <Button
-            variant='success'
-            onClick={async () => {
-              setState({
-                kind: 'Display',
-                model: {
-                  name,
-                  image,
-                  // TODO show an error message and abort if this is null
-                  methods: protobufToRemoteMethods(await fileContent(filesRef!.current!) || '') || Set(),
-                  id: uuid()
-                }
-              });
-            }}><FaCheck /></Button>
-          <Button
-            variant='danger'
-            onClick={removeModel}
-          ><FaTrash /></Button>
+          <ButtonGroup>
+            { model ?
+              <Button
+                variant='secondary'
+                onClick={() => setState({ kind: 'Display', model })}
+              ><FaTimes /></Button> : null
+            }
+            <Button
+              variant='success'
+              onClick={async () => {
+                setState({
+                  kind: 'Display',
+                  model: {
+                    name,
+                    image,
+                    // TODO show an error message and abort if this is null
+                    methods: protobufToRemoteMethods(await fileContent(filesRef!.current!) || '') || Set(),
+                    id: uuid()
+                  }
+                });
+              }}><FaCheck /></Button>
+            <Button
+              variant='danger'
+              onClick={removeModel}
+            ><FaTrash /></Button>
+          </ButtonGroup>
         </td>
       </tr>
     </>
