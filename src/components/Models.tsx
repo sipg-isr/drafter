@@ -1,21 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Button,
   Table
 } from 'react-bootstrap';
 import { List } from 'immutable';
 import { FaPlus } from 'react-icons/fa';
-// Import types
-import { Model } from '../types';
-import { remoteMethodToString } from '../utils';
-import ModelView, { ModelViewState } from './ModelView';
+import ModelView, { ModelEntry } from './ModelView';
+import { useStore } from '../state';
 
 interface ModelsProps {
-  models: List<ModelViewState>;
-  setModels: (models: List<ModelViewState>) => void;
 }
-export default function Models({ models, setModels }: ModelsProps) {
-  const addModel = (model: ModelViewState) => setModels(models.push(model));
+export default function Models({ }: ModelsProps) {
+  const [entries, setEntries] = useState<List<ModelEntry>>(List());
+  const addModel = (model: ModelEntry) => setEntries(entries.push(model));
+
+  const setModels = useStore(state => state.setModels);
+
+  useEffect(() => {
+    setModels(entries
+      .filter(entry => entry.model !== null )
+      .map(({ model }) => model!)
+    )
+  }, [entries]);
+
   return (
     <>
       <Table>
@@ -28,13 +35,13 @@ export default function Models({ models, setModels }: ModelsProps) {
           </tr>
         </thead>
         <tbody>
-          {models.map((model, idx) => <ModelView
+          {entries.map((entry, idx) => <ModelView
             key={`mv-${idx}`}
-            state={model}
+            entry={entry}
             removeModel={() => {
-              setModels(models.remove(models.indexOf(model)));
+              setEntries(entries.remove(entries.indexOf(entry)));
             }}
-            setState={state => setModels(models.set(idx, state))}
+            setEntry={entry => setEntries(entries.set(idx, entry))}
           />)}
           <tr>
             <td colSpan={4} style={{textAlign: 'center'}}>
