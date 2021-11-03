@@ -13,16 +13,18 @@ import {
   Edge,
   Node
 } from '../types';
+import { useNodes, useSetNodes } from '../state';
 import EdgeSVG from './EdgeSVG';
 import NodeSVG from './NodeSVG';
 
 interface GraphProps {
-  nodes: Set<Node>;
-  setNodes: (nodes: Set<Node>) => void;
 }
-export default function Graph({ nodes, setNodes }: GraphProps) {
+export default function Graph({}: GraphProps) {
   const [simulation] = useState(forceSimulation<Node>().stop());
   const [drag, setDrag] = useState<Drag | null>(null);
+  const nodes = useNodes();
+  const setNodes = useSetNodes();
+  // TODO move these into state container
   const [edges, setEdges] = useState<Set<Edge>>(Set());
 
   // TODO make these configurable?
