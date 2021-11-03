@@ -7,12 +7,13 @@ import {
 } from './types';
 import { Service, parse } from 'protobufjs';
 import { MD5 } from 'object-hash';
+import { Set } from 'immutable';
 import  { v4 as uuid } from 'uuid';
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's
  */
-export function protobufToRemoteMethods(code: string): RemoteMethod[] | null {
+export function protobufToRemoteMethods(code: string): Set<RemoteMethod> | null {
   try {
     // Parse out the root object from the ProtoBuf code
     const { root } = parse(code);
@@ -25,13 +26,13 @@ export function protobufToRemoteMethods(code: string): RemoteMethod[] | null {
       .filter(reflectionObject => reflectionObject.toJSON().methods)
       .map(obj => obj as Service);
 
-    return services.flatMap(service => service
+    return Set(services.flatMap(service => service
       .methodsArray
       .map(method => ({
         name: method.name,
         requestType: { ...root.lookupType(method.requestType).toJSON(), name: method.requestType},
         responseType: { ...root.lookupType(method.responseType).toJSON(), name: method.responseType}
-      }))
+      })))
     );
   } catch (e: any) {
     // I really hate exceptions, so we just return null here. TODO make this more sophisticated

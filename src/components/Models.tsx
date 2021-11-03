@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Button,
   Form,
@@ -33,7 +33,28 @@ interface ModelAddingFormProps {
 function ModelAddingForm({ addModel }: ModelAddingFormProps) {
   const [name, setName] = useState('');
   const [image, setImage] = useState('');
-  const [protobufCode, setProtobufCode] = useState('');
+  const filesRef = useRef<HTMLInputElement | null>(null);
+  // A function that returns the plain-text value of the currently-uploaded file
+  const fileContent: () => Promise<string | null> = async () => {
+    // Get the set of files associated with the current file input
+    // Note that we coerce to undefined in case of a falsy value here because the `Set`
+    // constructor does not accept null.
+    const files = List(filesRef?.current?.files || undefined);
+    if (files) {
+      // If the thing actually exists...
+      // We should make sure it has exactly one file
+      if (files.size === 1) {
+        // We can assert-nonnull here because we know the files list has a first element
+        const file = files.first()!;
+        return file.text();
+      } else {
+        console.error(`Attempted to upload more than one protobuf file for a model. Files were [${files.map(file => file.name).join(', ')}]}`);
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
   return (
     <>
       <tr>
@@ -53,26 +74,25 @@ function ModelAddingForm({ addModel }: ModelAddingFormProps) {
         </td>
         <td>
           <Form.Control
-            as='textarea'
+            type='file'
+            ref={filesRef}
             placeholder='paste in protobuf here'
-            value={protobufCode}
-            onChange={event => setProtobufCode(event.target.value)}
           />
         </td>
         <td>
           <Button
             variant='success'
-            onClick={() => {
+            onClick={async () => {
               addModel({
                 name,
                 image,
                 // TODO show an error message and abort if this is null
-                methods: Set(protobufToRemoteMethods(protobufCode) || [])
+                methods: protobufToRemoteMethods(await fileContent() || '') || Set()
               });
               // Clear all the fields
               setName('');
               setImage('');
-              setProtobufCode('');
+              // TODO delete the file ref
             }}><FaPlus /></Button>
         </td>
       </tr>
@@ -97,7 +117,7 @@ export default function Models({ models, setModels }: ModelsProps) {
           </tr>
         </thead>
         <tbody>
-          {models.map(model => <ModelView key={model.name} model={model} removeModel={() => {
+          {models.map(model => <ModelView key={model.name + Math.random()} model={model} removeModel={() => {
             setModels(models.remove(models.indexOf(model)));
           }} />)}
           <ModelAddingForm addModel={(model: Model) => {
@@ -108,3 +128,5 @@ export default function Models({ models, setModels }: ModelsProps) {
     </>
   );
 }
+
+FileList
