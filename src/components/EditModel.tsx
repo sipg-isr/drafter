@@ -4,6 +4,7 @@ import {
   Form,
 } from 'react-bootstrap';
 import { List, Set } from 'immutable';
+import { v4 as uuid } from 'uuid';
 import { Model } from '../types';
 import { protobufToRemoteMethods } from '../utils';
 import { FaPlus } from 'react-icons/fa';
@@ -68,7 +69,8 @@ export default function EditModel({ addModel }: EditModelProps) {
                 name,
                 image,
                 // TODO show an error message and abort if this is null
-                methods: protobufToRemoteMethods(await fileContent() || '') || Set()
+                methods: protobufToRemoteMethods(await fileContent() || '') || Set(),
+                id: uuid()
               });
               // Clear all the fields
               setName('');

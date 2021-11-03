@@ -45,7 +45,7 @@ export default function Models({ models, setModels }: ModelsProps) {
           </tr>
         </thead>
         <tbody>
-          {models.map(model => <ModelView key={model.name + Math.random()} model={model} removeModel={() => {
+          {models.map(model => <ModelView key={model.id} model={model} removeModel={() => {
             setModels(models.remove(models.indexOf(model)));
           }} />)}
           <EditModel addModel={(model: Model) => {
