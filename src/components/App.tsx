@@ -12,11 +12,12 @@ import {
   Tabs
 } from 'react-bootstrap';
 import { Model } from '../types';
+import { ModelViewState } from './ModelView';
 
 function App() {
   // TODO store this somewhere like localStorage or idb-keyval
   // write a custom hook to serialize / deserialize this
-  const [models, setModels] = useState<List<Model>>(List());
+  const [models, setModels] = useState<List<ModelViewState>>(List());
 
   return (
     <BrowserRouter basename={process.env.PUBLIC_URL}>
@@ -31,7 +32,7 @@ function App() {
               <Models models={models} setModels={setModels} />
             </Tab>
             <Tab style={{padding:15}} eventKey='editor' title='Editor'>
-              <Editor models={models} />
+              <Editor models={models.filter(model => model.model).map(model => model.model!)} />
             </Tab>
           </Tabs>
         </Row>
