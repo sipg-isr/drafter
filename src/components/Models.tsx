@@ -76,7 +76,7 @@ function ModelAddingForm({ addModel }: ModelAddingFormProps) {
           <Form.Control
             type='file'
             ref={filesRef}
-            placeholder='paste in protobuf here'
+            accept='.proto'
           />
         </td>
         <td>
