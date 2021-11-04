@@ -6,17 +6,23 @@ import {
 import { List } from 'immutable';
 import { FaPlus } from 'react-icons/fa';
 import ModelView, { ModelEntry } from './ModelView';
-import { useStore } from '../state';
+import { useModels } from '../state';
 
 interface ModelsProps {
 }
 export default function Models({ }: ModelsProps) {
-  const [entries, setEntries] = useState<List<ModelEntry>>(List());
-  const addModel = (model: ModelEntry) => setEntries(entries.push(model));
+  // These are the entires in the form
+  const [entries, setEntries] = useState<List<ModelEntry>>(List([
+    { kind: 'Edit', model: null } // Start with one empty model
+  ]));
+  // To add an entry by pushing it into the entries set
+  const addEntry = (entry: ModelEntry) => setEntries(entries.push(entry));
 
-  const setModels = useStore(state => state.setModels);
+  const [, setModels] = useModels();
 
   useEffect(() => {
+    // Whenever entries are updated, filter out the ones that have associated models, and set
+    // those models
     setModels(entries
       .filter(entry => entry.model !== null )
       .map(({ model }) => model!)
@@ -47,7 +53,7 @@ export default function Models({ }: ModelsProps) {
             <td colSpan={4} style={{textAlign: 'center'}}>
               <Button
                 variant='primary'
-                onClick={() => addModel({ kind: 'Edit', model: null})}
+                onClick={() => addEntry({ kind: 'Edit', model: null})}
               ><FaPlus /></Button>
             </td>
           </tr>

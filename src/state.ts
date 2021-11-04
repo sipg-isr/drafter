@@ -5,7 +5,6 @@ import {
   Node,
   Edge
 } from './types';
-import { instantiateModel } from './utils';
 
 /**
  * The global state for the application. This requires a few properties
@@ -17,12 +16,9 @@ interface State {
   setModels: (models: List<Model>) => void;
   /** A set of nodes that were instantiated into the graph */
   nodes: Set<Node>;
-  setNodes: (models: Set<Node>) => void;
-  removeNode: (node: Node) => void;
+  setNodes: (nodes: Set<Node>) => void;
   /** A set of edges that connect the nodes in the graph */
   edges: Set<Edge>;
-  /** take a given model, and add it to the editor */
-  addModelToEditor: (model: Model) => void;
 };
 
 export const useStore = create<State>(set => ({
@@ -36,18 +32,11 @@ export const useStore = create<State>(set => ({
   setNodes: (nodes: Iterable<Node>) => set(() => ({
     nodes: Set(nodes)
   })),
-
-  removeNode: (node: Node) => set(({ nodes }) => ({
-    nodes: nodes.remove(node)
-  })),
-
-  addModelToEditor: (model: Model) => set(({ nodes }) => ({
-    nodes: nodes.add(instantiateModel(model, model.name))
-  }))
 }));
 
-export const useModels = () => useStore(state => state.models);
-export const useNodes = () => useStore(state => state.nodes);
-export const useSetNodes = () => useStore(state => state.setNodes);
-export const useAddModelToEditor = () => useStore(state => state.addModelToEditor);
-export const useRemoveNode = () => useStore(state => state.removeNode);
+export function useModels(): [List<Model>, (models: List<Model>) => void] {
+  return useStore(state => [state.models, state.setModels]);
+}
+export function useNodes(): [Set<Node>, (nodes: Set<Node>) => void] {
+  return useStore(state => [state.nodes, state.setNodes]);
+}
