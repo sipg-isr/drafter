@@ -9,6 +9,8 @@ import {
   Requester,
   Responder
 } from './types';
+// TODO perhaps move this type into types.ts to avoid a circular dependency?
+import { State } from './state';
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's
@@ -129,4 +131,22 @@ export async function fileContent(element: HTMLInputElement): Promise<string | n
   } else {
     return null;
   }
+}
+
+export function serializeState(state: State): string {
+  return JSON.stringify(state);
+}
+
+export function deserializeState(serialized: string): State {
+  return JSON.parse(serialized, (key, value) => {
+    if (key === 'models') {
+      return List(value);
+    } else if (key === 'nodes') {
+      return Set(value);
+    } else if (key === 'edges') {
+      return Set(value);
+    } else {
+      return;
+    }
+  });
 }
