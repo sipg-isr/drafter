@@ -34,7 +34,7 @@ export const useStore = create<State>(set => ({
   edges: Set(),
   setEdges: (edges: Iterable<Edge>) => set(() => ({
     edges: Set(edges)
-  })),
+  }))
 }));
 
 export function useModels(): [List<Model>, (models: List<Model>) => void] {

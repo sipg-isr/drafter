@@ -13,7 +13,7 @@ import {
   Edge,
   Node
 } from '../types';
-import { useNodes, useEdges } from '../state';
+import { useEdges, useNodes } from '../state';
 import EdgeSVG from './EdgeSVG';
 import NodeSVG from './NodeSVG';
 
