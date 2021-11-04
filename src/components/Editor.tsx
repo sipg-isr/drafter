@@ -17,29 +17,16 @@ import {
   instantiateModel
 } from '../utils';
 
-interface EditorProps {
-  models: List<Model>;
-}
-export default function Editor({ models }: EditorProps) {
-  const [nodes, setNodes] = useState<Set<Node>>(Set());
-
+export default function Editor() {
+  // TODO store state somewhere like localStorage or idb-keyval
+  // write a custom hook to serialize / deserialize this
   return (
     <>
       <Row>
         <Col>
-          <Sidebar
-            models={models}
-            addModelToEditor={(model: Model) => {
-              const node = instantiateModel(model, model.name);
-              setNodes(nodes.add(node));
-            }}
-            nodes={nodes}
-            removeNode={(node: Node) => {
-              setNodes(nodes.remove(node));
-            }}
-          />
+          <Sidebar />
         </Col>
-        <Col><Graph nodes={nodes} setNodes={setNodes} /></Col>
+        <Col><Graph /></Col>
       </Row>
     </>
   );

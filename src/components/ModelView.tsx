@@ -20,14 +20,14 @@ interface Display {
   model: Model;
 }
 
-export type ModelViewState = | Edit | Display;
+export type ModelEntry = | Edit | Display;
 
 interface DisplayModelProps {
-  setState: (state: ModelViewState) => void;
+  setEntry: (entry: ModelEntry) => void;
   removeModel: () => void;
-  state: Display;
+  entry: Display;
 }
-function DisplayModel({ setState, state: { model }, removeModel}: DisplayModelProps) {
+function DisplayModel({ setEntry, entry: { model }, removeModel}: DisplayModelProps) {
   return (
     <>
       <tr>
@@ -39,7 +39,7 @@ function DisplayModel({ setState, state: { model }, removeModel}: DisplayModelPr
             <Button
               variant='primary'
               onClick={() =>
-                setState({
+                setEntry({
                   kind: 'Edit',
                   model
                 })
@@ -58,12 +58,12 @@ function DisplayModel({ setState, state: { model }, removeModel}: DisplayModelPr
 }
 
 interface EditModelProps {
-  setState: (state: ModelViewState) => void;
+  setEntry: (entry: ModelEntry) => void;
   removeModel: () => void;
-  state: Edit;
+  entry: Edit;
 }
 
-function EditModel({ setState, state: { model }, removeModel }: EditModelProps) {
+function EditModel({ setEntry, entry: { model }, removeModel }: EditModelProps) {
   const [name, setName] = useState(model?.name || '');
   const [image, setImage] = useState(model?.image || '');
   // Protobuf file input
@@ -97,13 +97,13 @@ function EditModel({ setState, state: { model }, removeModel }: EditModelProps) 
             { model ?
               <Button
                 variant='secondary'
-                onClick={() => setState({ kind: 'Display', model })}
+                onClick={() => setEntry({ kind: 'Display', model })}
               ><FaTimes /></Button> : null
             }
             <Button
               variant='success'
               onClick={async () => {
-                setState({
+                setEntry({
                   kind: 'Display',
                   model: {
                     name,
@@ -126,16 +126,16 @@ function EditModel({ setState, state: { model }, removeModel }: EditModelProps) 
 }
 
 interface ModelViewProps {
-  setState: (state: ModelViewState) => void;
+  setEntry: (entry: ModelEntry) => void;
   removeModel: () => void;
-  state: ModelViewState;
+  entry: ModelEntry;
 }
-export default function ModelView({ state, setState, removeModel }: ModelViewProps) {
-  if (state.kind === 'Display') {
-    return <DisplayModel state={state} setState={setState} removeModel={removeModel} />;
-  } else if (state.kind === 'Edit') {
-    return <EditModel state={state} setState={setState} removeModel={removeModel} />;
+export default function ModelView({ entry, setEntry, removeModel }: ModelViewProps) {
+  if (entry.kind === 'Display') {
+    return <DisplayModel entry={entry} setEntry={setEntry} removeModel={removeModel} />;
+  } else if (entry.kind === 'Edit') {
+    return <EditModel entry={entry} setEntry={setEntry} removeModel={removeModel} />;
   } else {
-    throw new Error(`Unexpected Model View State ${state}`);
+    throw new Error(`Unexpected Model View State ${entry}`);
   }
 }

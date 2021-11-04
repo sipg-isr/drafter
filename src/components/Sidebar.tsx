@@ -13,19 +13,18 @@ import {
   Model,
   Node
 } from '../types';
+import { instantiateModel } from '../utils';
+import {
+  useModels,
+  useNodes
+} from '../state';
 
-interface SidebarProps {
-  models: List<Model>;
-  addModelToEditor: (model: Model) => void;
-  nodes: Set<Node>;
-  removeNode: (node: Node) => void;
-}
-export default function Sidebar({
-  models,
-  addModelToEditor,
-  nodes,
-  removeNode
-}: SidebarProps) {
+export default function Sidebar() {
+  const [models] = useModels();
+  const [nodes, setNodes] = useNodes();
+  const removeNode = (node: Node) => setNodes(nodes.remove(node));
+  const addModelToEditor = (model: Model) => setNodes(nodes.add(instantiateModel(model, model.name)));
+
   return (
     <>
       <Row>
