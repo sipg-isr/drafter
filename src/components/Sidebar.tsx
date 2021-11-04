@@ -19,11 +19,8 @@ import {
   useNodes
 } from '../state';
 
-interface SidebarProps {
-}
-export default function Sidebar({
-}: SidebarProps) {
-  const [models, setModels] = useModels();
+export default function Sidebar() {
+  const [models] = useModels();
   const [nodes, setNodes] = useNodes();
   const removeNode = (node: Node) => setNodes(nodes.remove(node));
   const addModelToEditor = (model: Model) => setNodes(nodes.add(instantiateModel(model, model.name)));

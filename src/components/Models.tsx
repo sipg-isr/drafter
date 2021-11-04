@@ -8,9 +8,7 @@ import { FaPlus } from 'react-icons/fa';
 import ModelView, { ModelEntry } from './ModelView';
 import { useModels } from '../state';
 
-interface ModelsProps {
-}
-export default function Models({ }: ModelsProps) {
+export default function Models() {
   // These are the entires in the form
   const [entries, setEntries] = useState<List<ModelEntry>>(List([
     { kind: 'Edit', model: null } // Start with one empty model

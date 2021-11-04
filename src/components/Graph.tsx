@@ -17,9 +17,7 @@ import { useNodes } from '../state';
 import EdgeSVG from './EdgeSVG';
 import NodeSVG from './NodeSVG';
 
-interface GraphProps {
-}
-export default function Graph({}: GraphProps) {
+export default function Graph() {
   const [simulation] = useState(forceSimulation<Node>().stop());
   const [drag, setDrag] = useState<Drag | null>(null);
   const [nodes, setNodes] = useNodes();

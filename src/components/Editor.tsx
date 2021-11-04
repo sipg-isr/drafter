@@ -17,9 +17,7 @@ import {
   instantiateModel
 } from '../utils';
 
-interface EditorProps {
-}
-export default function Editor({}: EditorProps) {
+export default function Editor() {
   // TODO store state somewhere like localStorage or idb-keyval
   // write a custom hook to serialize / deserialize this
   return (
