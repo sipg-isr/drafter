@@ -4,10 +4,6 @@ import {
   Row,
   Table
 } from 'react-bootstrap';
-import {
-  List,
-  Set
-} from 'immutable';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import {
   Model,
