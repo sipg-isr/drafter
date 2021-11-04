@@ -26,7 +26,7 @@ export default function Sidebar({
   const [models, setModels] = useModels();
   const [nodes, setNodes] = useNodes();
   const removeNode = (node: Node) => setNodes(nodes.remove(node));
-  const addModelToEditor = (model: Model) => setNodes(nodes.add(instantiateModel(model, model.name)))
+  const addModelToEditor = (model: Model) => setNodes(nodes.add(instantiateModel(model, model.name)));
 
   return (
     <>

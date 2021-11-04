@@ -1,9 +1,9 @@
 import create from 'zustand';
-import { Set, List } from 'immutable';
+import { List, Set } from 'immutable';
 import {
+  Edge,
   Model,
-  Node,
-  Edge
+  Node
 } from './types';
 
 /**
@@ -19,7 +19,7 @@ interface State {
   setNodes: (nodes: Set<Node>) => void;
   /** A set of edges that connect the nodes in the graph */
   edges: Set<Edge>;
-};
+}
 
 export const useStore = create<State>(set => ({
   models: List(),
@@ -31,7 +31,7 @@ export const useStore = create<State>(set => ({
 
   setNodes: (nodes: Iterable<Node>) => set(() => ({
     nodes: Set(nodes)
-  })),
+  }))
 }));
 
 export function useModels(): [List<Model>, (models: List<Model>) => void] {

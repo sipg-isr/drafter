@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Button,
   Table
@@ -26,7 +26,7 @@ export default function Models({ }: ModelsProps) {
     setModels(entries
       .filter(entry => entry.model !== null )
       .map(({ model }) => model!)
-    )
+    );
   }, [entries]);
 
   return (
