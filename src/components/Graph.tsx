@@ -13,7 +13,7 @@ import {
   Edge,
   Node
 } from '../types';
-import { useNodes } from '../state';
+import { useEdges, useNodes } from '../state';
 import EdgeSVG from './EdgeSVG';
 import NodeSVG from './NodeSVG';
 
@@ -22,7 +22,7 @@ export default function Graph() {
   const [drag, setDrag] = useState<Drag | null>(null);
   const [nodes, setNodes] = useNodes();
   // TODO move these into state container
-  const [edges, setEdges] = useState<Set<Edge>>(Set());
+  const [edges, setEdges] = useEdges();
 
   // TODO make these configurable?
   const width = 600;
