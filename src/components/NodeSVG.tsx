@@ -10,6 +10,7 @@ import {
   Edge,
   Node
 } from '../types';
+import { useAccessPoints } from '../state';
 import {
   ellipsePolarToCartesian
 } from '../utils';
@@ -27,8 +28,9 @@ export default function NodeSVG({
   setDrag,
   restartSimulation,
 } : NodeSVGProps) {
+  const [accessPoints, ] = useAccessPoints();
   const { PI, max } = Math;
-  const { name, x, y, accessPoints } = node;
+  const { name, x, y } = node;
 
   const displayName = truncate(name, { length: 25 });
   // The radii of the ellipse
@@ -37,12 +39,14 @@ export default function NodeSVG({
 
   const interval = (2 * PI) / accessPoints.size;
 
-  accessPoints.toList().forEach((ap, idx) => {
-    const accessPoint = node.accessPoints.get(ap.accessPointId)!;
-    [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
-      2 * idx * interval, rx, ry, x!, y!
-    );
-  });
+  accessPoints
+    .filter(ap => ap.nodeId === node.nodeId)
+    .toList()
+    .forEach((accessPoint, idx) => {
+      [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
+        2 * idx * interval, rx, ry, x!, y!
+      );
+    });
 
 
   return (

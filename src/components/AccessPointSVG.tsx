@@ -10,20 +10,12 @@ import {
   HasEdgeId,
   Node
 } from '../types';
-import { useEdges, useNodes } from '../state';
+import { useEdges, useNodes, useAccessPoints } from '../state';
 import {
   objectToColor,
   compatibleMethods
 } from '../utils';
 import { v4 as uuid } from 'uuid';
-
-function lookupAccessPoint(
-  nodes: Map<UUID, Node>,
-  { nodeId, accessPointId }: HasNodeId & HasAccessPointId
-): AccessPoint | null {
-  return nodes.get(nodeId)?.accessPoints.get(accessPointId) || null;
-}
-
 
 interface AccessPointSVGProps {
   accessPoint: AccessPoint;
@@ -37,22 +29,23 @@ export default function AccessPointSVG({
 }: AccessPointSVGProps) {
   const [nodes, ] = useNodes();
   const [edges, setEdges] = useEdges();
+  const [accessPoints, ] = useAccessPoints();
 
   // A function to add an edge connection two nodes
   const addEdge = (left: AccessPoint, right: AccessPoint) => {
     const edgeId = uuid();
     setEdges(edges.set(edgeId, {
       edgeId,
-      requesterId: { nodeId: left.nodeId, accessPointId: left.accessPointId },
-      responderId: { nodeId: right.nodeId, accessPointId: right.accessPointId}
+      requesterId: left.accessPointId,
+      responderId: right.accessPointId
     }));
   }
 
   function findEdge({ accessPointId }: HasAccessPointId): Edge | null {
     return edges
       .find(edge =>
-        edge.requesterId.accessPointId === accessPointId ||
-        edge.responderId.accessPointId === accessPointId) || null;
+        edge.requesterId === accessPointId ||
+        edge.responderId === accessPointId) || null;
   }
 
   const removeEdge = ({ edgeId }: HasEdgeId) => {
@@ -69,7 +62,9 @@ export default function AccessPointSVG({
         const edge = findEdge(accessPoint);
         if (edge) {
           removeEdge(edge);
-          const other = lookupAccessPoint(nodes, accessPoint.role === 'Requester' ? edge.responderId : edge.requesterId);
+          const other = accessPoints.get(
+            accessPoint.role === 'Requester' ? edge.responderId : edge.requesterId
+          );
           if (other) {
             setDrag({
               element: other,

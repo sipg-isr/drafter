@@ -13,7 +13,7 @@ import {
   Edge,
   Node
 } from '../types';
-import { useEdges, useNodes } from '../state';
+import { useEdges, useNodes, useAccessPoints } from '../state';
 import EdgeSVG from './EdgeSVG';
 import NodeSVG from './NodeSVG';
 
@@ -23,6 +23,7 @@ export default function Graph() {
   const [nodes, setNodes] = useNodes();
   // TODO move these into state container
   const [edges, setEdges] = useEdges();
+  const [accessPoints, ] = useAccessPoints();
 
   // TODO make these configurable?
   const width = 600;
@@ -91,8 +92,8 @@ export default function Graph() {
       }}
     >
       {edges.toList().map(({ requesterId, responderId }) => {
-        const requester = nodes.get(requesterId.nodeId)?.accessPoints.get(requesterId.accessPointId)!;
-        const responder = nodes.get(responderId.nodeId)?.accessPoints.get(responderId.accessPointId)!;
+        const requester = accessPoints.get(requesterId)!;
+        const responder = accessPoints.get(responderId)!;
         return <EdgeSVG
           key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
           x1={requester.x!}

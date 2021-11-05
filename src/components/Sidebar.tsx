@@ -12,16 +12,19 @@ import {
 import { instantiateModel } from '../utils';
 import {
   useModels,
-  useNodes
+  useNodes,
+  useAccessPoints
 } from '../state';
 
 export default function Sidebar() {
   const [models] = useModels();
   const [nodes, setNodes] = useNodes();
+  const [accessPoints, setAccessPoints] = useAccessPoints();
   const removeNode = (node: Node) => setNodes(nodes.remove(node.nodeId));
   const addModelToEditor = (model: Model) => {
-    const node = instantiateModel(model, model.name);
+    const { node, accessPoints: newAccessPoints } = instantiateModel(model, model.name);
     setNodes(nodes.set(node.nodeId, node));
+    setAccessPoints(accessPoints.concat(newAccessPoints));
   }
 
   return (

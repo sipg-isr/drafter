@@ -52,8 +52,16 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
 /**
  * Given a model, instantiate it so that it can be used in the simulation
  */
-export function instantiateModel({ modelId, methods }: Model, name: string): Node {
+export function instantiateModel(
+  { modelId, methods }: Model, name: string
+): { node: Node, accessPoints: Map<UUID, AccessPoint> } {
   const nodeId = uuid();
+  const node: Node = {
+    kind: 'Node',
+    name,
+    nodeId,
+    modelId,
+  };
   const accessPoints = methods.reduce<Map<UUID, AccessPoint>>((acc, method) => {
     const requesterId = uuid();
     const responderId = uuid();
@@ -75,13 +83,7 @@ export function instantiateModel({ modelId, methods }: Model, name: string): Nod
         nodeId
       });
   }, Map());
-  return {
-    kind: 'Node',
-    name,
-    nodeId,
-    modelId,
-    accessPoints
-  };
+  return { node, accessPoints };
 }
 
 /**
