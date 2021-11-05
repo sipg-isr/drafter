@@ -7,7 +7,8 @@ import {
   Node,
   RemoteMethod,
   AccessPoint,
-  UUID
+  HasNodeId,
+  HasAccessPointId
 } from './types';
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
 import { State } from './state';
@@ -54,19 +55,13 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
  */
 export function instantiateModel(
   { modelId, methods }: Model, name: string
-): { node: Node, accessPoints: Map<UUID, AccessPoint> } {
+): Node {
   const nodeId = uuid();
-  const node: Node = {
-    kind: 'Node',
-    name,
-    nodeId,
-    modelId,
-  };
-  const accessPoints = methods.reduce<Map<UUID, AccessPoint>>((acc, method) => {
+  const accessPoints = methods.reduce<List<AccessPoint>>((acc, method) => {
     const requesterId = uuid();
     const responderId = uuid();
     return acc
-      .set(requesterId, {
+      .push({
         kind:       'AccessPoint',
         role:       'Requester',
         name:        method.name,
@@ -74,7 +69,7 @@ export function instantiateModel(
         accessPointId: requesterId,
         nodeId
       })
-      .set(responderId, {
+      .push({
         kind:       'AccessPoint',
         role:       'Responder',
         name:        method.name,
@@ -82,8 +77,14 @@ export function instantiateModel(
         accessPointId: responderId,
         nodeId
       });
-  }, Map());
-  return { node, accessPoints };
+  }, List());
+  return {
+    kind: 'Node',
+    name,
+    nodeId,
+    modelId,
+    accessPoints
+  };
 }
 
 /**
@@ -161,4 +162,13 @@ export function deserializeState(serialized: string): State {
   parsed.nodes = Set(parsed.nodes);
   parsed.edges = Set(parsed.edges);
   return parsed;
+}
+
+export function lookupAccessPoint(
+  nodes: Set<Node>,
+  { nodeId, accessPointId }: HasNodeId & HasAccessPointId): AccessPoint | null {
+    return nodes
+      .find(node => node.nodeId === nodeId)
+      ?.accessPoints
+      .find(ap => ap.accessPointId === accessPointId) || null;
 }

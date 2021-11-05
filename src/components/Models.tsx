@@ -3,13 +3,13 @@ import {
   Button,
   Table
 } from 'react-bootstrap';
-import { List, Map } from 'immutable';
+import { List, Map, Set } from 'immutable';
 import { FaPlus } from 'react-icons/fa';
 import {
   UUID, Model
 } from '../types';
 import ModelView, { ModelEntry } from './ModelView';
-import { useModels, useNodes, useAccessPoints, useEdges } from '../state';
+import { useModels, useNodes, useEdges } from '../state';
 
 export default function Models() {
   // These are the entries in the form
@@ -21,33 +21,29 @@ export default function Models() {
 
   const [, setModels] = useModels();
   const [nodes, setNodes] = useNodes();
-  const [accessPoints, setAccessPoints] = useAccessPoints();
   const [edges, setEdges] = useEdges();
 
   useEffect(() => {
     // Models have been updated
-    const newModels = entries
-      .reduce<Map<UUID, Model>>((acc, { model}) =>
-        model ? acc.set(model.modelId, model) : acc,
-        Map()
-      );
+    const newModels = Set(
+      entries
+      .filter(({ model }) => model !== null)
+      .map(({ model }) => model!)
+    );
 
     // Filter out only the nodes that are from these models
     const newNodes = nodes.filter(node =>
       newModels.find(({ modelId }) => node.modelId === modelId));
 
-    // Filter out only the access points that are from these nodes
-    const newAccessPoints = accessPoints.filter(ap =>
-      newNodes.find(({ nodeId }) => ap.nodeId === nodeId));
+    // TODO Filter out only the access points that are from these nodes
 
-    // Filter out only the edges that are from these access points
-    const newEdges = edges.filter(edge =>
-      newAccessPoints.find(({ accessPointId }) =>
-        edge.requesterId === accessPointId || edge.responderId === accessPointId));
+    // TODO: Filter out only the edges that are from these access points
+    // const newEdges = edges.filter(edge =>
+    //   newAccessPoints.find(({ accessPointId }) =>
+    //     edge.requesterId === accessPointId || edge.responderId === accessPointId));
 
     // Now set everything, in reverse
-    setEdges(newEdges);
-    setAccessPoints(newAccessPoints);
+    // setEdges(newEdges);
     setNodes(newNodes);
     setModels(newModels);
   }, [entries]);

@@ -48,6 +48,8 @@ export interface Node extends SimulationNodeDatum, HasNodeId, HasModelId {
   kind: 'Node';
   // The name of the individual node
   name: string;
+
+  accessPoints: List<AccessPoint>;
 }
 
 export interface AccessPoint extends SimulationNodeDatum, HasNodeId, HasAccessPointId {
@@ -71,8 +73,8 @@ export interface AccessPoint extends SimulationNodeDatum, HasNodeId, HasAccessPo
 
 export interface Edge extends HasEdgeId {
   // TODO - use newtype pattern here?
-  requesterId: UUID;
-  responderId: UUID;
+  requesterId: HasNodeId & HasAccessPointId;
+  responderId: HasNodeId & HasAccessPointId;
 }
 
 /**

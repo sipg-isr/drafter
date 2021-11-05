@@ -1,5 +1,7 @@
 import React from 'react';
 import { Map } from 'immutable';
+import { v4 as uuid } from 'uuid';
+import { sortBy } from 'lodash';
 import {
   AccessPoint,
   HasAccessPointId,
@@ -10,12 +12,11 @@ import {
   HasEdgeId,
   Node
 } from '../types';
-import { useEdges, useNodes, useAccessPoints } from '../state';
+import { useEdges, useNodes } from '../state';
 import {
   objectToColor,
   compatibleMethods
 } from '../utils';
-import { v4 as uuid } from 'uuid';
 
 interface AccessPointSVGProps {
   accessPoint: AccessPoint;
@@ -29,27 +30,26 @@ export default function AccessPointSVG({
 }: AccessPointSVGProps) {
   const [nodes, ] = useNodes();
   const [edges, setEdges] = useEdges();
-  const [accessPoints, ] = useAccessPoints();
 
   // A function to add an edge connection two nodes
   const addEdge = (left: AccessPoint, right: AccessPoint) => {
-    const edgeId = uuid();
-    setEdges(edges.set(edgeId, {
-      edgeId,
-      requesterId: left.accessPointId,
-      responderId: right.accessPointId
+    const [requester, responder] = sortBy([left, right], ap => ap.role);
+    setEdges(edges.add({
+      edgeId: uuid(),
+      requesterId: { nodeId: accessPoint.nodeId, accessPointId: requester.accessPointId },
+      responderId: { nodeId: accessPoint.nodeId, accessPointId: responder.accessPointId }
     }));
   }
 
   function findEdge({ accessPointId }: HasAccessPointId): Edge | null {
     return edges
-      .find(edge =>
-        edge.requesterId === accessPointId ||
-        edge.responderId === accessPointId) || null;
+      .find(({ requesterId, responderId }) =>
+        requesterId.accessPointId === accessPointId ||
+        responderId.accessPointId === accessPointId) || null;
   }
 
-  const removeEdge = ({ edgeId }: HasEdgeId) => {
-    setEdges(edges.remove(edgeId));
+  const removeEdge = (edge: Edge) => {
+    setEdges(edges.remove(edge));
   }
 
   const outerRadius = 12;
@@ -62,9 +62,12 @@ export default function AccessPointSVG({
         const edge = findEdge(accessPoint);
         if (edge) {
           removeEdge(edge);
-          const other = accessPoints.get(
-            accessPoint.role === 'Requester' ? edge.responderId : edge.requesterId
-          );
+          const otherId =
+            accessPoint.role === 'Requester' ? edge.responderId : edge.requesterId;
+          const other = nodes
+            .find(({ nodeId }) => otherId.nodeId === nodeId)
+            ?.accessPoints
+            ?.find(ap => ap.accessPointId === otherId.accessPointId)
           if (other) {
             setDrag({
               element: other,

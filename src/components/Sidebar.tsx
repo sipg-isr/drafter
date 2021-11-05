@@ -12,19 +12,16 @@ import {
 import { instantiateModel } from '../utils';
 import {
   useModels,
-  useNodes,
-  useAccessPoints
+  useNodes
 } from '../state';
 
 export default function Sidebar() {
   const [models] = useModels();
   const [nodes, setNodes] = useNodes();
-  const [accessPoints, setAccessPoints] = useAccessPoints();
-  const removeNode = (node: Node) => setNodes(nodes.remove(node.nodeId));
+  const removeNode = (node: Node) => setNodes(nodes.remove(node));
   const addModelToEditor = (model: Model) => {
-    const { node, accessPoints: newAccessPoints } = instantiateModel(model, model.name);
-    setNodes(nodes.set(node.nodeId, node));
-    setAccessPoints(accessPoints.concat(newAccessPoints));
+    const node = instantiateModel(model, model.name);
+    setNodes(nodes.add(node));
   }
 
   return (
@@ -68,7 +65,7 @@ export default function Sidebar() {
             {nodes.toList().map(node =>
               <tr key={node.nodeId}>
                 <td>{node.name}</td>
-                <td>{models.get(node.modelId)!.name}</td>
+                <td>{models.find(({ modelId }) => node.modelId === modelId)!.name}</td>
                 <td>
                   <Button
                     variant='danger'
