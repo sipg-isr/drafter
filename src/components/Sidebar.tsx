@@ -18,8 +18,11 @@ import {
 export default function Sidebar() {
   const [models] = useModels();
   const [nodes, setNodes] = useNodes();
-  const removeNode = (node: Node) => setNodes(nodes.remove(node));
-  const addModelToEditor = (model: Model) => setNodes(nodes.add(instantiateModel(model, model.name)));
+  const removeNode = (node: Node) => setNodes(nodes.remove(node.nodeId));
+  const addModelToEditor = (model: Model) => {
+    const node = instantiateModel(model, model.name);
+    setNodes(nodes.set(node.nodeId, node));
+  }
 
   return (
     <>
@@ -34,8 +37,8 @@ export default function Sidebar() {
             </tr>
           </thead>
           <tbody>
-            {models.map(model =>
-              <tr key={model.name}>
+            {models.toList().map(model =>
+              <tr key={model.modelId}>
                 <td>{model.name}</td>
                 <td><pre>{model.image}</pre></td>
                 <td>
@@ -59,10 +62,10 @@ export default function Sidebar() {
             </tr>
           </thead>
           <tbody>
-            {nodes.map(node =>
-              <tr key={node.id}>
+            {nodes.toList().map(node =>
+              <tr key={node.nodeId}>
                 <td>{node.name}</td>
-                <td>{node.modelName}</td>
+                <td>{models.get(node.modelId)!.name}</td>
                 <td>
                   <Button
                     variant='danger'

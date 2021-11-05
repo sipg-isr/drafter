@@ -1,11 +1,11 @@
 import { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force';
 import { IType } from 'protobufjs';
-import { List, Set } from 'immutable';
+import { List, Set, Map } from 'immutable';
 
 export type MessageType = IType & { name: string };
 
 /**
- * An RPC method that can be called on a compute node
+ * An RPC method that forms part of a Model's interface
  */
 export interface RemoteMethod {
   name: string;
@@ -14,18 +14,28 @@ export interface RemoteMethod {
 }
 
 export type UUID = string;
-/**
- * Any object that has a UUID identifier
- */
-export interface Identified {
-  // A unique identifer for nodes in the graph
-  id: UUID;
+
+export interface HasModelId {
+  modelId: UUID;
+}
+
+export interface HasNodeId {
+  nodeId: UUID;
+}
+
+export interface HasAccessPointId {
+  accessPointId: UUID;
+}
+
+export interface HasEdgeId {
+  edgeId: UUID;
 }
 
 /**
  * this defines a model, which is a template from which nodes in the editor can be made
  */
-export interface Model extends Identified {
+export interface Model extends HasModelId {
+  kind: 'Model';
   // The human-readable name of the model
   name: string;
   // An image name, like sipgisr/image-source:latest
@@ -34,23 +44,35 @@ export interface Model extends Identified {
   methods: Set<RemoteMethod>;
 }
 
-export interface Node extends SimulationNodeDatum, Identified {
+export interface Node extends SimulationNodeDatum, HasNodeId, HasModelId {
+  kind: 'Node';
   // The name of the individual node
   name: string;
-  // The name of the model this node was created from
-  modelName: string;
-  // The image identifier of the model
-  image: string;
-  accessPoints: List<[Requester, Responder]>;
+  accessPoints: Map<UUID, AccessPoint>;
 }
 
-export type Requester  = Pick<RemoteMethod, 'name' | 'requestType'>  & SimulationNodeDatum & Identified;
-export type Responder = Pick<RemoteMethod, 'name' | 'responseType'> & SimulationNodeDatum & Identified;
-export type AccessPoint = Requester | Responder;
+export interface AccessPoint extends SimulationNodeDatum, HasNodeId, HasAccessPointId {
+  kind: 'AccessPoint';
+  /**
+   * An AccessPoint can either be a Requester, which calls the methods of other nodes, or a
+   * Responder, which responds to such calls
+   */
+  role: 'Requester' | 'Responder';
+  /**
+   * The message type is either the 'parameter type' of a requester or the 'return type' of a
+   * responder. It determines which methods can be connected
+   */
+  type: MessageType;
 
-export interface Edge {
-  requester: Requester;
-  responder: Responder;
+  /**
+   * The name of the method
+   */
+  name: string;
+}
+
+export interface Edge extends HasEdgeId {
+  requesterId: HasNodeId & HasAccessPointId;
+  responderId: HasNodeId & HasAccessPointId;
 }
 
 /**
@@ -72,8 +94,3 @@ export interface Drag {
   /** the element being dragged */
   element: Node | AccessPoint;
 }
-
-/**
- * An edge in the graph
- */
-type Connection = [AccessPoint, AccessPoint];

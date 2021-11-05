@@ -6,9 +6,9 @@ import {
 } from 'react-bootstrap';
 import { List, Set } from 'immutable';
 import { v4 as uuid } from 'uuid';
+import { FaCheck, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
 import { Model } from '../types';
 import { fileContent, protobufToRemoteMethods, remoteMethodToString } from '../utils';
-import { FaCheck, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
 
 interface Edit {
   kind: 'Edit';
@@ -23,17 +23,18 @@ interface Display {
 export type ModelEntry = | Edit | Display;
 
 interface DisplayModelProps {
-  setEntry: (entry: ModelEntry) => void;
-  removeModel: () => void;
   entry: Display;
+  setEntry: (entry: ModelEntry) => void;
+  removeEntry: () => void;
 }
-function DisplayModel({ setEntry, entry: { model }, removeModel}: DisplayModelProps) {
+function DisplayModel({ entry: { model }, setEntry, removeEntry }: DisplayModelProps) {
+
   return (
     <>
       <tr>
         <td>{model.name}</td>
         <td>{model.image}</td>
-        <td>{model.methods.map(method => <pre key={`${model.id}-${method.name}`}>{remoteMethodToString(method)}</pre>)}</td>
+        <td>{model.methods.map(method => <pre key={`${model.modelId}-${method.name}`}>{remoteMethodToString(method)}</pre>)}</td>
         <td style={{whiteSpace: 'nowrap'}}>
           <ButtonGroup>
             <Button
@@ -47,7 +48,7 @@ function DisplayModel({ setEntry, entry: { model }, removeModel}: DisplayModelPr
             ><FaPen /></Button>
             <Button
               variant='danger'
-              onClick={removeModel}
+              onClick={removeEntry}
             ><FaTrash /></Button>
           </ButtonGroup>
         </td>
@@ -58,16 +59,17 @@ function DisplayModel({ setEntry, entry: { model }, removeModel}: DisplayModelPr
 }
 
 interface EditModelProps {
-  setEntry: (entry: ModelEntry) => void;
-  removeModel: () => void;
   entry: Edit;
+  setEntry: (entry: ModelEntry) => void;
+  removeEntry: () => void;
 }
 
-function EditModel({ setEntry, entry: { model }, removeModel }: EditModelProps) {
+function EditModel({ entry: { model }, setEntry, removeEntry }: EditModelProps) {
   const [name, setName] = useState(model?.name || '');
   const [image, setImage] = useState(model?.image || '');
   // Protobuf file input
   const filesRef = useRef<HTMLInputElement | null>(null);
+
   return (
     <>
       <tr>
@@ -106,17 +108,18 @@ function EditModel({ setEntry, entry: { model }, removeModel }: EditModelProps) 
                 setEntry({
                   kind: 'Display',
                   model: {
+                    kind: 'Model',
                     name,
                     image,
                     // TODO show an error message and abort if this is null
                     methods: protobufToRemoteMethods(await fileContent(filesRef!.current!) || '') || Set(),
-                    id: uuid()
+                    modelId: model ? model.modelId : uuid()
                   }
                 });
               }}><FaCheck /></Button>
             <Button
               variant='danger'
-              onClick={removeModel}
+              onClick={removeEntry}
             ><FaTrash /></Button>
           </ButtonGroup>
         </td>
@@ -126,15 +129,15 @@ function EditModel({ setEntry, entry: { model }, removeModel }: EditModelProps) 
 }
 
 interface ModelViewProps {
-  setEntry: (entry: ModelEntry) => void;
-  removeModel: () => void;
   entry: ModelEntry;
+  setEntry: (entry: ModelEntry) => void;
+  removeEntry: () => void;
 }
-export default function ModelView({ entry, setEntry, removeModel }: ModelViewProps) {
+export default function ModelView({ entry, setEntry, removeEntry }: ModelViewProps) {
   if (entry.kind === 'Display') {
-    return <DisplayModel entry={entry} setEntry={setEntry} removeModel={removeModel} />;
+    return <DisplayModel entry={entry} setEntry={setEntry} removeEntry={removeEntry} />;
   } else if (entry.kind === 'Edit') {
-    return <EditModel entry={entry} setEntry={setEntry} removeModel={removeModel} />;
+    return <EditModel entry={entry} setEntry={setEntry} removeEntry={removeEntry} />;
   } else {
     throw new Error(`Unexpected Model View State ${entry}`);
   }

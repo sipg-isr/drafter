@@ -1,13 +1,13 @@
 import { Service, parse } from 'protobufjs';
 import { MD5 } from 'object-hash';
-import { List, Set } from 'immutable';
+import { List, Set, Map } from 'immutable';
 import  { v4 as uuid } from 'uuid';
 import {
   Model,
   Node,
   RemoteMethod,
-  Requester,
-  Responder
+  AccessPoint,
+  UUID
 } from './types';
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
 import { State } from './state';
@@ -52,30 +52,34 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
 /**
  * Given a model, instantiate it so that it can be used in the simulation
  */
-export function instantiateModel(model: Model, name: string): Node {
-  const accessPoints = model.methods.map(
-    (remoteMethod) => {
-      const { requestType, responseType } = remoteMethod;
-      const requester: Requester = {
-        name: remoteMethodToString(remoteMethod),
-        requestType,
-        id: uuid()
-      };
-      const responder: Responder = {
-        name: remoteMethodToString(remoteMethod),
-        responseType,
-        id:
-        uuid()
-      };
-      const result: [Requester, Responder] = [requester, responder];
-      return result;
-    }
-  ).toList();
+export function instantiateModel({ modelId, methods }: Model, name: string): Node {
+  const nodeId = uuid();
+  const accessPoints = methods.reduce<Map<UUID, AccessPoint>>((acc, method) => {
+    const requesterId = uuid();
+    const responderId = uuid();
+    return acc
+      .set(requesterId, {
+        kind:       'AccessPoint',
+        role:       'Requester',
+        name:        method.name,
+        type:        method.requestType,
+        accessPointId: requesterId,
+        nodeId
+      })
+      .set(responderId, {
+        kind:       'AccessPoint',
+        role:       'Responder',
+        name:        method.name,
+        type:        method.responseType,
+        accessPointId: responderId,
+        nodeId
+      });
+  }, Map());
   return {
+    kind: 'Node',
     name,
-    id: uuid(),
-    modelName: model.name,
-    image: model.image,
+    nodeId,
+    modelId,
     accessPoints
   };
 }
@@ -83,8 +87,12 @@ export function instantiateModel(model: Model, name: string): Node {
 /**
  * Can two methods be connected?
  */
-export function compatibleMethods(requester: Requester, responder: Responder): boolean {
-  return (requester.requestType.name === responder.responseType.name);
+export function compatibleMethods(left: AccessPoint, right: AccessPoint): boolean {
+  const kinds = [left.role, right.role];
+  return kinds.includes('Requester') &&
+    kinds.includes('Responder') &&
+    // TODO do MUCH deeper type-checking than this
+    (left.type.name === right.type.name);
 }
 
 /**
@@ -125,7 +133,7 @@ export async function fileContent(element: HTMLInputElement): Promise<string | n
       const file = files.first()!;
       return file.text();
     } else {
-      console.error(`Attempted to upload more than one protobuf file for a model. Files were [${files.map(file => file.name).join(', ')}]}`);
+      console.error(`Didn't find exactly one protobuf file for the model. Files were [${files.map(file => file.name).join(', ')}]}`);
       return null;
     }
   } else {
@@ -138,15 +146,17 @@ export function serializeState(state: State): string {
 }
 
 export function deserializeState(serialized: string): State {
-  return JSON.parse(serialized, (key, value) => {
-    if (key === 'models') {
+  const parsed = JSON.parse(serialized, (key, value) => {
+    if (key === 'models' || key === 'accessPoints') {
       return List(value);
-    } else if (key === 'nodes') {
-      return Set(value);
-    } else if (key === 'edges') {
+    } else if (key === 'nodes' || key === 'edges') {
       return Set(value);
     } else {
-      return;
+      return value;
     }
   });
+  parsed.models = List(parsed.models);
+  parsed.nodes = Set(parsed.nodes);
+  parsed.edges = Set(parsed.edges);
+  return parsed;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Button,
   Container,
@@ -8,7 +8,7 @@ import {
   Form
 } from 'react-bootstrap';
 import { useStore, State } from '../state';
-import { serializeState } from  '../utils';
+import { serializeState, deserializeState, fileContent } from  '../utils';
 import { saveAs } from 'file-saver';
 
 /**
@@ -31,7 +31,6 @@ export default function EditMenu() {
   const openLoadDialog = () => setCurrentDialog(DialogOption.Load);
   const closeDialog = () => setCurrentDialog(null);
 
-  const store = useStore();
   return (
     <Container>
       <ListGroup horizontal>
@@ -85,14 +84,27 @@ interface LoadDialogProps {
   close: () => void;
 }
 function LoadDialog({ show, close }: LoadDialogProps) {
+
+  const fileUploadRef = useRef<HTMLInputElement | null>(null);
+  const restoreState = useStore(state => state.restoreState);
+
   return (
     <Modal show={show} onEscapeKeyDown={close}>
       <Modal.Header>
-        <Modal.Title>Load saved</Modal.Title>
+        <Modal.Title>Load a solution from a File</Modal.Title>
         <CloseButton onClick={close} />
       </Modal.Header>
       <Modal.Body>
-        yeah
+        <Form.Label>Solution file</Form.Label>
+        <Form.Control type='file' ref={fileUploadRef} />
+        <br />
+        <Button onClick={async () => {
+          const content = await fileContent(fileUploadRef!.current!);
+          console.log(deserializeState(content!));
+          if (content) {
+            restoreState(deserializeState(content))
+          }
+        }}>Load</Button>
       </Modal.Body>
     </Modal>
   );

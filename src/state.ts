@@ -1,9 +1,13 @@
 import create from 'zustand';
-import { List, Set } from 'immutable';
+import { Map } from 'immutable';
 import {
   Edge,
   Model,
-  Node
+  Node,
+  UUID,
+  HasNodeId,
+  HasAccessPointId,
+  AccessPoint
 } from './types';
 
 /**
@@ -12,35 +16,36 @@ import {
  */
 export interface State {
   /** A set of models that have been onboarded onto the platform  */
-  models: List<Model>;
-  setModels: (models: List<Model>) => void;
+  models: Map<UUID, Model>;
+  setModels: (models: Map<UUID, Model>) => void;
   /** A set of nodes that were instantiated into the graph */
-  nodes: Set<Node>;
-  setNodes: (nodes: Set<Node>) => void;
+  nodes: Map<UUID, Node>;
+  setNodes: (nodes: Map<UUID, Node>) => void;
+
   /** A set of edges that connect the nodes in the graph */
-  edges: Set<Edge>;
-  setEdges: (edges: Set<Edge>) => void;
+  edges: Map<UUID, Edge>;
+  setEdges: (edges: Map<UUID, Edge>) => void;
 
   /** Set the entire state, from new */
   restoreState: (state: State) => void;
 }
 
 export const useStore = create<State>(set => ({
-  models:    List(),
+  models:    Map(),
   setModels: models => set(() => ({ models })),
-  nodes:    Set(),
+  nodes:    Map(),
   setNodes: nodes => set(() => ({ nodes })),
-  edges:    Set(),
+  edges:    Map(),
   setEdges: edges => set(() => ({ edges })),
   restoreState: state => set(state, false)
 }));
 
-export function useModels(): [List<Model>, (models: List<Model>) => void] {
+export function useModels(): [Map<UUID, Model>, (models: Map<UUID, Model>) => void] {
   return useStore(state => [state.models, state.setModels]);
 }
-export function useNodes(): [Set<Node>, (nodes: Set<Node>) => void] {
+export function useNodes(): [Map<UUID, Node>, (nodes: Map<UUID, Node>) => void] {
   return useStore(state => [state.nodes, state.setNodes]);
 }
-export function useEdges(): [Set<Edge>, (edges: Set<Edge>) => void] {
+export function useEdges(): [Map<UUID, Edge>, (edges: Map<UUID, Edge>) => void] {
   return useStore(state => [state.edges, state.setEdges]);
 }

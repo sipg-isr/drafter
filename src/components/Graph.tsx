@@ -6,7 +6,7 @@ import {
   forceY
 } from 'd3-force';
 import {
-  Set
+  Map
 } from 'immutable';
 import {
   Drag,
@@ -29,7 +29,7 @@ export default function Graph() {
   const height = 800;
 
   useEffect(() => {
-    simulation.nodes(nodes.toArray());
+    simulation.nodes(nodes.valueSeq().toArray());
     simulation
       .force('vertical-center', forceX(width / 2).strength(0.01))
       .force('horizontal-center', forceY(height / 2).strength(0.01))
@@ -41,7 +41,7 @@ export default function Graph() {
   }, [nodes.size]);
 
   simulation.on('tick', () => {
-    setNodes(Set(nodes.toArray()));
+    setNodes(Map(nodes.toObject()));
   });
 
   const restartSimulation = () => {
@@ -51,7 +51,7 @@ export default function Graph() {
   useEffect(() => {
     if (drag) {
       const {cursor, offset, element} = drag;
-      if ('image' in element) {
+      if (element.kind === 'Node') {
         element.fx! = cursor.x + offset.x;
         element.fy! = cursor.y + offset.y;
       }
@@ -90,15 +90,17 @@ export default function Graph() {
         }
       }}
     >
-      {edges.map(({ requester, responder }) =>
-        <EdgeSVG
-          key={`edge-${requester.id}-${responder.id}`}
+      {edges.toList().map(({ requesterId, responderId }) => {
+        const requester = nodes.get(requesterId.nodeId)?.accessPoints.get(requesterId.accessPointId)!;
+        const responder = nodes.get(responderId.nodeId)?.accessPoints.get(responderId.accessPointId)!;
+        return <EdgeSVG
+          key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
           x1={requester.x!}
           y1={requester.y!}
           x2={responder.x!}
           y2={responder.y!}
         />
-      )}
+      })}
       {(() => {
         if (drag) {
           const {
@@ -106,7 +108,7 @@ export default function Graph() {
             cursor,
             element
           } = drag;
-          if ('requestType' in element || 'responseType' in element) {
+          if (element.kind === 'AccessPoint') {
             return <EdgeSVG
               x1={element.x!}
               y1={element.y!}
@@ -115,14 +117,11 @@ export default function Graph() {
             />;
           }
         }})()}
-      {nodes.map(node => <NodeSVG
+      {nodes.toList().map(node => <NodeSVG
         node={node}
-        key={node.id}
+        key={node.nodeId}
         drag={drag}
         setDrag={setDrag}
-        edges={edges}
-        addEdge={(edge: Edge) => setEdges(edges.add(edge))}
-        removeEdge={(edge: Edge) => setEdges(edges.remove(edge))}
         restartSimulation={restartSimulation}
       />)}
     </svg>

@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Set
 } from 'immutable';
@@ -13,25 +14,18 @@ import {
   ellipsePolarToCartesian
 } from '../utils';
 import AccessPointSVG from './AccessPointSVG';
-import React from 'react';
 
 interface NodeSVGProps {
   node: Node;
   drag: Drag | null;
   setDrag: (drag: Drag) => void;
   restartSimulation: () => void;
-  edges: Set<Edge>;
-  addEdge: (edge: Edge) => void;
-  removeEdge: (edge: Edge) => void;
 }
 export default function NodeSVG({
   node,
   drag,
   setDrag,
   restartSimulation,
-  edges,
-  addEdge,
-  removeEdge
 } : NodeSVGProps) {
   const { PI, max } = Math;
   const { name, x, y, accessPoints } = node;
@@ -41,14 +35,12 @@ export default function NodeSVG({
   const rx = max(displayName.length * 5, 50);
   const ry = rx / 2;
 
-  const interval = PI / accessPoints.size;
+  const interval = (2 * PI) / accessPoints.size;
 
-  accessPoints.forEach(([requester, responder], idx) => {
-    [requester.x, requester.y] = ellipsePolarToCartesian(
+  accessPoints.toList().forEach((ap, idx) => {
+    const accessPoint = node.accessPoints.get(ap.accessPointId)!;
+    [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
       2 * idx * interval, rx, ry, x!, y!
-    );
-    [responder.x, responder.y] = ellipsePolarToCartesian(
-      (2 * idx + 1) * interval, rx, ry, x!, y!
     );
   });
 
@@ -88,30 +80,14 @@ export default function NodeSVG({
         x={x!}
         y={y!}
       >{displayName}</text>
-      {accessPoints.map(([requester, responder], idx) =>
+      {accessPoints.toList().map(ap =>
         (
-          <g key={requester.id + responder.id}>
             <AccessPointSVG
-              accessPoint={requester}
+              accessPoint={ap}
               drag={drag}
               setDrag={setDrag}
-              addEdge={addEdge}
-              removeEdge={removeEdge}
-              findEdge={() =>
-                edges.findKey(edge => edge.requester === requester) || null}
-              key={requester.id}
+              key={ap.accessPointId}
             />
-            <AccessPointSVG
-              accessPoint={responder}
-              drag={drag}
-              setDrag={setDrag}
-              addEdge={addEdge}
-              removeEdge={removeEdge}
-              findEdge={() =>
-                edges.findKey(edge => edge.responder === responder) || null}
-              key={responder.id}
-            />
-          </g>
         )
       )}
     </g>
