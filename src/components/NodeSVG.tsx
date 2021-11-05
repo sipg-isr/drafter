@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Set
 } from 'immutable';
@@ -39,14 +39,16 @@ export default function NodeSVG({
 
   const interval = (2 * PI) / accessPoints.size;
 
-  accessPoints
-    .filter(ap => ap.nodeId === node.nodeId)
-    .toList()
-    .forEach((accessPoint, idx) => {
-      [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
-        2 * idx * interval, rx, ry, x!, y!
-      );
-    });
+  useEffect(() => {
+    accessPoints
+      .filter(ap => ap.nodeId === node.nodeId)
+      .toList()
+      .forEach((accessPoint, idx) => {
+        [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
+          2 * idx * interval, rx, ry, x!, y!
+        );
+      });
+  }, [x, y]);
 
 
   return (
@@ -84,7 +86,7 @@ export default function NodeSVG({
         x={x!}
         y={y!}
       >{displayName}</text>
-      {accessPoints.toList().map(ap =>
+      {accessPoints.valueSeq().map(ap =>
         (
             <AccessPointSVG
               accessPoint={ap}

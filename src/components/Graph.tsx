@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useReducer } from 'react';
 import {
   forceManyBody,
   forceSimulation,
@@ -25,6 +25,8 @@ export default function Graph() {
   const [edges, setEdges] = useEdges();
   const [accessPoints, ] = useAccessPoints();
 
+  const [, update] = useReducer(x => x + 1, 0);
+
   // TODO make these configurable?
   const width = 600;
   const height = 800;
@@ -42,7 +44,7 @@ export default function Graph() {
   }, [nodes.size]);
 
   simulation.on('tick', () => {
-    setNodes(Map(nodes.toObject()));
+    update();
   });
 
   const restartSimulation = () => {
@@ -118,7 +120,7 @@ export default function Graph() {
             />;
           }
         }})()}
-      {nodes.toList().map(node => <NodeSVG
+      {nodes.valueSeq().map(node => <NodeSVG
         node={node}
         key={node.nodeId}
         drag={drag}
