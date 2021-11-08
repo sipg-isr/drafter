@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import {
   forceManyBody,
   forceSimulation,
@@ -6,13 +6,14 @@ import {
   forceY
 } from 'd3-force';
 import {
-  Set
+  Map
 } from 'immutable';
 import {
   Drag,
   Edge,
   Node
 } from '../types';
+import { lookupAccessPoint } from '../utils';
 import { useEdges, useNodes } from '../state';
 import EdgeSVG from './EdgeSVG';
 import NodeSVG from './NodeSVG';
@@ -24,24 +25,24 @@ export default function Graph() {
   // TODO move these into state container
   const [edges, setEdges] = useEdges();
 
+  const [, update] = useReducer(x => x + 1, 0);
+
   // TODO make these configurable?
   const width = 600;
   const height = 800;
 
   useEffect(() => {
-    simulation.nodes(nodes.toArray());
+    simulation.nodes(nodes.valueSeq().toArray());
     simulation
       .force('vertical-center', forceX(width / 2).strength(0.01))
       .force('horizontal-center', forceY(height / 2).strength(0.01))
       .force('charge', forceManyBody().strength(-100));
     simulation.alpha(0.5);
     simulation.alphaTarget(0.0).restart();
-    // Run this whenever a node is added or removed
-    // TODO also run it when connections are made or broken
-  }, [nodes.size]);
+  }, [nodes, edges]);
 
   simulation.on('tick', () => {
-    setNodes(Set(nodes.toArray()));
+    update();
   });
 
   const restartSimulation = () => {
@@ -51,7 +52,7 @@ export default function Graph() {
   useEffect(() => {
     if (drag) {
       const {cursor, offset, element} = drag;
-      if ('image' in element) {
+      if (element.kind === 'Node') {
         element.fx! = cursor.x + offset.x;
         element.fy! = cursor.y + offset.y;
       }
@@ -90,15 +91,22 @@ export default function Graph() {
         }
       }}
     >
-      {edges.map(({ requester, responder }) =>
-        <EdgeSVG
-          key={`edge-${requester.id}-${responder.id}`}
-          x1={requester.x!}
-          y1={requester.y!}
-          x2={responder.x!}
-          y2={responder.y!}
-        />
-      )}
+      {edges.map(({ requesterId, responderId }) => {
+        // Look up each id
+        const [requester, responder] = [requesterId, responderId]
+          .map(id => lookupAccessPoint(nodes, id));
+        if (requester && responder) {
+          return <EdgeSVG
+            key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
+            x1={requester.x}
+            y1={requester.y}
+            x2={responder.x}
+            y2={responder.y}
+          />;
+        } else {
+          return null;
+        }
+      })}
       {(() => {
         if (drag) {
           const {
@@ -106,7 +114,7 @@ export default function Graph() {
             cursor,
             element
           } = drag;
-          if ('requestType' in element || 'responseType' in element) {
+          if (element.kind === 'AccessPoint') {
             return <EdgeSVG
               x1={element.x!}
               y1={element.y!}
@@ -115,14 +123,11 @@ export default function Graph() {
             />;
           }
         }})()}
-      {nodes.map(node => <NodeSVG
+      {nodes.valueSeq().map(node => <NodeSVG
         node={node}
-        key={node.id}
+        key={node.nodeId}
         drag={drag}
         setDrag={setDrag}
-        edges={edges}
-        addEdge={(edge: Edge) => setEdges(edges.add(edge))}
-        removeEdge={(edge: Edge) => setEdges(edges.remove(edge))}
         restartSimulation={restartSimulation}
       />)}
     </svg>

@@ -1,10 +1,19 @@
 import React from 'react';
+import { v4 as uuid } from 'uuid';
+import { sortBy } from 'lodash';
 import {
   AccessPoint,
   Drag,
-  Edge
+  Edge,
+  HasAccessPointId,
+  HasEdgeId,
+  HasNodeId,
+  Node,
+  UUID
 } from '../types';
+import { useEdges, useNodes } from '../state';
 import {
+  compatibleMethods,
   objectToColor
 } from '../utils';
 
@@ -12,64 +21,79 @@ interface AccessPointSVGProps {
   accessPoint: AccessPoint;
   setDrag: (drag: Drag) => void;
   drag: Drag | null;
-  addEdge: (edge: Edge) => void;
-  removeEdge: (edge: Edge) => void;
-  findEdge: () => Edge | null;
 }
 export default function AccessPointSVG({
   accessPoint,
   drag,
-  setDrag,
-  addEdge,
-  removeEdge,
-  findEdge
+  setDrag
 }: AccessPointSVGProps) {
+  const [nodes ] = useNodes();
+  const [edges, setEdges] = useEdges();
+
+  // A function to add an edge connection two nodes
+  const addEdge = (left: AccessPoint, right: AccessPoint) => {
+    const [requester, responder] = sortBy([left, right], ap => ap.role);
+    setEdges(edges.add({
+      edgeId: uuid(),
+      requesterId: { nodeId: requester.nodeId, accessPointId: requester.accessPointId },
+      responderId: { nodeId: responder.nodeId, accessPointId: responder.accessPointId }
+    }));
+  };
+
+  function findEdge({ accessPointId }: HasAccessPointId): Edge | null {
+    return edges
+      .find(({ requesterId, responderId }) =>
+        requesterId.accessPointId === accessPointId ||
+        responderId.accessPointId === accessPointId) || null;
+  }
+
+  const removeEdge = (edge: Edge) => {
+    setEdges(edges.remove(edge));
+  };
+
   const outerRadius = 12;
   const innerRadius = outerRadius / 2;
   const { x, y } = accessPoint;
-  // Requester -> inner color
-  const innerColor = 'requestType' in accessPoint ? objectToColor(accessPoint.requestType) : 'white';
-  // Responder -> outer color
-  const outerColor = 'responseType' in accessPoint ? objectToColor(accessPoint.responseType) : 'white';
+  const color = objectToColor(accessPoint.type);
   return (
     <g
       onMouseDown={(e) => {
-        const edge = findEdge();
+        const edge = findEdge(accessPoint);
         if (edge) {
           removeEdge(edge);
-          const otherAp = edge.requester === accessPoint ? edge.responder : edge.requester;
-          setDrag({
-            element: otherAp,
-            offset: {
-              x: x! - e.clientX,
-              y: y! - e.clientY
-            },
-            cursor: { x: e.clientX, y: e.clientY }
-          });
+          const otherId =
+            accessPoint.role === 'Requester' ? edge.responderId : edge.requesterId;
+          const other = nodes
+            .find(({ nodeId }) => otherId.nodeId === nodeId)
+            ?.accessPoints
+            ?.find(ap => ap.accessPointId === otherId.accessPointId);
+          if (other) {
+            setDrag({
+              element: other,
+              offset: {
+                x: x - e.clientX,
+                y: y - e.clientY
+              },
+              cursor: { x: e.clientX, y: e.clientY }
+            });
+          }
         } else {
           setDrag({
             element: accessPoint,
             offset: {
-              x: x! - e.clientX,
-              y: y! - e.clientY
+              x: x - e.clientX,
+              y: y - e.clientY
             },
             cursor: { x: e.clientX, y: e.clientY }
           });
         }
       }}
-      onMouseUp={(e) => {
+      onMouseUp={() => {
         if (drag) {
           const { element } = drag;
-          if ('requestType' in element && 'responseType' in accessPoint) {
-            addEdge({
-              requester: element,
-              responder: accessPoint
-            });
-          } else if ('responseType' in element && 'requestType' in accessPoint) {
-            addEdge({
-              requester: accessPoint,
-              responder: element
-            });
+          if (element.kind === 'AccessPoint' &&
+              compatibleMethods(element, accessPoint)) {
+            addEdge(accessPoint, element);
           }
         }
       }}
@@ -77,17 +101,17 @@ export default function AccessPointSVG({
       <title>{accessPoint.name}</title>
       <circle
         r={outerRadius}
-        cx={x!}
-        cy={y!}
-        fill={outerColor}
+        cx={x}
+        cy={y}
+        fill={accessPoint.role === 'Requester' ? color : 'white'}
         stroke={'black'}
         strokeWidth={ '1px' }
       />
       <circle
         r={innerRadius}
-        cx={x!}
-        cy={y!}
-        fill={innerColor}
+        cx={x}
+        cy={y}
+        fill={accessPoint.role === 'Responder' ? color: 'white'}
       />
     </g>
   );

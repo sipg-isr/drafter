@@ -3,28 +3,32 @@ import {
   Button,
   Table
 } from 'react-bootstrap';
-import { List } from 'immutable';
+import { List, Map, Set } from 'immutable';
 import { FaPlus } from 'react-icons/fa';
+import {
+  Model, UUID
+} from '../types';
 import ModelView, { ModelEntry } from './ModelView';
-import { useModels } from '../state';
+import { useEdges, useModels, useNodes } from '../state';
 
 export default function Models() {
-  // These are the entires in the form
+  // These are the entries in the form
   const [entries, setEntries] = useState<List<ModelEntry>>(List([
     { kind: 'Edit', model: null } // Start with one empty model
   ]));
+
   // To add an entry by pushing it into the entries set
   const addEntry = (entry: ModelEntry) => setEntries(entries.push(entry));
 
   const [, setModels] = useModels();
 
   useEffect(() => {
-    // Whenever entries are updated, filter out the ones that have associated models, and set
-    // those models
-    setModels(entries
-      .filter(entry => entry.model !== null )
-      .map(({ model }) => model!)
-    );
+    // Whenever the model entries are updated, update the models
+    setModels(Set(
+      entries
+        .filter(({ model }) => model !== null)
+        .map(({ model }) => model!)
+    ));
   }, [entries]);
 
   return (
@@ -42,10 +46,8 @@ export default function Models() {
           {entries.map((entry, idx) => <ModelView
             key={`mv-${idx}`}
             entry={entry}
-            removeModel={() => {
-              setEntries(entries.remove(entries.indexOf(entry)));
-            }}
             setEntry={entry => setEntries(entries.set(idx, entry))}
+            removeEntry={() => setEntries(entries.remove(idx))}
           />)}
           <tr>
             <td colSpan={4} style={{textAlign: 'center'}}>

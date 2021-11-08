@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import {
   Set
 } from 'immutable';
@@ -13,44 +14,38 @@ import {
   ellipsePolarToCartesian
 } from '../utils';
 import AccessPointSVG from './AccessPointSVG';
-import React from 'react';
 
 interface NodeSVGProps {
   node: Node;
   drag: Drag | null;
   setDrag: (drag: Drag) => void;
   restartSimulation: () => void;
-  edges: Set<Edge>;
-  addEdge: (edge: Edge) => void;
-  removeEdge: (edge: Edge) => void;
 }
 export default function NodeSVG({
   node,
   drag,
   setDrag,
-  restartSimulation,
-  edges,
-  addEdge,
-  removeEdge
+  restartSimulation
 } : NodeSVGProps) {
   const { PI, max } = Math;
-  const { name, x, y, accessPoints } = node;
+  const { name, x, y } = node;
 
   const displayName = truncate(name, { length: 25 });
   // The radii of the ellipse
   const rx = max(displayName.length * 5, 50);
   const ry = rx / 2;
 
-  const interval = PI / accessPoints.size;
+  const interval = (2 * PI) / node.accessPoints.size;
 
-  accessPoints.forEach(([requester, responder], idx) => {
-    [requester.x, requester.y] = ellipsePolarToCartesian(
-      2 * idx * interval, rx, ry, x!, y!
-    );
-    [responder.x, responder.y] = ellipsePolarToCartesian(
-      (2 * idx + 1) * interval, rx, ry, x!, y!
-    );
-  });
+  useEffect(() => {
+    node
+      .accessPoints
+      .forEach((accessPoint, idx) => {
+        [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
+          2 * idx * interval, rx, ry, x, y
+        );
+      });
+  }, [x, y]);
 
 
   return (
@@ -58,8 +53,8 @@ export default function NodeSVG({
       <ellipse
         rx={rx}
         ry={ry}
-        cx={x!}
-        cy={y!}
+        cx={x}
+        cy={y}
         fill='#fff'
         stroke='#000'
         strokeWidth='1px'
@@ -67,8 +62,8 @@ export default function NodeSVG({
         onMouseDown={(e) => {
           setDrag({
             offset: {
-              x: x! - e.clientX,
-              y: y! - e.clientY
+              x: x - e.clientX,
+              y: y - e.clientY
             },
             cursor: {
               x: e.clientX, y: e.clientY
@@ -85,33 +80,17 @@ export default function NodeSVG({
         strokeOpacity='0.6'
         fill='#000'
         fontSize='16px'
-        x={x!}
-        y={y!}
+        x={x}
+        y={y}
       >{displayName}</text>
-      {accessPoints.map(([requester, responder], idx) =>
+      {node.accessPoints.map(ap =>
         (
-          <g key={requester.id + responder.id}>
-            <AccessPointSVG
-              accessPoint={requester}
-              drag={drag}
-              setDrag={setDrag}
-              addEdge={addEdge}
-              removeEdge={removeEdge}
-              findEdge={() =>
-                edges.findKey(edge => edge.requester === requester) || null}
-              key={requester.id}
-            />
-            <AccessPointSVG
-              accessPoint={responder}
-              drag={drag}
-              setDrag={setDrag}
-              addEdge={addEdge}
-              removeEdge={removeEdge}
-              findEdge={() =>
-                edges.findKey(edge => edge.responder === responder) || null}
-              key={responder.id}
-            />
-          </g>
+          <AccessPointSVG
+            accessPoint={ap}
+            drag={drag}
+            setDrag={setDrag}
+            key={ap.accessPointId}
+          />
         )
       )}
     </g>

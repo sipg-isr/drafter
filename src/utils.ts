@@ -1,14 +1,17 @@
 import { Service, parse } from 'protobufjs';
 import { MD5 } from 'object-hash';
-import { List, Set } from 'immutable';
+import { List, Map, Set } from 'immutable';
 import  { v4 as uuid } from 'uuid';
 import {
+  AccessPoint,
+  HasAccessPointId,
+  HasNodeId,
   Model,
   Node,
-  RemoteMethod,
-  Requester,
-  Responder
+  RemoteMethod
 } from './types';
+// TODO perhaps move this type into types.ts to avoid a circular dependency?
+import { State } from './state';
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's
@@ -31,7 +34,8 @@ export function protobufToRemoteMethods(code: string): Set<RemoteMethod> | null 
       .map(method => ({
         name: method.name,
         requestType: { ...root.lookupType(method.requestType).toJSON(), name: method.requestType},
-        responseType: { ...root.lookupType(method.responseType).toJSON(), name: method.responseType}
+        responseType: { ...root.lookupType(method.responseType).toJSON(), name: method.responseType},
+        remoteMethodId: uuid()
       })))
     );
   } catch (e: any) {
@@ -50,39 +54,57 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
 /**
  * Given a model, instantiate it so that it can be used in the simulation
  */
-export function instantiateModel(model: Model, name: string): Node {
-  const accessPoints = model.methods.map(
-    (remoteMethod) => {
-      const { requestType, responseType } = remoteMethod;
-      const requester: Requester = {
-        name: remoteMethodToString(remoteMethod),
-        requestType,
-        id: uuid()
-      };
-      const responder: Responder = {
-        name: remoteMethodToString(remoteMethod),
-        responseType,
-        id:
-        uuid()
-      };
-      const result: [Requester, Responder] = [requester, responder];
-      return result;
-    }
-  ).toList();
+export function instantiateModel(
+  { modelId, methods }: Model, name: string
+): Node {
+  const nodeId = uuid();
+  const accessPoints = methods.reduce<List<AccessPoint>>((acc, { name, requestType, responseType, remoteMethodId}) => {
+    const requesterId = uuid();
+    const responderId = uuid();
+    return acc
+      .push({
+        kind:       'AccessPoint',
+        role:       'Requester',
+        name:        name,
+        type:        requestType,
+        accessPointId: requesterId,
+        remoteMethodId,
+        nodeId,
+        x: 0,
+        y: 0
+      })
+      .push({
+        kind:       'AccessPoint',
+        role:       'Responder',
+        name:        name,
+        type:        responseType,
+        accessPointId: responderId,
+        nodeId,
+        remoteMethodId,
+        x: 0,
+        y: 0
+      });
+  }, List());
   return {
+    kind: 'Node',
     name,
-    id: uuid(),
-    modelName: model.name,
-    image: model.image,
-    accessPoints
+    nodeId,
+    modelId,
+    accessPoints,
+    x: 0,
+    y: 0
   };
 }
 
 /**
  * Can two methods be connected?
  */
-export function compatibleMethods(requester: Requester, responder: Responder): boolean {
-  return (requester.requestType.name === responder.responseType.name);
+export function compatibleMethods(left: AccessPoint, right: AccessPoint): boolean {
+  const kinds = [left.role, right.role];
+  return kinds.includes('Requester') &&
+    kinds.includes('Responder') &&
+    // TODO do MUCH deeper type-checking than this
+    (left.type.name === right.type.name);
 }
 
 /**
@@ -123,10 +145,44 @@ export async function fileContent(element: HTMLInputElement): Promise<string | n
       const file = files.first()!;
       return file.text();
     } else {
-      console.error(`Attempted to upload more than one protobuf file for a model. Files were [${files.map(file => file.name).join(', ')}]}`);
+      console.error(`Didn't find exactly one protobuf file for the model. Files were [${files.map(file => file.name).join(', ')}]}`);
       return null;
     }
   } else {
     return null;
   }
+}
+
+export function serializeState(state: State): string {
+  return JSON.stringify(state);
+}
+
+export function deserializeState(serialized: string): State {
+  const parsed = JSON.parse(serialized, (key, value) => {
+    if (key === 'accessPoints') {
+      return List(value);
+    } else if (
+      key === 'methods' ||
+      key === 'models' ||
+      key === 'nodes' ||
+      key === 'edges'
+    ) {
+      return Set(value);
+    } else {
+      return value;
+    }
+  });
+  parsed.models = List(parsed.models);
+  parsed.nodes = Set(parsed.nodes);
+  parsed.edges = Set(parsed.edges);
+  return parsed;
+}
+
+export function lookupAccessPoint(
+  nodes: Set<Node>,
+  { nodeId, accessPointId }: HasNodeId & HasAccessPointId): AccessPoint | null {
+  return nodes
+    .find(node => node.nodeId === nodeId)
+    ?.accessPoints
+    .find(ap => ap.accessPointId === accessPointId) || null;
 }
