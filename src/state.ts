@@ -1,5 +1,5 @@
 import create from 'zustand';
-import { Map, Set } from 'immutable';
+import { Set } from 'immutable';
 import {
   AccessPoint,
   Edge,

@@ -76,6 +76,7 @@ function LoadDialog({ show, close }: LoadDialogProps) {
           if (content) {
             restoreState(deserializeState(content));
           }
+          close();
         }}>Load</Button>
       </Modal.Body>
     </Modal>
