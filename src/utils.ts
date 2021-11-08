@@ -1,14 +1,14 @@
 import { Service, parse } from 'protobufjs';
 import { MD5 } from 'object-hash';
-import { List, Set, Map } from 'immutable';
+import { List, Map, Set } from 'immutable';
 import  { v4 as uuid } from 'uuid';
 import {
+  AccessPoint,
+  HasAccessPointId,
+  HasNodeId,
   Model,
   Node,
-  RemoteMethod,
-  AccessPoint,
-  HasNodeId,
-  HasAccessPointId
+  RemoteMethod
 } from './types';
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
 import { State } from './state';
@@ -167,8 +167,8 @@ export function deserializeState(serialized: string): State {
 export function lookupAccessPoint(
   nodes: Set<Node>,
   { nodeId, accessPointId }: HasNodeId & HasAccessPointId): AccessPoint | null {
-    return nodes
-      .find(node => node.nodeId === nodeId)
-      ?.accessPoints
-      .find(ap => ap.accessPointId === accessPointId) || null;
+  return nodes
+    .find(node => node.nodeId === nodeId)
+    ?.accessPoints
+    .find(ap => ap.accessPointId === accessPointId) || null;
 }

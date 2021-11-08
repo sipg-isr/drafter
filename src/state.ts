@@ -1,13 +1,13 @@
 import create from 'zustand';
-import { Set, Map } from 'immutable';
+import { Map, Set } from 'immutable';
 import {
+  AccessPoint,
   Edge,
+  HasAccessPointId,
+  HasNodeId,
   Model,
   Node,
-  UUID,
-  HasNodeId,
-  HasAccessPointId,
-  AccessPoint
+  UUID
 } from './types';
 
 /**

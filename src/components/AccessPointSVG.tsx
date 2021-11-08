@@ -4,18 +4,18 @@ import { v4 as uuid } from 'uuid';
 import { sortBy } from 'lodash';
 import {
   AccessPoint,
-  HasAccessPointId,
   Drag,
   Edge,
-  UUID,
-  HasNodeId,
+  HasAccessPointId,
   HasEdgeId,
-  Node
+  HasNodeId,
+  Node,
+  UUID
 } from '../types';
 import { useEdges, useNodes } from '../state';
 import {
-  objectToColor,
-  compatibleMethods
+  compatibleMethods,
+  objectToColor
 } from '../utils';
 
 interface AccessPointSVGProps {
@@ -28,7 +28,7 @@ export default function AccessPointSVG({
   drag,
   setDrag
 }: AccessPointSVGProps) {
-  const [nodes, ] = useNodes();
+  const [nodes ] = useNodes();
   const [edges, setEdges] = useEdges();
 
   // A function to add an edge connection two nodes
@@ -39,7 +39,7 @@ export default function AccessPointSVG({
       requesterId: { nodeId: requester.nodeId, accessPointId: requester.accessPointId },
       responderId: { nodeId: responder.nodeId, accessPointId: responder.accessPointId }
     }));
-  }
+  };
 
   function findEdge({ accessPointId }: HasAccessPointId): Edge | null {
     return edges
@@ -50,7 +50,7 @@ export default function AccessPointSVG({
 
   const removeEdge = (edge: Edge) => {
     setEdges(edges.remove(edge));
-  }
+  };
 
   const outerRadius = 12;
   const innerRadius = outerRadius / 2;
@@ -67,7 +67,7 @@ export default function AccessPointSVG({
           const other = nodes
             .find(({ nodeId }) => otherId.nodeId === nodeId)
             ?.accessPoints
-            ?.find(ap => ap.accessPointId === otherId.accessPointId)
+            ?.find(ap => ap.accessPointId === otherId.accessPointId);
           if (other) {
             setDrag({
               element: other,

@@ -22,7 +22,7 @@ export default function Sidebar() {
   const addModelToEditor = (model: Model) => {
     const node = instantiateModel(model, model.name);
     setNodes(nodes.add(node));
-  }
+  };
 
   return (
     <>

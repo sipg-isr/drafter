@@ -25,7 +25,7 @@ export default function NodeSVG({
   node,
   drag,
   setDrag,
-  restartSimulation,
+  restartSimulation
 } : NodeSVGProps) {
   const { PI, max } = Math;
   const { name, x, y } = node;
@@ -85,12 +85,12 @@ export default function NodeSVG({
       >{displayName}</text>
       {node.accessPoints.map(ap =>
         (
-            <AccessPointSVG
-              accessPoint={ap}
-              drag={drag}
-              setDrag={setDrag}
-              key={ap.accessPointId}
-            />
+          <AccessPointSVG
+            accessPoint={ap}
+            drag={drag}
+            setDrag={setDrag}
+            key={ap.accessPointId}
+          />
         )
       )}
     </g>

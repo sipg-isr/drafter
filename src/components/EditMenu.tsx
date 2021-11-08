@@ -1,14 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Button,
-  Container,
-  ListGroup,
-  Modal,
   CloseButton,
-  Form
+  Container,
+  Form,
+  ListGroup,
+  Modal
 } from 'react-bootstrap';
-import { useStore, State } from '../state';
-import { serializeState, deserializeState, fileContent } from  '../utils';
+import { State, useStore } from '../state';
+import { deserializeState, fileContent, serializeState } from  '../utils';
 import { saveAs } from 'file-saver';
 
 /**
@@ -66,18 +66,18 @@ function SaveDialog({ show, close }: SaveDialogProps) {
         <CloseButton onClick={close} />
       </Modal.Header>
       <Modal.Body>
-          <Form.Label >Filename</Form.Label>
-          <Form.Control
-            placeholder='solution.json'
-            value={filename}
-            onChange={e => setFilename(e.target.value)}
-          />
+        <Form.Label >Filename</Form.Label>
+        <Form.Control
+          placeholder='solution.json'
+          value={filename}
+          onChange={e => setFilename(e.target.value)}
+        />
         <br />
         <Button onClick={save}>Save</Button>
       </Modal.Body>
     </Modal>
   );
-};
+}
 
 interface LoadDialogProps {
   show: boolean;
@@ -102,7 +102,7 @@ function LoadDialog({ show, close }: LoadDialogProps) {
           const content = await fileContent(fileUploadRef!.current!);
           console.log(deserializeState(content!));
           if (content) {
-            restoreState(deserializeState(content))
+            restoreState(deserializeState(content));
           }
         }}>Load</Button>
       </Modal.Body>

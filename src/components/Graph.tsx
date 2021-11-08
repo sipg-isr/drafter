@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useReducer } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import {
   forceManyBody,
   forceSimulation,
@@ -102,7 +102,7 @@ export default function Graph() {
           y1={requester.y!}
           x2={responder.x!}
           y2={responder.y!}
-        />
+        />;
       })}
       {(() => {
         if (drag) {

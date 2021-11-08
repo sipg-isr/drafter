@@ -6,10 +6,10 @@ import {
 import { List, Map, Set } from 'immutable';
 import { FaPlus } from 'react-icons/fa';
 import {
-  UUID, Model
+  Model, UUID
 } from '../types';
 import ModelView, { ModelEntry } from './ModelView';
-import { useModels, useNodes, useEdges } from '../state';
+import { useEdges, useModels, useNodes } from '../state';
 
 export default function Models() {
   // These are the entries in the form
@@ -28,8 +28,8 @@ export default function Models() {
     // Models have been updated
     setModels(Set(
       entries
-      .filter(({ model }) => model !== null)
-      .map(({ model }) => model!)
+        .filter(({ model }) => model !== null)
+        .map(({ model }) => model!)
     ));
   }, [entries]);
 
