@@ -14,16 +14,11 @@ interface Coordinates {
 
 export type SimulationNodeDatumWithRequiredCoordinates = SimulationNodeDatum & Coordinates;
 
-/**
- * An RPC method that forms part of a Model's interface
- */
-export interface RemoteMethod {
-  name: string;
-  requestType: MessageType;
-  responseType: MessageType
-}
-
 export type UUID = string;
+
+export interface HasRemoteMethodId {
+  remoteMethodId: UUID;
+}
 
 export interface HasModelId {
   modelId: UUID;
@@ -40,6 +35,16 @@ export interface HasAccessPointId {
 export interface HasEdgeId {
   edgeId: UUID;
 }
+
+/**
+ * An RPC method that forms part of a Model's interface
+ */
+export interface RemoteMethod extends HasRemoteMethodId {
+  name: string;
+  requestType: MessageType;
+  responseType: MessageType
+}
+
 
 /**
  * this defines a model, which is a template from which nodes in the editor can be made
@@ -62,7 +67,7 @@ export interface Node extends SimulationNodeDatumWithRequiredCoordinates, HasNod
   accessPoints: List<AccessPoint>;
 }
 
-export interface AccessPoint extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasAccessPointId {
+export interface AccessPoint extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasRemoteMethodId, HasAccessPointId {
   kind: 'AccessPoint';
   /**
    * An AccessPoint can either be a Requester, which calls the methods of other nodes, or a

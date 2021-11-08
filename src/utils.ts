@@ -34,7 +34,8 @@ export function protobufToRemoteMethods(code: string): Set<RemoteMethod> | null 
       .map(method => ({
         name: method.name,
         requestType: { ...root.lookupType(method.requestType).toJSON(), name: method.requestType},
-        responseType: { ...root.lookupType(method.responseType).toJSON(), name: method.responseType}
+        responseType: { ...root.lookupType(method.responseType).toJSON(), name: method.responseType},
+        remoteMethodId: uuid()
       })))
     );
   } catch (e: any) {
@@ -57,16 +58,17 @@ export function instantiateModel(
   { modelId, methods }: Model, name: string
 ): Node {
   const nodeId = uuid();
-  const accessPoints = methods.reduce<List<AccessPoint>>((acc, method) => {
+  const accessPoints = methods.reduce<List<AccessPoint>>((acc, { name, requestType, responseType, remoteMethodId}) => {
     const requesterId = uuid();
     const responderId = uuid();
     return acc
       .push({
         kind:       'AccessPoint',
         role:       'Requester',
-        name:        method.name,
-        type:        method.requestType,
+        name:        name,
+        type:        requestType,
         accessPointId: requesterId,
+        remoteMethodId,
         nodeId,
         x: 0,
         y: 0
@@ -74,10 +76,11 @@ export function instantiateModel(
       .push({
         kind:       'AccessPoint',
         role:       'Responder',
-        name:        method.name,
-        type:        method.responseType,
+        name:        name,
+        type:        responseType,
         accessPointId: responderId,
         nodeId,
+        remoteMethodId,
         x: 0,
         y: 0
       });

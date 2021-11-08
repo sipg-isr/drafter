@@ -26,9 +26,8 @@ export default function Editor() {
   useEffect(() => {
     // Whenever the models are changed,
     // filter out only the nodes that are from these models
-    const newNodes = nodes.filter(node =>
-      models.find(({ modelId }) => node.modelId === modelId));
-    setNodes(newNodes);
+    setNodes(nodes.filter(node =>
+        models.find(({ modelId }) => node.modelId === modelId)));
   }, [models]);
 
   useEffect(() => {
