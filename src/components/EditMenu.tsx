@@ -3,13 +3,13 @@ import {
   Button,
   CloseButton,
   Container,
+  FloatingLabel,
   Form,
   ListGroup,
-  Modal,
-  FloatingLabel
+  Modal
 } from 'react-bootstrap';
 import { State, useStore } from '../state';
-import { deserializeState, fileContent, serializeState, exportState } from  '../utils';
+import { deserializeState, exportState, fileContent, serializeState } from  '../utils';
 import { saveAs } from 'file-saver';
 
 /**
