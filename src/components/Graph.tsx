@@ -39,9 +39,7 @@ export default function Graph() {
       .force('charge', forceManyBody().strength(-100));
     simulation.alpha(0.5);
     simulation.alphaTarget(0.0).restart();
-    // Run this whenever a node is added or removed
-    // TODO also run it when connections are made or broken
-  }, [nodes.size]);
+  }, [nodes, edges]);
 
   simulation.on('tick', () => {
     update();
@@ -94,15 +92,20 @@ export default function Graph() {
       }}
     >
       {edges.map(({ requesterId, responderId }) => {
-        const requester = lookupAccessPoint(nodes, requesterId)!;
-        const responder = lookupAccessPoint(nodes, responderId)!;
-        return <EdgeSVG
-          key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
-          x1={requester.x}
-          y1={requester.y}
-          x2={responder.x}
-          y2={responder.y}
-        />;
+        // Look up each id
+        const [requester, responder] = [requesterId, responderId]
+          .map(id => lookupAccessPoint(nodes, id));
+        if (requester && responder) {
+          return <EdgeSVG
+            key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
+            x1={requester.x}
+            y1={requester.y}
+            x2={responder.x}
+            y2={responder.y}
+          />;
+        } else {
+          return null;
+        }
       })}
       {(() => {
         if (drag) {
