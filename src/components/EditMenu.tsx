@@ -9,7 +9,7 @@ import {
   FloatingLabel
 } from 'react-bootstrap';
 import { State, useStore } from '../state';
-import { deserializeState, fileContent, serializeState } from  '../utils';
+import { deserializeState, fileContent, serializeState, exportState } from  '../utils';
 import { saveAs } from 'file-saver';
 
 /**
@@ -89,7 +89,12 @@ interface ExportDialogProps {
   close: () => void;
 }
 function ExportDialog({ show, close }: ExportDialogProps) {
-  const exportSolution = () => {};
+  const state = useStore();
+  const [filename, setFilename] = useState('solution.zip');
+  const exportSolution = async () => {
+    const blob = await exportState(state);
+    saveAs(blob, filename);
+  };
 
   return (
     <Modal show={show} onEscapeKeyDown={close}>
@@ -98,6 +103,13 @@ function ExportDialog({ show, close }: ExportDialogProps) {
         <CloseButton onClick={close} />
       </Modal.Header>
       <Modal.Body>
+        <Form.Label >Filename</Form.Label>
+        <Form.Control
+          placeholder='solution.zip'
+          value={filename}
+          onChange={e => setFilename(e.target.value)}
+        />
+        <br />
         {/* TODO other export options here */}
         <FloatingLabel controlId='floatingSelect' label='Export to'>
           <Form.Select>

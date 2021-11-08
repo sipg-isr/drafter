@@ -2,6 +2,8 @@ import { Service, parse } from 'protobufjs';
 import { MD5 } from 'object-hash';
 import { List, Map, Set } from 'immutable';
 import  { v4 as uuid } from 'uuid';
+import { dump } from 'js-yaml';
+import JSZip from 'jszip';
 import {
   AccessPoint,
   HasAccessPointId,
@@ -185,4 +187,60 @@ export function lookupAccessPoint(
     .find(node => node.nodeId === nodeId)
     ?.accessPoints
     .find(ap => ap.accessPointId === accessPointId) || null;
+}
+
+export async function exportState({ models, nodes, edges }: State): Promise<Blob> {
+  const zip = new JSZip();
+
+  // This object represents the docker-compose file
+  // We don't have a schema for this yet, so we effectively disable type-checking by giving it the
+  // `any` type
+  const dockerCompose: any = {
+    version: '3',
+    services: {
+      'orchestrator-node': {
+        image: 'sipgisr/grpc-orchestrator:latest',
+        volumes: [{
+          type: 'bind',
+          source: './config.yml',
+          target: '/app/config/config.yml'
+        }],
+        environment: {
+          CONFIG_FILE: 'config/config.yml'
+        }
+      }
+    }
+  };
+
+  models.forEach(({ name, image }) => {
+    if (!(name in dockerCompose.services)) {
+      dockerCompose.services[name] = {
+        image
+      }
+    }
+  });
+
+  // This object represents the `config.yml` file
+  const config: any = {
+    stages: nodes.map(({ name, modelId }) => ({
+      name,
+      host: models.find(model => model.modelId === modelId)?.name || 'Model not found',
+      port: 8061
+    })).toArray(),
+    links: edges.map(({ requesterId, responderId }) => ({
+      source: {
+        stage: nodes.find(({ nodeId }) => nodeId === requesterId.nodeId)?.name || 'Node not found',
+      },
+      target: {
+        stage: nodes.find(({ nodeId }) => nodeId === responderId.nodeId)?.name || 'Node not found'
+      }
+    })).toArray()
+  }
+
+  // Add the data to the zip as yaml
+  zip.file('docker-compose.yml', dump(dockerCompose));
+  zip.file('config.yml',         dump(config));
+
+  // Generate a blob and return
+  return zip.generateAsync({ type: 'blob' });
 }
