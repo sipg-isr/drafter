@@ -5,7 +5,8 @@ import {
 } from 'react-bootstrap';
 import {
   List,
-  Set
+  Set,
+  is as equal
 } from 'immutable';
 import {
   Model,
@@ -13,7 +14,7 @@ import {
 } from '../types';
 import Sidebar from './Sidebar';
 import Graph from './Graph';
-import { lookupAccessPoint } from '../utils';
+import { lookupAccessPoint, instantiateModel } from '../utils';
 import { useEdges, useModels, useNodes } from '../state';
 
 export default function Editor() {
@@ -26,8 +27,22 @@ export default function Editor() {
   useEffect(() => {
     // Whenever the models are changed,
     // filter out only the nodes that are from these models
-    setNodes(nodes.filter(node =>
-        models.find(({ modelId }) => node.modelId === modelId)));
+
+    setNodes(nodes
+      .filter(node =>
+        models.find(({ modelId }) => node.modelId === modelId))
+      .map(node => {
+        const model = models.find(({ modelId }) => node.modelId === modelId)!;
+        if (equal(
+          node.accessPoints.map(({ remoteMethodId }) => remoteMethodId).toSet(),
+          model.methods.map(({ remoteMethodId }) => remoteMethodId).toSet()
+        )) {
+          return node;
+        } else {
+          return instantiateModel(model, node.name);
+        }
+      })
+    );
   }, [models]);
 
   useEffect(() => {
