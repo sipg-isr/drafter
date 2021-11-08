@@ -14,13 +14,13 @@ import {
 } from '../types';
 import Sidebar from './Sidebar';
 import Graph from './Graph';
-import { lookupAccessPoint, instantiateModel } from '../utils';
+import { instantiateModel, lookupAccessPoint } from '../utils';
 import { useEdges, useModels, useNodes } from '../state';
 
 export default function Editor() {
   // TODO store state somewhere like localStorage or idb-keyval
   // write a custom hook to serialize / deserialize this
-  const [models, ] = useModels();
+  const [models ] = useModels();
   const [nodes, setNodes] = useNodes();
   const [edges, setEdges] = useEdges();
 
