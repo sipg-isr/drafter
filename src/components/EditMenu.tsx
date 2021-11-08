@@ -5,7 +5,8 @@ import {
   Container,
   Form,
   ListGroup,
-  Modal
+  Modal,
+  FloatingLabel
 } from 'react-bootstrap';
 import { State, useStore } from '../state';
 import { deserializeState, fileContent, serializeState } from  '../utils';
@@ -15,7 +16,7 @@ import { saveAs } from 'file-saver';
  * The different possible dialogs that can be displayed to the user
  */
 enum DialogOption {
-  Save, Load
+  Save, Load, Export
 }
 
 interface SaveDialogProps {
@@ -83,17 +84,40 @@ function LoadDialog({ show, close }: LoadDialogProps) {
   );
 }
 
-export default function EditMenu() {
-  const dummy = () => {
-    // TODO actually do something here
-    console.log('Not yet implemented');
-  };
+interface ExportDialogProps {
+  show: boolean;
+  close: () => void;
+}
+function ExportDialog({ show, close }: ExportDialogProps) {
+  const exportSolution = () => {};
 
+  return (
+    <Modal show={show} onEscapeKeyDown={close}>
+      <Modal.Header>
+        <Modal.Title>Export Solution</Modal.Title>
+        <CloseButton onClick={close} />
+      </Modal.Header>
+      <Modal.Body>
+        {/* TODO other export options here */}
+        <FloatingLabel controlId='floatingSelect' label='Export to'>
+          <Form.Select>
+            <option>Docker Compose</option>
+          </Form.Select>
+        </FloatingLabel>
+        <br />
+        <Button onClick={exportSolution}>Export</Button>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+export default function EditMenu() {
   const [currentDialog, setCurrentDialog] = useState<DialogOption | null>(null);
 
   // Control whether the save dialog is open
   const openSaveDialog = () => setCurrentDialog(DialogOption.Save);
   const openLoadDialog = () => setCurrentDialog(DialogOption.Load);
+  const openExportDialog = () => setCurrentDialog(DialogOption.Export);
   const closeDialog = () => setCurrentDialog(null);
 
   return (
@@ -101,11 +125,12 @@ export default function EditMenu() {
       <ListGroup horizontal>
         <ListGroup.Item action onClick={openSaveDialog}>Save</ListGroup.Item>
         <ListGroup.Item action onClick={openLoadDialog}>Load</ListGroup.Item>
-        <ListGroup.Item action onClick={dummy}>Export</ListGroup.Item>
+        <ListGroup.Item action onClick={openExportDialog}>Export</ListGroup.Item>
       </ListGroup>
 
       <SaveDialog show={currentDialog === DialogOption.Save} close={closeDialog} />
       <LoadDialog show={currentDialog === DialogOption.Load} close={closeDialog} />
+      <ExportDialog show={currentDialog === DialogOption.Export} close={closeDialog} />
     </Container>
   );
 }
