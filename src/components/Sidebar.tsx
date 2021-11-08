@@ -65,7 +65,7 @@ export default function Sidebar() {
             {nodes.toList().map(node =>
               <tr key={node.nodeId}>
                 <td>{node.name}</td>
-                <td>{models.find(({ modelId }) => node.modelId === modelId)!.name}</td>
+                <td>{models.find(({ modelId }) => node.modelId === modelId)?.name || 'No model found'}</td>
                 <td>
                   <Button
                     variant='danger'
