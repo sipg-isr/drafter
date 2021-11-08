@@ -23,10 +23,6 @@ export interface State {
   nodes: Set<Node>;
   setNodes: (nodes: Set<Node>) => void;
 
-  /** A set of access points that mark the interfaces of nodes */
-  accessPoints: Map<UUID, AccessPoint>;
-  setAccessPoints: (accessPoints: Map<UUID, AccessPoint>) => void;
-
   /** A set of edges that connect the nodes in the graph */
   edges: Set<Edge>;
   setEdges: (edges: Set<Edge>) => void;
@@ -40,8 +36,6 @@ export const useStore = create<State>(set => ({
   setModels: models => set(() => ({ models })),
   nodes:    Set(),
   setNodes: nodes => set(() => ({ nodes })),
-  accessPoints: Map(),
-  setAccessPoints: accessPoints => set(() => ({ accessPoints})),
   edges:    Set(),
   setEdges: edges => set(() => ({ edges })),
   restoreState: state => set(state, false)
@@ -53,9 +47,6 @@ export function useModels(): [Set<Model>, (models: Set<Model>) => void] {
 export function useNodes(): [Set<Node>, (nodes: Set<Node>) => void] {
   return useStore(state => [state.nodes, state.setNodes]);
 }
-// export function useAccessPoints(): [Map<UUID, AccessPoint>, (accessPoints: Map<UUID, AccessPoint>) => void] {
-//   return useStore(state => [state.accessPoints, state.setAccessPoints]);
-// }
 export function useEdges(): [Set<Edge>, (edges: Set<Edge>) => void] {
   return useStore(state => [state.edges, state.setEdges]);
 }

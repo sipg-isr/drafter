@@ -36,8 +36,8 @@ export default function AccessPointSVG({
     const [requester, responder] = sortBy([left, right], ap => ap.role);
     setEdges(edges.add({
       edgeId: uuid(),
-      requesterId: { nodeId: accessPoint.nodeId, accessPointId: requester.accessPointId },
-      responderId: { nodeId: accessPoint.nodeId, accessPointId: responder.accessPointId }
+      requesterId: { nodeId: requester.nodeId, accessPointId: requester.accessPointId },
+      responderId: { nodeId: responder.nodeId, accessPointId: responder.accessPointId }
     }));
   }
 
