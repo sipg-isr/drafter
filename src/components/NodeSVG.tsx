@@ -42,7 +42,7 @@ export default function NodeSVG({
       .accessPoints
       .forEach((accessPoint, idx) => {
         [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
-          2 * idx * interval, rx, ry, x!, y!
+          2 * idx * interval, rx, ry, x, y
         );
       });
   }, [x, y]);
@@ -53,8 +53,8 @@ export default function NodeSVG({
       <ellipse
         rx={rx}
         ry={ry}
-        cx={x!}
-        cy={y!}
+        cx={x}
+        cy={y}
         fill='#fff'
         stroke='#000'
         strokeWidth='1px'
@@ -62,8 +62,8 @@ export default function NodeSVG({
         onMouseDown={(e) => {
           setDrag({
             offset: {
-              x: x! - e.clientX,
-              y: y! - e.clientY
+              x: x - e.clientX,
+              y: y - e.clientY
             },
             cursor: {
               x: e.clientX, y: e.clientY
@@ -80,8 +80,8 @@ export default function NodeSVG({
         strokeOpacity='0.6'
         fill='#000'
         fontSize='16px'
-        x={x!}
-        y={y!}
+        x={x}
+        y={y}
       >{displayName}</text>
       {node.accessPoints.map(ap =>
         (

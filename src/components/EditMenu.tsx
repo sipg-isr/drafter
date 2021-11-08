@@ -18,33 +18,6 @@ enum DialogOption {
   Save, Load
 }
 
-export default function EditMenu() {
-  const dummy = () => {
-    // TODO actually do something here
-    console.log('Not yet implemented');
-  };
-
-  const [currentDialog, setCurrentDialog] = useState<DialogOption | null>(null);
-
-  // Control whether the save dialog is open
-  const openSaveDialog = () => setCurrentDialog(DialogOption.Save);
-  const openLoadDialog = () => setCurrentDialog(DialogOption.Load);
-  const closeDialog = () => setCurrentDialog(null);
-
-  return (
-    <Container>
-      <ListGroup horizontal>
-        <ListGroup.Item action onClick={openSaveDialog}>Save</ListGroup.Item>
-        <ListGroup.Item action onClick={openLoadDialog}>Load</ListGroup.Item>
-        <ListGroup.Item action onClick={dummy}>Export</ListGroup.Item>
-      </ListGroup>
-
-      <SaveDialog show={currentDialog === DialogOption.Save} close={closeDialog} />
-      <LoadDialog show={currentDialog === DialogOption.Load} close={closeDialog} />
-    </Container>
-  );
-}
-
 interface SaveDialogProps {
   show: boolean;
   close: () => void;
@@ -100,12 +73,38 @@ function LoadDialog({ show, close }: LoadDialogProps) {
         <br />
         <Button onClick={async () => {
           const content = await fileContent(fileUploadRef!.current!);
-          console.log(deserializeState(content!));
           if (content) {
             restoreState(deserializeState(content));
           }
         }}>Load</Button>
       </Modal.Body>
     </Modal>
+  );
+}
+
+export default function EditMenu() {
+  const dummy = () => {
+    // TODO actually do something here
+    console.log('Not yet implemented');
+  };
+
+  const [currentDialog, setCurrentDialog] = useState<DialogOption | null>(null);
+
+  // Control whether the save dialog is open
+  const openSaveDialog = () => setCurrentDialog(DialogOption.Save);
+  const openLoadDialog = () => setCurrentDialog(DialogOption.Load);
+  const closeDialog = () => setCurrentDialog(null);
+
+  return (
+    <Container>
+      <ListGroup horizontal>
+        <ListGroup.Item action onClick={openSaveDialog}>Save</ListGroup.Item>
+        <ListGroup.Item action onClick={openLoadDialog}>Load</ListGroup.Item>
+        <ListGroup.Item action onClick={dummy}>Export</ListGroup.Item>
+      </ListGroup>
+
+      <SaveDialog show={currentDialog === DialogOption.Save} close={closeDialog} />
+      <LoadDialog show={currentDialog === DialogOption.Load} close={closeDialog} />
+    </Container>
   );
 }

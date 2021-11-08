@@ -98,10 +98,10 @@ export default function Graph() {
         const responder = lookupAccessPoint(nodes, responderId)!;
         return <EdgeSVG
           key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
-          x1={requester.x!}
-          y1={requester.y!}
-          x2={responder.x!}
-          y2={responder.y!}
+          x1={requester.x}
+          y1={requester.y}
+          x2={responder.x}
+          y2={responder.y}
         />;
       })}
       {(() => {

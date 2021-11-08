@@ -5,6 +5,16 @@ import { List, Map, Set } from 'immutable';
 export type MessageType = IType & { name: string };
 
 /**
+ * Represents a model that is being dragged and its coordinates, or a lack of drag
+ */
+interface Coordinates {
+  x: number;
+  y: number;
+}
+
+export type SimulationNodeDatumWithRequiredCoordinates = SimulationNodeDatum & Coordinates;
+
+/**
  * An RPC method that forms part of a Model's interface
  */
 export interface RemoteMethod {
@@ -44,7 +54,7 @@ export interface Model extends HasModelId {
   methods: Set<RemoteMethod>;
 }
 
-export interface Node extends SimulationNodeDatum, HasNodeId, HasModelId {
+export interface Node extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasModelId {
   kind: 'Node';
   // The name of the individual node
   name: string;
@@ -52,7 +62,7 @@ export interface Node extends SimulationNodeDatum, HasNodeId, HasModelId {
   accessPoints: List<AccessPoint>;
 }
 
-export interface AccessPoint extends SimulationNodeDatum, HasNodeId, HasAccessPointId {
+export interface AccessPoint extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasAccessPointId {
   kind: 'AccessPoint';
   /**
    * An AccessPoint can either be a Requester, which calls the methods of other nodes, or a
@@ -75,14 +85,6 @@ export interface Edge extends HasEdgeId {
   // TODO - use newtype pattern here?
   requesterId: HasNodeId & HasAccessPointId;
   responderId: HasNodeId & HasAccessPointId;
-}
-
-/**
- * Represents a model that is being dragged and its coordinates, or a lack of drag
- */
-interface Coordinates {
-  x: number;
-  y: number;
 }
 
 /**

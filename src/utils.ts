@@ -67,7 +67,9 @@ export function instantiateModel(
         name:        method.name,
         type:        method.requestType,
         accessPointId: requesterId,
-        nodeId
+        nodeId,
+        x: 0,
+        y: 0
       })
       .push({
         kind:       'AccessPoint',
@@ -75,7 +77,9 @@ export function instantiateModel(
         name:        method.name,
         type:        method.responseType,
         accessPointId: responderId,
-        nodeId
+        nodeId,
+        x: 0,
+        y: 0
       });
   }, List());
   return {
@@ -83,7 +87,9 @@ export function instantiateModel(
     name,
     nodeId,
     modelId,
-    accessPoints
+    accessPoints,
+    x: 0,
+    y: 0
   };
 }
 

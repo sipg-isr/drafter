@@ -1,5 +1,4 @@
 import React from 'react';
-import { Map } from 'immutable';
 import { v4 as uuid } from 'uuid';
 import { sortBy } from 'lodash';
 import {
@@ -72,8 +71,8 @@ export default function AccessPointSVG({
             setDrag({
               element: other,
               offset: {
-                x: x! - e.clientX,
-                y: y! - e.clientY
+                x: x - e.clientX,
+                y: y - e.clientY
               },
               cursor: { x: e.clientX, y: e.clientY }
             });
@@ -82,8 +81,8 @@ export default function AccessPointSVG({
           setDrag({
             element: accessPoint,
             offset: {
-              x: x! - e.clientX,
-              y: y! - e.clientY
+              x: x - e.clientX,
+              y: y - e.clientY
             },
             cursor: { x: e.clientX, y: e.clientY }
           });
@@ -102,16 +101,16 @@ export default function AccessPointSVG({
       <title>{accessPoint.name}</title>
       <circle
         r={outerRadius}
-        cx={x!}
-        cy={y!}
+        cx={x}
+        cy={y}
         fill={accessPoint.role === 'Requester' ? color : 'white'}
         stroke={'black'}
         strokeWidth={ '1px' }
       />
       <circle
         r={innerRadius}
-        cx={x!}
-        cy={y!}
+        cx={x}
+        cy={y}
         fill={accessPoint.role === 'Responder' ? color: 'white'}
       />
     </g>
