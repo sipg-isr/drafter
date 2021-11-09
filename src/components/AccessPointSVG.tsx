@@ -114,7 +114,7 @@ export default function AccessPointSVG({
               fillOpacity='0'
             />
           )
-          }</>
+        }</>
         :
         null
       }
