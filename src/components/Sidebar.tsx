@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Row,
-  Table
+  Table,
+  FloatingLabel,
+  Form
 } from 'react-bootstrap';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import {
   Model,
-  Node
+  Node,
+  UUID
 } from '../types';
 import { instantiateModel } from '../utils';
 import {
@@ -24,60 +27,65 @@ export default function Sidebar() {
     setNodes(nodes.add(node));
   };
 
+  // This is a hack-- the select element won't except null as a value, so we define an alternate
+  // null value-- nil, which we set to be zero. This works because all the valid values are
+  // UUID's (strings), which means that 0 will never be considered a valid value
+  const nil = 0;
+  const [selectedModelId, setSelectedModelId] = useState<UUID | typeof nil>(nil);
+
   return (
-    <>
-      <Row>
-        <h6>Available models</h6>
-        <Table>
-          <thead>
-            <tr>
-              <th>Model</th>
-              <th>Image</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {models.toList().map(model =>
-              <tr key={model.modelId}>
-                <td>{model.name}</td>
-                <td><pre>{model.image}</pre></td>
-                <td>
-                  <Button onClick={() => addModelToEditor(model)}>
-                    <FaPlus />
-                  </Button>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </Table>
-      </Row>
-      <Row>
-        <h6>Nodes</h6>
-        <Table>
-          <thead>
-            <tr>
-              <th>Node</th>
-              <th>Model</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {nodes.toList().map(node =>
-              <tr key={node.nodeId}>
-                <td>{node.name}</td>
-                <td>{models.find(({ modelId }) => node.modelId === modelId)?.name || 'No model found'}</td>
-                <td>
-                  <Button
-                    variant='danger'
-                    onClick={() => removeNode(node)}>
-                    <FaTrash />
-                  </Button>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </Table>
-      </Row>
-    </>
+    <Row>
+      <h6>Nodes</h6>
+      <Table>
+        <thead>
+          <tr>
+            <th>Node</th>
+            <th>Model</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {nodes.toList().map(node =>
+          <tr key={node.nodeId}>
+            <td>{node.name}</td>
+            <td>{models.find(({ modelId }) => node.modelId === modelId)?.name || 'No model found'}</td>
+            <td>
+              <Button
+                variant='danger'
+                onClick={() => removeNode(node)}>
+                <FaTrash />
+              </Button>
+            </td>
+          </tr>
+          )}
+          <tr>
+            <td colSpan={2}>
+              <FloatingLabel controlId='floatingSelectGrid' label='Add model' defaultValue={nil}>
+                <Form.Select aria-label='Add another model' onChange={({ target: { value } }) => setSelectedModelId(value)}>
+                  <option value={nil}>Select Model to add</option>
+                  {models.map(({ modelId, name }) =>
+                  <option value={modelId}>{name}</option>
+                  )}
+                </Form.Select>
+              </FloatingLabel>
+            </td>
+            <td>
+              <Button
+                disabled={ selectedModelId === nil }
+                variant='primary'
+                onClick={() => {
+                  const model = models.find(({ modelId }) => modelId === selectedModelId);
+                  if (model) {
+                    addModelToEditor(model);
+                  }
+                }}
+              >
+                <FaPlus />
+              </Button>
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+    </Row>
   );
 }
