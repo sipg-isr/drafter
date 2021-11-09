@@ -229,10 +229,10 @@ export async function exportState({ models, nodes, edges }: State): Promise<Blob
     })).toArray(),
     links: edges.map(({ requesterId, responderId }) => ({
       source: {
-        stage: nodes.find(({ nodeId }) => nodeId === requesterId.nodeId)?.name || 'Node not found'
+        stage: nodes.find(({ nodeId }) => nodeId === responderId.nodeId)?.name || 'Node not found'
       },
       target: {
-        stage: nodes.find(({ nodeId }) => nodeId === responderId.nodeId)?.name || 'Node not found'
+        stage: nodes.find(({ nodeId }) => nodeId === requesterId.nodeId)?.name || 'Node not found'
       }
     })).toArray()
   };
