@@ -36,8 +36,16 @@ export function protobufToRemoteMethods(code: string): Set<RemoteMethod> | null 
       .methodsArray
       .map(method => ({
         name: method.name,
-        requestType: { ...root.lookupType(method.requestType).toJSON(), name: method.requestType},
-        responseType: { ...root.lookupType(method.responseType).toJSON(), name: method.responseType},
+        requestType: {
+          ...root.lookupType(method.requestType).toJSON(),
+          name: method.requestType,
+          streamed: method.requestStream || false
+        },
+        responseType: {
+          ...root.lookupType(method.responseType).toJSON(),
+          name: method.responseType,
+          streamed: method.responseStream || false
+        },
         remoteMethodId: uuid()
       })))
     );
