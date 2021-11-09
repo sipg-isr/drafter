@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import {
   Button,
-  Row,
-  Table,
   FloatingLabel,
-  Form
+  Form,
+  Row,
+  Table
 } from 'react-bootstrap';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import {
@@ -46,17 +46,17 @@ export default function Sidebar() {
         </thead>
         <tbody>
           {nodes.toList().map(node =>
-          <tr key={node.nodeId}>
-            <td>{node.name}</td>
-            <td>{models.find(({ modelId }) => node.modelId === modelId)?.name || 'No model found'}</td>
-            <td>
-              <Button
-                variant='danger'
-                onClick={() => removeNode(node)}>
-                <FaTrash />
-              </Button>
-            </td>
-          </tr>
+            <tr key={node.nodeId}>
+              <td>{node.name}</td>
+              <td>{models.find(({ modelId }) => node.modelId === modelId)?.name || 'No model found'}</td>
+              <td>
+                <Button
+                  variant='danger'
+                  onClick={() => removeNode(node)}>
+                  <FaTrash />
+                </Button>
+              </td>
+            </tr>
           )}
           <tr>
             <td colSpan={2}>
@@ -64,7 +64,7 @@ export default function Sidebar() {
                 <Form.Select aria-label='Add another model' onChange={({ target: { value } }) => setSelectedModelId(value)}>
                   <option value={nil}>Select Model to add</option>
                   {models.map(({ modelId, name }) =>
-                  <option value={modelId}>{name}</option>
+                    <option key={modelId }value={modelId}>{name}</option>
                   )}
                 </Form.Select>
               </FloatingLabel>
