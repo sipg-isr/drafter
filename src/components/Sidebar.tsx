@@ -27,10 +27,10 @@ export default function Sidebar() {
     setNodes(nodes.add(node));
   };
 
-  // This is a hack-- the select element won't except null as a value, so we define an alternate
-  // null value-- nil, which we set to be zero. This works because all the valid values are
-  // UUID's (strings), which means that 0 will never be considered a valid value
-  const nil = 0;
+  // This is a hack-- the select element won't accept null as a value, so we define an alternate
+  // null value-- nil. This hack isn't comprehensive. If the user somehow gets a UUID that is
+  // equal to '0', then this will fail. However, this shouldn't happen for a UUID
+  const nil = '0';
   const [selectedModelId, setSelectedModelId] = useState<UUID | typeof nil>(nil);
 
   return (
