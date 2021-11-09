@@ -42,7 +42,7 @@ export default function NodeSVG({
       .accessPoints
       .forEach((accessPoint, idx) => {
         [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
-          2 * idx * interval, rx, ry, x, y
+          idx * interval, rx, ry, x, y
         );
       });
   }, [x, y]);
