@@ -33,7 +33,7 @@ function DisplayModel({ entry: { model }, setEntry, removeEntry }: DisplayModelP
     <>
       <tr>
         <td>{model.name}</td>
-        <td>{model.image}</td>
+        <td><pre>{model.image}</pre></td>
         <td>{model.methods.map(method => <pre key={`${model.modelId}-${method.name}`}>{remoteMethodToString(method)}</pre>)}</td>
         <td style={{whiteSpace: 'nowrap'}}>
           <ButtonGroup>
