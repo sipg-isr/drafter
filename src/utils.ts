@@ -10,7 +10,8 @@ import {
   HasNodeId,
   Model,
   Node,
-  RemoteMethod
+  RemoteMethod,
+  UUID
 } from './types';
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
 import { State } from './state';
@@ -54,6 +55,10 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
 }
 
 /**
+ * Keeps track of how many of each model have been instantiated
+ */
+let idCounter: Map<UUID, number> = Map();
+/**
  * Given a model, instantiate it so that it can be used in the simulation
  */
 export function instantiateModel(
@@ -65,10 +70,10 @@ export function instantiateModel(
     const responderId = uuid();
     return acc
       .push({
-        kind:       'AccessPoint',
-        role:       'Requester',
-        name:        name,
-        type:        requestType,
+        kind:         'AccessPoint',
+        role:         'Requester',
+        name:          name,
+        type:          requestType,
         accessPointId: requesterId,
         remoteMethodId,
         nodeId,
@@ -76,10 +81,10 @@ export function instantiateModel(
         y: 0
       })
       .push({
-        kind:       'AccessPoint',
-        role:       'Responder',
-        name:        name,
-        type:        responseType,
+        kind:         'AccessPoint',
+        role:         'Responder',
+        name:          name,
+        type:          responseType,
         accessPointId: responderId,
         nodeId,
         remoteMethodId,
@@ -87,9 +92,17 @@ export function instantiateModel(
         y: 0
       });
   }, List());
+
+  // Get the number for this node
+  const nodeNumber = (idCounter.get(modelId) || 1);
+  // Increment the number for the modelId
+  idCounter = idCounter.set(modelId,
+    nodeNumber + 1
+  );
+
   return {
     kind: 'Node',
-    name,
+    name: `${name} ${nodeNumber}`,
     nodeId,
     modelId,
     accessPoints,
