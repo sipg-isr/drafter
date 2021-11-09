@@ -54,7 +54,9 @@ export default function AccessPointSVG({
   const outerRadius = 12;
   const innerRadius = outerRadius / 2;
   const { x, y } = accessPoint;
-  const color = objectToColor(accessPoint.type);
+  // Get the color of the object type, but don't use the name or whether it is streamed. Only
+  // consider the fields
+  const color = objectToColor({ ...accessPoint.type, name: null, streamed: null });
   return (
     <g
       onMouseDown={(e) => {
@@ -99,19 +101,37 @@ export default function AccessPointSVG({
       }}
     >
       <title>{accessPoint.name}</title>
+      {accessPoint.type.streamed ?
+        <>{
+          [1, 2].map(idx =>
+            <circle
+              key={idx}
+              r={outerRadius}
+              cx={x - idx * innerRadius / 2}
+              cy={y - idx * innerRadius / 2}
+              stroke='black'
+              strokeWidth='1px'
+              fillOpacity='0'
+            />
+          )
+          }</>
+        :
+        null
+      }
       <circle
         r={outerRadius}
         cx={x}
         cy={y}
         fill={accessPoint.role === 'Requester' ? color : 'white'}
-        stroke={'black'}
-        strokeWidth={ '1px' }
+        stroke='black'
+        strokeWidth='1px'
       />
       <circle
         r={innerRadius}
         cx={x}
         cy={y}
         fill={accessPoint.role === 'Responder' ? color: 'white'}
+        stroke='black'
       />
     </g>
   );
