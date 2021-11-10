@@ -76,7 +76,7 @@ function LoadDialog({ show, close }: LoadDialogProps) {
         <Button onClick={async () => {
           const content = await fileContent(fileUploadRef!.current!);
           if (content) {
-            dispatch({ kind: 'RestoreState', state: deserializeState(content) })
+            dispatch({ type: 'RestoreState', state: deserializeState(content) })
           }
           close();
         }}>Load</Button>
@@ -143,7 +143,7 @@ function ClearDialog({ show, close }: ClearDialogProps) {
         <Button variant='primary' onClick={close}>Cancel</Button>
         &nbsp;
         <Button variant='danger' onClick={() => {
-          dispatch({ kind: 'ClearState' });
+          dispatch({ type: 'ClearState' });
           close();
         }}>Clear</Button>
       </Modal.Body>
