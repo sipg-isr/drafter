@@ -31,6 +31,9 @@ export default function Models() {
     ));
   }, [entries]);
 
+  // useEffect(() => {
+  // }, [models]);
+
   return (
     <>
       <Table>

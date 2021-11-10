@@ -11,10 +11,10 @@ import {
   Model,
   Node,
   RemoteMethod,
+  State,
   UUID
 } from './types';
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
-import { State } from './state';
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's

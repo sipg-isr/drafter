@@ -96,6 +96,21 @@ export interface Edge extends HasEdgeId {
 }
 
 /**
+ * The global state for the application. This requires a few properties
+ *
+ */
+export interface State {
+  /** A set of models that have been onboarded onto the platform  */
+  models: Set<Model>;
+
+  /** A set of nodes that were instantiated into the graph */
+  nodes: Set<Node>;
+
+  /** A set of edges that connect the nodes in the graph */
+  edges: Set<Edge>;
+}
+
+/**
  * Represents an active drag.
  */
 export interface Drag {
@@ -106,3 +121,53 @@ export interface Drag {
   /** the element being dragged */
   element: Node | AccessPoint;
 }
+
+/*
+ * Actions begin here. Each of these actions represents a transformation
+ * made on the application state.
+ **/
+
+/**
+ * Set the models. Used for adding and removing models from the editor, as well as modifying them
+ */
+export interface SetModels {
+  type: 'SetModels';
+  models: Set<Model>;
+}
+
+/**
+ * Set the nodes. Used when nodes are added or removed from the editor
+ */
+export interface SetNodes {
+  type: 'SetNodes';
+  nodes: Set<Node>;
+}
+
+/**
+ * Set the edges. Used when connections are made or broken in the editor
+ */
+export interface SetEdges {
+  type: 'SetEdges';
+  edges: Set<Edge>;
+}
+
+/**
+ * Set the entire state to a given value. This is used when loading state from a saved or
+ * serialized version
+ */
+export interface RestoreState {
+  type: 'RestoreState';
+  state: State;
+}
+
+/**
+ * Set the state back to default. Used for clearing the editor
+ */
+export interface ClearState {
+  type: 'ClearState';
+}
+
+/**
+ * The action type is defined as the union of all the possible actions in the editor
+ */
+export type Action = SetModels | SetNodes | SetEdges | RestoreState | ClearState;
