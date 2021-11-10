@@ -139,9 +139,9 @@ function ClearDialog({ show, close }: ClearDialogProps) {
         <CloseButton onClick={close} />
       </Modal.Header>
       <Modal.Body>
-        <Button variant="primary" onClick={close}>Cancel</Button>
+        <Button variant='primary' onClick={close}>Cancel</Button>
         &nbsp;
-        <Button variant="danger" onClick={() => {
+        <Button variant='danger' onClick={() => {
           clearState();
           close();
         }}>Clear</Button>
