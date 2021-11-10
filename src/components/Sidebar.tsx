@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Button,
   FloatingLabel,
@@ -32,6 +32,11 @@ export default function Sidebar() {
   // equal to '0', then this will fail. However, this shouldn't happen for a UUID
   const nil = '0';
   const [selectedModelId, setSelectedModelId] = useState<UUID | typeof nil>(nil);
+
+  // Whenever models change, set back to nil
+  useEffect(() => {
+    setSelectedModelId(nil);
+  }, [models]);
 
   return (
     <Row>
