@@ -29,6 +29,9 @@ export interface State {
 
   /** Set the entire state, from new */
   restoreState: (state: State) => void;
+
+  /** Reset the state to default values */
+  clearState: () => void;
 }
 
 export const useStore = create<State>(set => ({
@@ -38,7 +41,8 @@ export const useStore = create<State>(set => ({
   setNodes: nodes => set(() => ({ nodes })),
   edges:    Set(),
   setEdges: edges => set(() => ({ edges })),
-  restoreState: state => set(state, false)
+  restoreState: state => set(state, false),
+  clearState: () => set({ models: Set(), nodes: Set(), edges: Set() }, false)
 }));
 
 export function useModels(): [Set<Model>, (models: Set<Model>) => void] {

@@ -117,7 +117,10 @@ function ExportDialog({ show, close }: ExportDialogProps) {
           </Form.Select>
         </FloatingLabel>
         <br />
-        <Button onClick={exportSolution}>Export</Button>
+        <Button onClick={() => {
+          exportSolution();
+          close();
+        }}>Export</Button>
       </Modal.Body>
     </Modal>
   );
@@ -128,6 +131,7 @@ interface ClearDialogProps {
   close: () => void;
 }
 function ClearDialog({ show, close }: ClearDialogProps) {
+  const clearState = useStore(store => store.clearState);
   return (
     <Modal show={show} onEscapeKeyDown={close}>
       <Modal.Header>
@@ -137,7 +141,10 @@ function ClearDialog({ show, close }: ClearDialogProps) {
       <Modal.Body>
         <Button variant="primary" onClick={close}>Cancel</Button>
         &nbsp;
-        <Button variant="danger" onClick={() => {}}>Clear</Button>
+        <Button variant="danger" onClick={() => {
+          clearState();
+          close();
+        }}>Clear</Button>
       </Modal.Body>
     </Modal>
   );
