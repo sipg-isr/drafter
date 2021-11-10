@@ -183,7 +183,10 @@ export function serializeState(state: State): string {
 
 export function deserializeState(serialized: string): State {
   const parsed = JSON.parse(serialized, (key, value) => {
-    if (key === 'accessPoints') {
+    if (
+      key === 'accessPoints' ||
+      key === 'actions'
+    ) {
       return List(value);
     } else if (
       key === 'methods' ||
@@ -196,9 +199,6 @@ export function deserializeState(serialized: string): State {
       return value;
     }
   });
-  parsed.models = List(parsed.models);
-  parsed.nodes = Set(parsed.nodes);
-  parsed.edges = Set(parsed.edges);
   return parsed;
 }
 

@@ -1,6 +1,6 @@
 import create from 'zustand';
 import { redux } from 'zustand/middleware';
-import { Set } from 'immutable';
+import { List, Set } from 'immutable';
 import {
   Action,
   Edge,
@@ -16,7 +16,8 @@ import {
 const initialState: State = {
   models: Set(),
   nodes: Set(),
-  edges: Set()
+  edges: Set(),
+  actions: List()
 };
 
 /**
@@ -26,15 +27,15 @@ const initialState: State = {
 function reducer(state: State, action: Action): State {
   switch (action.type) {
   case 'SetModels':
-    return { ...state, models: action.models };
+    return { ...state, models: action.models, actions: state.actions.push(action) };
   case 'SetNodes':
-    return { ...state, nodes: action.nodes };
+    return { ...state, nodes: action.nodes, actions: state.actions.push(action)  };
   case 'SetEdges':
-    return { ...state, edges: action.edges };
+    return { ...state, edges: action.edges, actions: state.actions.push(action)  };
   case 'RestoreState':
-    return action.state;
+    return { ...action.state, actions: state.actions.push(action) };
   case 'ClearState':
-    return initialState;
+    return { ...initialState, actions: state.actions.push(action) };
   }
 }
 
@@ -52,4 +53,7 @@ export function useNodes(): [Set<Node>, (nodes: Set<Node>) => void] {
 }
 export function useEdges(): [Set<Edge>, (edges: Set<Edge>) => void] {
   return useStore(state => [state.edges, ((edges: Set<Edge>) => state.dispatch({ type: 'SetEdges', edges }))]);
+}
+export function useActions(): List<Action> {
+  return useStore(state => state.actions);
 }

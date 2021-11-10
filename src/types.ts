@@ -1,4 +1,4 @@
-import { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force';
+import { SimulationNodeDatum } from 'd3-force';
 import { IType } from 'protobufjs';
 import { List, Map, Set } from 'immutable';
 
@@ -108,6 +108,9 @@ export interface State {
 
   /** A set of edges that connect the nodes in the graph */
   edges: Set<Edge>;
+
+  /** A list of previous actions. Used for record-keeping */
+  actions: List<Action>;
 }
 
 /**
