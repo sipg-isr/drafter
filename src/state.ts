@@ -1,6 +1,6 @@
 import create from 'zustand';
 import { redux } from 'zustand/middleware';
-import { Set, List } from 'immutable';
+import { List, Set } from 'immutable';
 import {
   Action,
   Edge,

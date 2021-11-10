@@ -6,7 +6,7 @@ import {
 import { List, Map, Set } from 'immutable';
 import { FaPlus } from 'react-icons/fa';
 import ModelView, { ModelEntry } from './ModelView';
-import { useModels, useActions } from '../state';
+import { useActions, useModels } from '../state';
 
 export default function Models() {
   // Keep a list of the state models
