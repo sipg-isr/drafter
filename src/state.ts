@@ -5,48 +5,10 @@ import {
   Edge,
   Model,
   Node,
+  State,
+  Action
 } from './types';
 
-interface SetModels {
-  type: 'SetModels';
-  models: Set<Model>;
-}
-
-interface SetNodes {
-  type: 'SetNodes';
-  nodes: Set<Node>;
-}
-
-interface SetEdges {
-  type: 'SetEdges';
-  edges: Set<Edge>;
-}
-
-interface RestoreState {
-  type: 'RestoreState';
-  state: State;
-}
-
-interface ClearState {
-  type: 'ClearState';
-}
-
-type Action = SetModels | SetNodes | SetEdges | RestoreState | ClearState;
-
-/**
- * The global state for the application. This requires a few properties
- *
- */
-export interface State {
-  /** A set of models that have been onboarded onto the platform  */
-  models: Set<Model>;
-
-  /** A set of nodes that were instantiated into the graph */
-  nodes: Set<Node>;
-
-  /** A set of edges that connect the nodes in the graph */
-  edges: Set<Edge>;
-}
 
 /**
  * This is the fundamental state management function for the application. It takes a state, and an

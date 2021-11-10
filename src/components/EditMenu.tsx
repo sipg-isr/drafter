@@ -8,7 +8,8 @@ import {
   ListGroup,
   Modal
 } from 'react-bootstrap';
-import { State, useStore, useDispatch } from '../state';
+import { useStore, useDispatch } from '../state';
+import { State } from '../types';
 import { deserializeState, exportState, fileContent, serializeState } from  '../utils';
 import { saveAs } from 'file-saver';
 
