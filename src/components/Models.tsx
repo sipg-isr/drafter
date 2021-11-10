@@ -5,13 +5,16 @@ import {
 } from 'react-bootstrap';
 import { List, Map, Set } from 'immutable';
 import { FaPlus } from 'react-icons/fa';
-import {
-  Model, UUID
-} from '../types';
 import ModelView, { ModelEntry } from './ModelView';
-import { useEdges, useModels, useNodes } from '../state';
+import { useModels, useActions } from '../state';
 
 export default function Models() {
+  // Keep a list of the state models
+  const [models, setModels] = useModels();
+
+  // Also keep a list of the previous actions
+  const actions = useActions();
+
   // These are the entries in the form
   const [entries, setEntries] = useState<List<ModelEntry>>(List([
     { kind: 'Edit', model: null } // Start with one empty model
@@ -19,8 +22,6 @@ export default function Models() {
 
   // To add an entry by pushing it into the entries set
   const addEntry = (entry: ModelEntry) => setEntries(entries.push(entry));
-
-  const [, setModels] = useModels();
 
   useEffect(() => {
     // Whenever the model entries are updated, update the models
@@ -31,8 +32,18 @@ export default function Models() {
     ));
   }, [entries]);
 
-  // useEffect(() => {
-  // }, [models]);
+  useEffect(() => {
+    // If models changed as a result of a RestoreState or ClearState action...
+    // Note that this change is necessary so we don't get infinite recursion whenever a user adds
+    // a model via this form
+    if (
+      actions.last()?.type === 'RestoreState' ||
+      actions.last()?.type === 'ClearState'
+    ) {
+      // Then set the entries to equal the models
+      setEntries(models.map(model => ({ kind: 'Display', model } as ModelEntry)).toList());
+    }
+  }, [models]);
 
   return (
     <>
