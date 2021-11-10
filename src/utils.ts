@@ -127,8 +127,6 @@ export function compatibleMethods(left: AccessPoint, right: AccessPoint): boolea
   const kinds = [left.role, right.role];
   return kinds.includes('Requester') &&
     kinds.includes('Responder') &&
-    // TODO do MUCH deeper type-checking than this
-    left.type.name === right.type.name &&
     equal(left.type, right.type);
 }
 
