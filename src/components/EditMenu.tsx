@@ -8,7 +8,7 @@ import {
   ListGroup,
   Modal
 } from 'react-bootstrap';
-import { useStore, useDispatch } from '../state';
+import { useDispatch, useStore } from '../state';
 import { State } from '../types';
 import { deserializeState, exportState, fileContent, serializeState } from  '../utils';
 import { saveAs } from 'file-saver';
@@ -77,7 +77,7 @@ function LoadDialog({ show, close }: LoadDialogProps) {
         <Button onClick={async () => {
           const content = await fileContent(fileUploadRef!.current!);
           if (content) {
-            dispatch({ type: 'RestoreState', state: deserializeState(content) })
+            dispatch({ type: 'RestoreState', state: deserializeState(content) });
           }
           close();
         }}>Load</Button>

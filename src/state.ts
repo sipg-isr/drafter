@@ -2,13 +2,22 @@ import create from 'zustand';
 import { redux } from 'zustand/middleware';
 import { Set } from 'immutable';
 import {
+  Action,
   Edge,
   Model,
   Node,
-  State,
-  Action
+  State
 } from './types';
 
+/**
+ * The initial state when the application is first loaded. Also used when clearing the application
+ * and restoring to this first state
+ */
+const initialState: State = {
+  models: Set(),
+  nodes: Set(),
+  edges: Set()
+};
 
 /**
  * This is the fundamental state management function for the application. It takes a state, and an
@@ -16,24 +25,19 @@ import {
  */
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'SetModels':
-      return { ...state, models: action.models };
-    case 'SetNodes':
-      return { ...state, nodes: action.nodes };
-    case 'SetEdges':
-      return { ...state, edges: action.edges };
-    case 'RestoreState':
-      return action.state;
-    case 'ClearState':
-      return initialState;
+  case 'SetModels':
+    return { ...state, models: action.models };
+  case 'SetNodes':
+    return { ...state, nodes: action.nodes };
+  case 'SetEdges':
+    return { ...state, edges: action.edges };
+  case 'RestoreState':
+    return action.state;
+  case 'ClearState':
+    return initialState;
   }
 }
 
-const initialState: State = {
-  models: Set(),
-  nodes: Set(),
-  edges: Set()
-};
 export const useStore = create(redux(reducer, initialState));
 
 export function useDispatch() {
