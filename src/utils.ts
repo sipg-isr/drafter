@@ -4,6 +4,7 @@ import { List, Map, Set } from 'immutable';
 import  { v4 as uuid } from 'uuid';
 import { dump } from 'js-yaml';
 import JSZip from 'jszip';
+import equal from 'fast-deep-equal';
 import {
   AccessPoint,
   HasAccessPointId,
@@ -128,7 +129,7 @@ export function compatibleMethods(left: AccessPoint, right: AccessPoint): boolea
     kinds.includes('Responder') &&
     // TODO do MUCH deeper type-checking than this
     left.type.name === right.type.name &&
-    left.type.streamed === right.type.streamed;
+    equal(left.type, right.type);
 }
 
 /**
