@@ -2,7 +2,10 @@ import { SimulationLinkDatum, SimulationNodeDatum } from 'd3-force';
 import { IType } from 'protobufjs';
 import { List, Map, Set } from 'immutable';
 
-export type MessageType = IType & { name: string };
+export interface MessageType extends IType {
+  name: string;
+  streamed: boolean;
+}
 
 /**
  * Represents a model that is being dragged and its coordinates, or a lack of drag
