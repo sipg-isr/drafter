@@ -8,7 +8,7 @@ import {
   ListGroup,
   Modal
 } from 'react-bootstrap';
-import { State, useStore } from '../state';
+import { State, useStore, useDispatch } from '../state';
 import { deserializeState, exportState, fileContent, serializeState } from  '../utils';
 import { saveAs } from 'file-saver';
 
@@ -59,8 +59,9 @@ interface LoadDialogProps {
 }
 function LoadDialog({ show, close }: LoadDialogProps) {
 
+  const dispatch = useDispatch();
+
   const fileUploadRef = useRef<HTMLInputElement | null>(null);
-  const restoreState = useStore(state => state.restoreState);
 
   return (
     <Modal show={show} onEscapeKeyDown={close}>
@@ -75,7 +76,7 @@ function LoadDialog({ show, close }: LoadDialogProps) {
         <Button onClick={async () => {
           const content = await fileContent(fileUploadRef!.current!);
           if (content) {
-            restoreState(deserializeState(content));
+            dispatch({ kind: 'RestoreState', state: deserializeState(content) })
           }
           close();
         }}>Load</Button>
@@ -131,7 +132,7 @@ interface ClearDialogProps {
   close: () => void;
 }
 function ClearDialog({ show, close }: ClearDialogProps) {
-  const clearState = useStore(store => store.clearState);
+  const dispatch = useDispatch();
   return (
     <Modal show={show} onEscapeKeyDown={close}>
       <Modal.Header>
@@ -142,7 +143,7 @@ function ClearDialog({ show, close }: ClearDialogProps) {
         <Button variant='primary' onClick={close}>Cancel</Button>
         &nbsp;
         <Button variant='danger' onClick={() => {
-          clearState();
+          dispatch({ kind: 'ClearState' });
           close();
         }}>Clear</Button>
       </Modal.Body>
