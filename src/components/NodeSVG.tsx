@@ -74,6 +74,7 @@ export default function NodeSVG({
         }}
       />
       <text
+        pointerEvents='none'
         textAnchor='middle'
         stroke='#fff'
         strokeWidth='0.5'
