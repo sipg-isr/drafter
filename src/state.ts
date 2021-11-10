@@ -31,6 +31,8 @@ interface ClearState {
   type: 'ClearState';
 }
 
+type Action = SetModels | SetNodes | SetEdges | RestoreState | ClearState;
+
 /**
  * The global state for the application. This requires a few properties
  *
@@ -46,8 +48,10 @@ export interface State {
   edges: Set<Edge>;
 }
 
-type Action = SetModels | SetNodes | SetEdges | RestoreState | ClearState;
-
+/**
+ * This is the fundamental state management function for the application. It takes a state, and an
+ * action and returns a new state
+ */
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'SetModels':
@@ -59,7 +63,7 @@ function reducer(state: State, action: Action): State {
     case 'RestoreState':
       return action.state;
     case 'ClearState':
-      return { ...state, models: Set(), nodes: Set(), edges: Set() };
+      return initialState;
   }
 }
 
