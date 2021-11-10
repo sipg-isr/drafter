@@ -91,22 +91,6 @@ export default function Graph() {
         }
       }}
     >
-      {edges.map(({ requesterId, responderId }) => {
-        // Look up each id
-        const [requester, responder] = [requesterId, responderId]
-          .map(id => lookupAccessPoint(nodes, id));
-        if (requester && responder) {
-          return <EdgeSVG
-            key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
-            x1={requester.x}
-            y1={requester.y}
-            x2={responder.x}
-            y2={responder.y}
-          />;
-        } else {
-          return null;
-        }
-      })}
       {(() => {
         if (drag) {
           const {
@@ -130,6 +114,22 @@ export default function Graph() {
         setDrag={setDrag}
         restartSimulation={restartSimulation}
       />)}
+      {edges.map(({ requesterId, responderId }) => {
+        // Look up each id
+        const [requester, responder] = [requesterId, responderId]
+          .map(id => lookupAccessPoint(nodes, id));
+        if (requester && responder) {
+          return <EdgeSVG
+            key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
+            x1={requester.x}
+            y1={requester.y}
+            x2={responder.x}
+            y2={responder.y}
+          />;
+        } else {
+          return null;
+        }
+      })}
     </svg>
   );
 }
