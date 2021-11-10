@@ -127,7 +127,8 @@ export function compatibleMethods(left: AccessPoint, right: AccessPoint): boolea
   return kinds.includes('Requester') &&
     kinds.includes('Responder') &&
     // TODO do MUCH deeper type-checking than this
-    (left.type.name === right.type.name);
+    left.type.name === right.type.name &&
+    left.type.streamed === right.type.streamed;
 }
 
 /**
