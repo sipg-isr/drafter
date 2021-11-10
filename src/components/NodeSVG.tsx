@@ -33,7 +33,7 @@ export default function NodeSVG({
   const displayName = truncate(name, { length: 25 });
   // The radii of the ellipse
   const rx = max(displayName.length * 6, 50);
-  const ry = rx / 2;
+  const ry = rx * 0.65;
 
   const interval = (2 * PI) / node.accessPoints.size;
 
