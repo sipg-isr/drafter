@@ -30,6 +30,20 @@ function reducer(state: State, action: Action): State {
     return { ...state, models: action.models, actions: state.actions.push(action) };
   case 'SetNodes':
     return { ...state, nodes: action.nodes, actions: state.actions.push(action)  };
+    case 'UpdateNode':
+      // Find the current node in the set that has the given Id
+      const currentNode = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId)
+      // If the node exists...
+      if (currentNode) {
+        return {
+          ...state,
+          nodes: state.nodes.remove(currentNode).add(action.node)
+        };
+      } else {
+        // Couldn't find the existing node.
+        console.error(`Refusing to modify state. Error in ${action.type}. Trying to update node with id ${action.node.nodeId} but no node with that id currently exists in state`);
+        return state;
+      }
   case 'SetEdges':
     return { ...state, edges: action.edges, actions: state.actions.push(action)  };
   case 'RestoreState':
@@ -43,6 +57,10 @@ export const useStore = create(redux(reducer, initialState));
 
 export function useDispatch() {
   return useStore(state => state.dispatch);
+}
+
+export function useUpdateNode() {
+  return useStore(({ dispatch }) => (node: Node) => dispatch({ type: 'UpdateNode', node}));
 }
 
 export function useModels(): [Set<Model>, (models: Set<Model>) => void] {

@@ -16,7 +16,8 @@ import {
 import { instantiateModel } from '../utils';
 import {
   useModels,
-  useNodes
+  useNodes,
+  useUpdateNode
 } from '../state';
 
 enum EditState {
@@ -51,10 +52,7 @@ export default function Sidebar() {
   const [models] = useModels();
   const [nodes, setNodes] = useNodes();
   // This function updates a node in-place
-  const setNode = (node: Node) =>
-    setNodes(nodes
-      .filter(({ nodeId }) => node.nodeId !== nodeId)
-      .add(node));
+  const updateNode = useUpdateNode();
 
   const removeNode = (node: Node) => setNodes(nodes.remove(node));
   const addModelToEditor = (model: Model) => {
@@ -87,7 +85,7 @@ export default function Sidebar() {
         <tbody>
           {nodes.toList().map(node =>
             <tr key={node.nodeId}>
-              <td><EditField value={node.name} setValue={name => setNode({ ...node, name })} /></td>
+              <td><EditField value={node.name} setValue={name => updateNode({ ...node, name })} /></td>
               <td>{models.find(({ modelId }) => node.modelId === modelId)?.name || 'No model found'}</td>
               <td>
                 <Button

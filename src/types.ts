@@ -147,6 +147,14 @@ export interface SetNodes {
 }
 
 /**
+ * Used for updating one node, in-place
+ */
+export interface UpdateNode {
+  type: 'UpdateNode';
+  node: Node;
+}
+
+/**
  * Set the edges. Used when connections are made or broken in the editor
  */
 export interface SetEdges {
@@ -173,4 +181,4 @@ export interface ClearState {
 /**
  * The action type is defined as the union of all the possible actions in the editor
  */
-export type Action = SetModels | SetNodes | SetEdges | RestoreState | ClearState;
+export type Action = SetModels | SetNodes | UpdateNode | SetEdges | RestoreState | ClearState;
