@@ -69,10 +69,12 @@ export default function Models() {
   return (
     <Table>
       <thead>
-        <th>Model Name</th>
-        <th>Image</th>
-        <th>Protobuf Interface</th>
-        <th>Action</th>
+        <tr>
+          <th>Model Name</th>
+          <th>Image</th>
+          <th>Protobuf Interface</th>
+          <th>Action</th>
+        </tr>
       </thead>
       <tbody>
         {models.map(model => <tr key={model.modelId}>

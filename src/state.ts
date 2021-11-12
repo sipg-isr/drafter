@@ -26,13 +26,12 @@ const initialState: State = {
  * This is the fundamental state management function for the application. It takes a state, and an
  * action and returns a new state
  */
-function reducer(state: State, action: Action): State {
+function reducer(state: State, action: Action): Partial<State> {
   switch (action.type) {
   case 'CreateModel':
     const methods = protobufToRemoteMethods(action.protobufCode);
     if (methods) {
       return {
-        ...state,
         models: state.models.add({
           kind: 'Model',
           modelId: uuid(),
@@ -51,7 +50,6 @@ function reducer(state: State, action: Action): State {
     const currentModel = state.models.find(({ modelId }) => modelId === action.model.modelId);
     if (currentModel) {
       return {
-        ...state,
         models: state.models.remove(currentModel).add(action.model)
       };
     } else {
@@ -59,14 +57,13 @@ function reducer(state: State, action: Action): State {
       return state;
     }
   case 'SetNodes':
-    return { ...state, nodes: action.nodes };
+    return { nodes: action.nodes };
   case 'UpdateNode':
     // Find the current node in the set that has the given Id
     const currentNode = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
     // If the node exists...
     if (currentNode) {
       return {
-        ...state,
         nodes: state.nodes.remove(currentNode).add(action.node)
       };
     } else {
@@ -75,7 +72,7 @@ function reducer(state: State, action: Action): State {
       return state;
     }
   case 'SetEdges':
-    return { ...state, edges: action.edges };
+    return { edges: action.edges };
   case 'RestoreState':
     return action.state;
   case 'ClearState':
@@ -83,15 +80,12 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-function addHistory(state: State, action: Action): State {
-  return { ...state, actions: state.actions.push(action) };
-}
-
-function reducerWithHistory(state: State, action: Action): State {
-  return addHistory(reducer(state, action), action);
-}
-
-export const useStore = create(redux(reducerWithHistory, initialState));
+export const useStore = create(redux(
+  (state: State, action: Action) => {
+    const partialState = reducer(state, action);
+    return { ...state, ...partialState, actions: state.actions.push(action) }
+  }
+  , initialState));
 
 export function useDispatch() {
   return useStore(state => state.dispatch);
