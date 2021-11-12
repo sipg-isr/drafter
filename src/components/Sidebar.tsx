@@ -19,34 +19,7 @@ import {
   useNodes,
   useUpdateNode
 } from '../state';
-
-enum EditState {
-  Edit, Display
-}
-interface EditFieldProps {
-  value: string;
-  setValue: (value: string) => void;
-}
-function EditField({ value, setValue }: EditFieldProps) {
-  const [editState, setEditState] = useState(EditState.Display);
-  const [fieldValue, setFieldValue] = useState(value);
-
-  if (editState === EditState.Display) {
-    return <span onClick={() => setEditState(EditState.Edit)}>{value}</span>
-  } else {
-    return <Row>
-      <Col>
-        <Form.Control value={fieldValue} onChange={({ target: { value } }) => setFieldValue(value)} />
-      </Col>
-      <Col>
-        <Button onClick={() => {
-          setValue(fieldValue);
-          setEditState(EditState.Display);
-        }}><FaCheck /></Button>
-      </Col>
-    </Row>
-  }
-}
+import EditField from './EditField';
 
 export default function Sidebar() {
   const [models] = useModels();
