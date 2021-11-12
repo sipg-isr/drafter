@@ -145,6 +145,11 @@ export interface SetModels {
   models: Set<Model>;
 }
 
+export interface UpdateModel {
+  type: 'UpdateModel';
+  model: Model;
+}
+
 /**
  * Set the nodes. Used when nodes are added or removed from the editor
  */
@@ -188,4 +193,4 @@ export interface ClearState {
 /**
  * The action type is defined as the union of all the possible actions in the editor
  */
-export type Action = CreateModel | SetModels | SetNodes | UpdateNode | SetEdges | RestoreState | ClearState;
+export type Action = CreateModel | SetModels | UpdateModel | SetNodes | UpdateNode | SetEdges | RestoreState | ClearState;

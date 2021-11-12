@@ -47,6 +47,17 @@ function reducer(state: State, action: Action): State {
       }
     case 'SetModels':
       return { ...state, models: action.models };
+    case 'UpdateModel':
+      const currentModel = state.models.find(({ modelId }) => modelId === action.model.modelId);
+      if (currentModel) {
+        return {
+          ...state,
+          models: state.models.remove(currentModel).add(action.model)
+        }
+      } else {
+        console.error(`Refusing to modify state. Error in ${action.type}. Trying to update model with id ${action.model.modelId} but no model with that id currently exists in state`);
+        return state;
+      }
     case 'SetNodes':
       return { ...state, nodes: action.nodes };
     case 'UpdateNode':
@@ -96,8 +107,12 @@ export function useCreateModel() {
     }));
 }
 
+export function useUpdateModel() {
+  return useStore(({ dispatch }) => (model: Model) => dispatch({ type: 'UpdateModel', model }));
+}
+
 export function useUpdateNode() {
-  return useStore(({ dispatch }) => (node: Node) => dispatch({ type: 'UpdateNode', node}));
+  return useStore(({ dispatch }) => (node: Node) => dispatch({ type: 'UpdateNode', node }));
 }
 
 export function useModels(): [Set<Model>, (models: Set<Model>) => void] {
