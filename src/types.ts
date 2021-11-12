@@ -62,12 +62,32 @@ export interface Model extends HasModelId {
   methods: Set<RemoteMethod>;
 }
 
+/** A stage in the editor-- one computer */
 export interface Node extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasModelId {
   kind: 'Node';
-  // The name of the individual node
+  /** The name of the individual node */
   name: string;
 
+  /** a list of interfaces associated with the node */
   accessPoints: List<AccessPoint>;
+
+  /** A list of volumes to be mounted with this node */
+  volumes: List<Volume>;
+}
+
+export enum VolumeType {
+  Bind = 'bind'
+}
+
+/**
+ * A path on disk
+ */
+export type Path = string;
+
+export interface Volume {
+  type: VolumeType;
+  source: Path;
+  target: Path;
 }
 
 export interface AccessPoint extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasRemoteMethodId, HasAccessPointId {

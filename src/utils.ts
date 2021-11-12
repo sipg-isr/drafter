@@ -117,6 +117,7 @@ export function instantiateModel(
     accessPoints: accessPoints.filter(({ type: { name, fields } }) =>
       name !== 'Empty' || Object.keys(fields).length > 0
     ),
+    volumes: List(),
     x: 0,
     y: 0
   };
