@@ -121,3 +121,6 @@ export function useEdges(): [Set<Edge>, (edges: Set<Edge>) => void] {
 export function useActions(): List<Action> {
   return useStore(state => state.actions);
 }
+export function useRestoreState() {
+  return useStore(({ dispatch }) => (state: State) => dispatch({type: 'RestoreState', state }));
+}
