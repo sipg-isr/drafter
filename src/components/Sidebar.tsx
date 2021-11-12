@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
   Button,
+  Col,
   FloatingLabel,
   Form,
   Row,
   Table
 } from 'react-bootstrap';
-import { FaPlus, FaTrash } from 'react-icons/fa';
+import { FaCheck, FaPlus, FaTrash } from 'react-icons/fa';
 import {
   Model,
   Node,
@@ -15,12 +16,17 @@ import {
 import { instantiateModel } from '../utils';
 import {
   useModels,
-  useNodes
+  useNodes,
+  useUpdateNode
 } from '../state';
+import EditField from './EditField';
 
 export default function Sidebar() {
   const [models] = useModels();
   const [nodes, setNodes] = useNodes();
+  // This function updates a node in-place
+  const updateNode = useUpdateNode();
+
   const removeNode = (node: Node) => setNodes(nodes.remove(node));
   const addModelToEditor = (model: Model) => {
     const node = instantiateModel(model, model.name);
@@ -44,7 +50,7 @@ export default function Sidebar() {
       <Table>
         <thead>
           <tr>
-            <th>Node</th>
+            <th>Name</th>
             <th>Model</th>
             <th>Action</th>
           </tr>
@@ -52,7 +58,7 @@ export default function Sidebar() {
         <tbody>
           {nodes.toList().map(node =>
             <tr key={node.nodeId}>
-              <td>{node.name}</td>
+              <td><EditField value={node.name} setValue={name => updateNode({ ...node, name })} /></td>
               <td>{models.find(({ modelId }) => node.modelId === modelId)?.name || 'No model found'}</td>
               <td>
                 <Button

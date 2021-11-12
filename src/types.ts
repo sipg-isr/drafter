@@ -130,6 +130,13 @@ export interface Drag {
  * made on the application state.
  **/
 
+export interface CreateModel {
+  type: 'CreateModel';
+  name: string;
+  image: string;
+  protobufCode: string;
+}
+
 /**
  * Set the models. Used for adding and removing models from the editor, as well as modifying them
  */
@@ -138,12 +145,25 @@ export interface SetModels {
   models: Set<Model>;
 }
 
+export interface UpdateModel {
+  type: 'UpdateModel';
+  model: Model;
+}
+
 /**
  * Set the nodes. Used when nodes are added or removed from the editor
  */
 export interface SetNodes {
   type: 'SetNodes';
   nodes: Set<Node>;
+}
+
+/**
+ * Used for updating one node, in-place
+ */
+export interface UpdateNode {
+  type: 'UpdateNode';
+  node: Node;
 }
 
 /**
@@ -173,4 +193,4 @@ export interface ClearState {
 /**
  * The action type is defined as the union of all the possible actions in the editor
  */
-export type Action = SetModels | SetNodes | SetEdges | RestoreState | ClearState;
+export type Action = CreateModel | SetModels | UpdateModel | SetNodes | UpdateNode | SetEdges | RestoreState | ClearState;
