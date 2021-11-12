@@ -18,8 +18,8 @@ export default function Models() {
   return (
     <Table>
       <thead>
-        <th>Name</th>
-        <th>Model</th>
+        <th>Model Name</th>
+        <th>Image</th>
         <th>Protobuf Interface</th>
         <th>Action</th>
       </thead>
