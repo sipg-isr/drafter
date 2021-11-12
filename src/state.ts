@@ -28,58 +28,58 @@ const initialState: State = {
  */
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case 'CreateModel':
-      const methods = protobufToRemoteMethods(action.protobufCode)
-      if (methods) {
-        return {
-          ...state,
-          models: state.models.add({
-            kind: 'Model',
-            modelId: uuid(),
-            name: action.name,
-            image: action.image,
-            methods
-          })
-        };
-      } else {
-        console.error('Refusing to update state: Could not parse protobuf code');
-        return state;
-      }
-    case 'SetModels':
-      return { ...state, models: action.models };
-    case 'UpdateModel':
-      const currentModel = state.models.find(({ modelId }) => modelId === action.model.modelId);
-      if (currentModel) {
-        return {
-          ...state,
-          models: state.models.remove(currentModel).add(action.model)
-        }
-      } else {
-        console.error(`Refusing to modify state. Error in ${action.type}. Trying to update model with id ${action.model.modelId} but no model with that id currently exists in state`);
-        return state;
-      }
-    case 'SetNodes':
-      return { ...state, nodes: action.nodes };
-    case 'UpdateNode':
-      // Find the current node in the set that has the given Id
-      const currentNode = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId)
-      // If the node exists...
-      if (currentNode) {
-        return {
-          ...state,
-          nodes: state.nodes.remove(currentNode).add(action.node)
-        };
-      } else {
-        // Couldn't find the existing node.
-        console.error(`Refusing to modify state. Error in ${action.type}. Trying to update node with id ${action.node.nodeId} but no node with that id currently exists in state`);
-        return state;
-      }
-    case 'SetEdges':
-      return { ...state, edges: action.edges };
-    case 'RestoreState':
-      return action.state;
-    case 'ClearState':
-      return initialState;
+  case 'CreateModel':
+    const methods = protobufToRemoteMethods(action.protobufCode);
+    if (methods) {
+      return {
+        ...state,
+        models: state.models.add({
+          kind: 'Model',
+          modelId: uuid(),
+          name: action.name,
+          image: action.image,
+          methods
+        })
+      };
+    } else {
+      console.error('Refusing to update state: Could not parse protobuf code');
+      return state;
+    }
+  case 'SetModels':
+    return { ...state, models: action.models };
+  case 'UpdateModel':
+    const currentModel = state.models.find(({ modelId }) => modelId === action.model.modelId);
+    if (currentModel) {
+      return {
+        ...state,
+        models: state.models.remove(currentModel).add(action.model)
+      };
+    } else {
+      console.error(`Refusing to modify state. Error in ${action.type}. Trying to update model with id ${action.model.modelId} but no model with that id currently exists in state`);
+      return state;
+    }
+  case 'SetNodes':
+    return { ...state, nodes: action.nodes };
+  case 'UpdateNode':
+    // Find the current node in the set that has the given Id
+    const currentNode = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
+    // If the node exists...
+    if (currentNode) {
+      return {
+        ...state,
+        nodes: state.nodes.remove(currentNode).add(action.node)
+      };
+    } else {
+      // Couldn't find the existing node.
+      console.error(`Refusing to modify state. Error in ${action.type}. Trying to update node with id ${action.node.nodeId} but no node with that id currently exists in state`);
+      return state;
+    }
+  case 'SetEdges':
+    return { ...state, edges: action.edges };
+  case 'RestoreState':
+    return action.state;
+  case 'ClearState':
+    return initialState;
   }
 }
 

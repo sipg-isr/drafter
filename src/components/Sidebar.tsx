@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
   Button,
+  Col,
   FloatingLabel,
   Form,
   Row,
-  Table,
-  Col
+  Table
 } from 'react-bootstrap';
-import { FaPlus, FaTrash, FaCheck } from 'react-icons/fa';
+import { FaCheck, FaPlus, FaTrash } from 'react-icons/fa';
 import {
   Model,
   Node,

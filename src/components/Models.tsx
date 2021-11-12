@@ -1,40 +1,14 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Button,
-  Table,
-  Form
+  Form,
+  Table
 } from 'react-bootstrap';
 import { List, Map, Set } from 'immutable';
-import { FaTrash, FaPlus } from 'react-icons/fa';
-import { remoteMethodToString, fileContent } from '../utils';
-import { useModels, useCreateModel, useUpdateModel } from '../state';
+import { FaPlus, FaTrash } from 'react-icons/fa';
+import { fileContent, remoteMethodToString } from '../utils';
+import { useCreateModel, useModels, useUpdateModel } from '../state';
 import EditField from './EditField';
-
-export default function Models() {
-  // Keep a list of the state models
-  const [models,] = useModels();
-  const updateModel = useUpdateModel();
-
-  return (
-    <Table>
-      <thead>
-        <th>Model Name</th>
-        <th>Image</th>
-        <th>Protobuf Interface</th>
-        <th>Action</th>
-      </thead>
-      <tbody>
-        {models.map(model => <tr key={model.modelId}>
-          <td><EditField value={model.name} setValue={name => updateModel({ ...model, name })} /></td>
-          <td><EditField value={model.image} setValue={image => updateModel({ ...model, image })} /></td>
-          <td>{model.methods.map(method => <pre>{remoteMethodToString(method)}</pre>)}</td>
-          <td><Button variant='danger'><FaTrash /></Button></td>
-        </tr>)}
-        <ModelAddingForm />
-      </tbody>
-    </Table>
-  );
-}
 
 function ModelAddingForm() {
   const createModel = useCreateModel();
@@ -84,5 +58,31 @@ function ModelAddingForm() {
         ><FaPlus /></Button>
       </td>
     </tr>
+  );
+}
+
+export default function Models() {
+  // Keep a list of the state models
+  const [models] = useModels();
+  const updateModel = useUpdateModel();
+
+  return (
+    <Table>
+      <thead>
+        <th>Model Name</th>
+        <th>Image</th>
+        <th>Protobuf Interface</th>
+        <th>Action</th>
+      </thead>
+      <tbody>
+        {models.map(model => <tr key={model.modelId}>
+          <td><EditField value={model.name} setValue={name => updateModel({ ...model, name })} /></td>
+          <td><EditField value={model.image} setValue={image => updateModel({ ...model, image })} /></td>
+          <td>{model.methods.map(method => <pre key={method.remoteMethodId}>{remoteMethodToString(method)}</pre>)}</td>
+          <td><Button variant='danger'><FaTrash /></Button></td>
+        </tr>)}
+        <ModelAddingForm />
+      </tbody>
+    </Table>
   );
 }

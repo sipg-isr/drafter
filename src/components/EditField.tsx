@@ -19,7 +19,7 @@ export default function EditField({ value, setValue }: EditFieldProps) {
   const [fieldValue, setFieldValue] = useState(value);
 
   if (editState === EditState.Display) {
-    return <span onClick={() => setEditState(EditState.Edit)}>{value}</span>
+    return <span onClick={() => setEditState(EditState.Edit)}>{value}</span>;
   } else {
     return <Row>
       <Col>
@@ -31,6 +31,6 @@ export default function EditField({ value, setValue }: EditFieldProps) {
           setEditState(EditState.Display);
         }}><FaCheck /></Button>
       </Col>
-    </Row>
+    </Row>;
   }
 }
