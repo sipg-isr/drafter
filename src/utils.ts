@@ -114,7 +114,9 @@ export function instantiateModel(
     name: `${name} ${nodeNumber}`,
     nodeId,
     modelId,
-    accessPoints,
+    accessPoints: accessPoints.filter(({ type: { name, fields } }) =>
+      name !== 'Empty' || Object.keys(fields).length > 0
+    ),
     x: 0,
     y: 0
   };
