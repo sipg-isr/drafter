@@ -161,18 +161,13 @@ export async function fileContent(element: HTMLInputElement): Promise<string | n
   // Note that we coerce to undefined in case of a falsy value here because the `Set`
   // constructor does not accept null.
   const files = List(element?.files || undefined);
-  if (files) {
-    // If the thing actually exists...
-    // We should make sure it has exactly one file
-    if (files.size === 1) {
-      // We can assert-nonnull here because we know the files list has a first element
-      const file = files.first()!;
-      return file.text();
-    } else {
-      console.error(`Didn't find exactly one protobuf file for the model. Files were [${files.map(file => file.name).join(', ')}]}`);
-      return null;
-    }
+  // We should make sure that the list has exactly one file
+  if (files.size === 1) {
+    // We can assert-nonnull here because we know the files list has a first element
+    const file = files.first()!;
+    return file.text();
   } else {
+    console.error(`Didn't find exactly one protobuf file for the model. Files were [${files.map(file => file.name).join(', ')}]}`);
     return null;
   }
 }
