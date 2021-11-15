@@ -8,11 +8,14 @@ import {
 } from 'react-bootstrap';
 import { v4 as uuid } from 'uuid';
 import {
-  FaPlus
+  FaPlus,
+  FaTrash
 } from 'react-icons/fa';
 import {
   Node,
-  VolumeType
+  Volume,
+  VolumeType,
+  UUID
 } from '../types';
 import {
   useUpdateNode
@@ -24,36 +27,58 @@ interface VolumeEditorProps {
   close: () => void;
 };
 export default function VolumeEditor({ node, selectNode, close }: VolumeEditorProps) {
-    return (
-      <Modal show={node !== null} onEscapeKeyDown={close}>
-        <Modal.Header>
-          <Modal.Title>{node.name}</Modal.Title>
-          <CloseButton onClick={close} />
-        </Modal.Header>
-        <Modal.Body>
-          <h5>Mounted Volumes</h5>
-          <Table>
-            <thead>
-              <tr>
-                <th>Source</th>
-                <th>Target</th>
-                <th>Type</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {node.volumes.map(({ source, target, type }) => <tr>
-                <td>{source}</td>
-                <td>{target}</td>
-                <td>{type}</td>
-                <td></td>
-              </tr>)}
-              <VolumeAddingForm node={node} selectNode={selectNode} />
-            </tbody>
-          </Table>
-        </Modal.Body>
-      </Modal>
-    );
+  const updateNode = useUpdateNode();
+  const deleteVolume = (id: UUID) => {
+    const idx = node.volumes.findIndex(({ volumeId }) => volumeId === id);
+    if (idx !== -1) {
+      const nodeWithoutVolume = {
+        ...node,
+        volumes: node.volumes.remove(idx)
+      };
+      updateNode(nodeWithoutVolume);
+      selectNode(nodeWithoutVolume);
+    } else {
+      console.error('attempt to delete volume that does not exist');
+    }
+  };
+  return (
+    <Modal show={node !== null} onEscapeKeyDown={close}>
+      <Modal.Header>
+        <Modal.Title>{node.name}</Modal.Title>
+        <CloseButton onClick={close} />
+      </Modal.Header>
+      <Modal.Body>
+        <h5>Mounted Volumes</h5>
+        <Table>
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Target</th>
+              <th>Type</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {node.volumes.map(({ source, target, type, volumeId }) =>
+            <tr key={volumeId}>
+              <td>{source}</td>
+              <td>{target}</td>
+              <td>{type}</td>
+              <td>
+                <Button
+                  variant='danger'
+                  onClick={() => deleteVolume(volumeId)}
+                >
+                  <FaTrash />
+                </Button>
+              </td>
+            </tr>)}
+            <VolumeAddingForm node={node} selectNode={selectNode} />
+          </tbody>
+        </Table>
+      </Modal.Body>
+    </Modal>
+  );
 }
 
 interface VolumeAddingFormProps {
