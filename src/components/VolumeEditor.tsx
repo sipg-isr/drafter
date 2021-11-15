@@ -11,7 +11,6 @@ import {
 } from 'react-icons/fa';
 import {
   Node,
-  Volume,
   VolumeType
 } from '../types';
 import {
@@ -19,10 +18,11 @@ import {
 } from '../state';
 
 interface VolumeEditorProps {
+  selectNode: (node: Node) => void;
   node: Node;
   close: () => void;
 };
-export default function VolumeEditor({ node, close }: VolumeEditorProps) {
+export default function VolumeEditor({ node, selectNode, close }: VolumeEditorProps) {
     return (
       <Modal show={node !== null} onEscapeKeyDown={close}>
         <Modal.Header>
@@ -47,7 +47,7 @@ export default function VolumeEditor({ node, close }: VolumeEditorProps) {
                 <td>{type}</td>
                 <td></td>
               </tr>)}
-              <VolumeAddingForm node={node} />
+              <VolumeAddingForm node={node} selectNode={selectNode} />
             </tbody>
           </Table>
         </Modal.Body>
@@ -57,14 +57,17 @@ export default function VolumeEditor({ node, close }: VolumeEditorProps) {
 
 interface VolumeAddingFormProps {
   node: Node;
+  selectNode: (node: Node) => void;
 }
-function VolumeAddingForm({ node }: VolumeAddingFormProps) {
+function VolumeAddingForm({ node, selectNode }: VolumeAddingFormProps) {
   const updateNode = useUpdateNode();
   const [source, setSource] = useState('');
   const [target, setTarget] = useState('');
   const [type, ] = useState(VolumeType.Bind);
   const addVolume = () => {
-    updateNode({ ...node, volumes: node.volumes.push({source, target, type}) });
+    const updated = { ...node, volumes: node.volumes.push({ source, target, type }) };
+    updateNode(updated);
+    selectNode(updated);
   }
 
   return (

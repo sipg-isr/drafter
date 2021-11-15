@@ -34,9 +34,6 @@ export default function Sidebar() {
   const [selectedNode, selectNode] = useState<Node | null>(null);
   const close = () => selectNode(null);
 
-  // Whenever nodes change, deselect
-  useEffect(close, [nodes])
-
   return (
     <Row>
       <h6>Nodes</h6>
@@ -74,7 +71,7 @@ export default function Sidebar() {
         </tbody>
       </Table>
       {selectedNode &&
-        <VolumeEditor node={selectedNode} close={close} />
+        <VolumeEditor node={selectedNode} selectNode={selectNode} close={close} />
       }
     </Row>
   );
