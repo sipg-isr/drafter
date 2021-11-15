@@ -58,6 +58,15 @@ function reducer(state: State, action: Action): Partial<State> {
     }
   case 'SetNodes':
     return { nodes: action.nodes };
+  case 'DeleteNode':
+    const node = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
+    if (node) {
+      // We found the node, now delete it
+      return { nodes: state.nodes.remove(node) };
+    } else {
+      console.error(`Error in ${action.type} in not find nodewith id ${action.node.nodeId}`);
+      return state;
+    }
   case 'UpdateNode':
     // Find the current node in the set that has the given Id
     const currentNode = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
@@ -103,6 +112,10 @@ export function useCreateModel() {
 
 export function useUpdateModel() {
   return useStore(({ dispatch }) => (model: Model) => dispatch({ type: 'UpdateModel', model }));
+}
+
+export function useDeleteNode() {
+  return useStore(({ dispatch }) => (node: Node) => dispatch({ type: 'DeleteNode', node }));
 }
 
 export function useUpdateNode() {

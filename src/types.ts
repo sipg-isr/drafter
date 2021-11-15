@@ -179,6 +179,14 @@ export interface SetNodes {
 }
 
 /**
+ * Delete the node with the given Id
+ */
+export interface DeleteNode {
+  type: 'DeleteNode';
+  node: Node;
+}
+
+/**
  * Used for updating one node, in-place
  */
 export interface UpdateNode {
@@ -213,4 +221,13 @@ export interface ClearState {
 /**
  * The action type is defined as the union of all the possible actions in the editor
  */
-export type Action = CreateModel | SetModels | UpdateModel | SetNodes | UpdateNode | SetEdges | RestoreState | ClearState;
+export type Action =
+  CreateModel  |
+  SetModels    |
+  UpdateModel  |
+  SetNodes     |
+  DeleteNode   |
+  UpdateNode   |
+  SetEdges     |
+  RestoreState |
+  ClearState;
