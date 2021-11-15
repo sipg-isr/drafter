@@ -39,6 +39,10 @@ export interface HasEdgeId {
   edgeId: UUID;
 }
 
+export interface HasVolumeId {
+  volumeId: UUID;
+}
+
 /**
  * An RPC method that forms part of a Model's interface
  */
@@ -84,7 +88,7 @@ export enum VolumeType {
  */
 export type Path = string;
 
-export interface Volume {
+export interface Volume extends HasVolumeId {
   type: VolumeType;
   source: Path;
   target: Path;

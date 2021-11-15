@@ -6,6 +6,7 @@ import {
   Table,
   Form
 } from 'react-bootstrap';
+import { v4 as uuid } from 'uuid';
 import {
   FaPlus
 } from 'react-icons/fa';
@@ -65,7 +66,9 @@ function VolumeAddingForm({ node, selectNode }: VolumeAddingFormProps) {
   const [target, setTarget] = useState('');
   const [type, ] = useState(VolumeType.Bind);
   const addVolume = () => {
-    const updated = { ...node, volumes: node.volumes.push({ source, target, type }) };
+    const updated = { ...node, volumes: node.volumes.push({
+      volumeId: uuid(), source, target, type
+    }) };
     updateNode(updated);
     selectNode(updated);
   }
