@@ -80,33 +80,33 @@ function reducer(state: State, action: Action): Partial<State> {
       console.error(`Refusing to modify state. Error in ${action.type}. Trying to update node with id ${action.node.nodeId} but no node with that id currently exists in state`);
       return state;
     }
-    case 'AddVolume':
-      const node = state.nodes.find(({ nodeId }) => nodeId === action.nodeId);
-      if (node) {
-        const nodeWithUpdatedVolumes = {
-          ...node,
-          volumes: node.volumes.push(action.volume)
-        }
-        const nodes = state.nodes.remove(node).add(nodeWithUpdatedVolumes);
-        return {
-          nodes
-        }
-      } else {
-        return state;
-      }
-    case 'SetEdges':
-      return { edges: action.edges };
-    case 'RestoreState':
-      return action.state;
-    case 'ClearState':
-      return initialState;
+  case 'AddVolume':
+    const node = state.nodes.find(({ nodeId }) => nodeId === action.nodeId);
+    if (node) {
+      const nodeWithUpdatedVolumes = {
+        ...node,
+        volumes: node.volumes.push(action.volume)
+      };
+      const nodes = state.nodes.remove(node).add(nodeWithUpdatedVolumes);
+      return {
+        nodes
+      };
+    } else {
+      return state;
+    }
+  case 'SetEdges':
+    return { edges: action.edges };
+  case 'RestoreState':
+    return action.state;
+  case 'ClearState':
+    return initialState;
   }
 }
 
 export const useStore = create(redux(
   (state: State, action: Action) => {
     const partialState = reducer(state, action);
-    return { ...state, ...partialState, actions: state.actions.push(action) }
+    return { ...state, ...partialState, actions: state.actions.push(action) };
   }
   , initialState));
 

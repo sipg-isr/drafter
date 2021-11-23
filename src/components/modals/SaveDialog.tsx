@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { saveAs } from 'file-saver';
-import { Button, Form, Modal, CloseButton } from 'react-bootstrap';
+import { Button, CloseButton, Form, Modal } from 'react-bootstrap';
 import { serializeState } from '../../utils';
 import { useStore } from '../../state';
 

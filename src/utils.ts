@@ -241,7 +241,7 @@ export async function exportState({ models, nodes, edges }: State): Promise<Blob
           .map(({ source, target, type }) => ({ source, target, type }))
           .toArray(),
         ports: '8061:8062'
-      }
+      };
     }
   });
 

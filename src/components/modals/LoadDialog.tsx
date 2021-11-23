@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Button, CloseButton, Form, Modal } from 'react-bootstrap';
 import { useRestoreState } from '../../state';
-import { fileContent, deserializeState } from '../../utils';
+import { deserializeState, fileContent } from '../../utils';
 
 interface LoadDialogProps {
   show: boolean;

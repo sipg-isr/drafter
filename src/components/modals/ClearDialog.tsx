@@ -1,8 +1,8 @@
 import React from 'react';
 import {
-  Modal,
   Button,
-  CloseButton
+  CloseButton,
+  Modal
 } from 'react-bootstrap';
 import { useDispatch } from '../../state';
 
