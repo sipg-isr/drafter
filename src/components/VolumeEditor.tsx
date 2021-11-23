@@ -18,16 +18,19 @@ import {
   UUID
 } from '../types';
 import {
+  useNodes,
   useUpdateNode
 } from '../state';
 
 interface VolumeEditorProps {
-  selectNode: (node: Node) => void;
-  node: Node;
-  close: () => void;
+  nodeId: UUID;
+  selectNodeId: (id: UUID) => void;
 };
-export default function VolumeEditor({ node, selectNode, close }: VolumeEditorProps) {
+export default function VolumeEditor({ nodeId, selectNodeId }: VolumeEditorProps) {
+  const [nodes] = useNodes();
   const updateNode = useUpdateNode();
+  const node = nodes.find(node => node.nodeId === nodeId)
+  if (!node) { return null; }
   const deleteVolume = (id: UUID) => {
     const idx = node.volumes.findIndex(({ volumeId }) => volumeId === id);
     if (idx !== -1) {
@@ -36,15 +39,14 @@ export default function VolumeEditor({ node, selectNode, close }: VolumeEditorPr
         volumes: node.volumes.remove(idx)
       };
       updateNode(nodeWithoutVolume);
-      selectNode(nodeWithoutVolume);
     } else {
       console.error('attempt to delete volume that does not exist');
     }
   };
   return (
-    <Modal show={node !== null} onEscapeKeyDown={close}>
+    <>
       <Modal.Header>
-        <Modal.Title>{node.name}</Modal.Title>
+        <Modal.Title>{node.name || 'No node selected'}</Modal.Title>
         <CloseButton onClick={close} />
       </Modal.Header>
       <Modal.Body>
@@ -59,7 +61,7 @@ export default function VolumeEditor({ node, selectNode, close }: VolumeEditorPr
             </tr>
           </thead>
           <tbody>
-            {node.volumes.map(({ source, target, type, volumeId }) =>
+            {node?.volumes.map(({ source, target, type, volumeId }) =>
             <tr key={volumeId}>
               <td>{source}</td>
               <td>{target}</td>
@@ -72,30 +74,35 @@ export default function VolumeEditor({ node, selectNode, close }: VolumeEditorPr
                   <FaTrash />
                 </Button>
               </td>
-            </tr>)}
-            <VolumeAddingForm node={node} selectNode={selectNode} />
+            </tr> || 'No node selected')}
+            {nodeId &&
+            <VolumeAddingForm node={node} selectNodeId={selectNodeId} />}
           </tbody>
         </Table>
       </Modal.Body>
-    </Modal>
+    </>
   );
 }
 
 interface VolumeAddingFormProps {
   node: Node;
-  selectNode: (node: Node) => void;
+  selectNodeId: (id: UUID) => void;
 }
-function VolumeAddingForm({ node, selectNode }: VolumeAddingFormProps) {
+function VolumeAddingForm({ node, selectNodeId }: VolumeAddingFormProps) {
   const updateNode = useUpdateNode();
   const [source, setSource] = useState('');
+  const clearSource = () => setSource('');
   const [target, setTarget] = useState('');
+  const clearTarget = () => setTarget('');
   const [type, ] = useState(VolumeType.Bind);
   const addVolume = () => {
     const updated = { ...node, volumes: node.volumes.push({
       volumeId: uuid(), source, target, type
     }) };
     updateNode(updated);
-    selectNode(updated);
+    selectNodeId(updated.nodeId);
+    clearSource();
+    clearTarget();
   }
 
   return (

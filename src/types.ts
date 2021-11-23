@@ -195,7 +195,16 @@ export interface DeleteNode {
  */
 export interface UpdateNode {
   type: 'UpdateNode';
-  node: Node;
+  node: Partial<Node>;
+}
+
+/**
+ * Add a volume to an existing node
+ */
+export interface AddVolume {
+  type: 'AddVolume';
+  nodeId: UUID;
+  volume: Volume;
 }
 
 /**
@@ -232,6 +241,7 @@ export type Action =
   SetNodes     |
   DeleteNode   |
   UpdateNode   |
+  AddVolume    |
   SetEdges     |
   RestoreState |
   ClearState;

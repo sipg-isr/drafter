@@ -59,10 +59,10 @@ function reducer(state: State, action: Action): Partial<State> {
   case 'SetNodes':
     return { nodes: action.nodes };
   case 'DeleteNode':
-    const node = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
-    if (node) {
+    const nodeToDelete = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
+    if (nodeToDelete) {
       // We found the node, now delete it
-      return { nodes: state.nodes.remove(node) };
+      return { nodes: state.nodes.remove(nodeToDelete) };
     } else {
       console.error(`Error in ${action.type} in not find nodewith id ${action.node.nodeId}`);
       return state;
@@ -73,19 +73,33 @@ function reducer(state: State, action: Action): Partial<State> {
     // If the node exists...
     if (currentNode) {
       return {
-        nodes: state.nodes.remove(currentNode).add(action.node)
+        nodes: state.nodes.remove(currentNode).add({ ...currentNode, ...action.node })
       };
     } else {
       // Couldn't find the existing node.
       console.error(`Refusing to modify state. Error in ${action.type}. Trying to update node with id ${action.node.nodeId} but no node with that id currently exists in state`);
       return state;
     }
-  case 'SetEdges':
-    return { edges: action.edges };
-  case 'RestoreState':
-    return action.state;
-  case 'ClearState':
-    return initialState;
+    case 'AddVolume':
+      const node = state.nodes.find(({ nodeId }) => nodeId === action.nodeId);
+      if (node) {
+        const nodeWithUpdatedVolumes = {
+          ...node,
+          volumes: node.volumes.push(action.volume)
+        }
+        const nodes = state.nodes.remove(node).add(nodeWithUpdatedVolumes);
+        return {
+          nodes
+        }
+      } else {
+        return state;
+      }
+    case 'SetEdges':
+      return { edges: action.edges };
+    case 'RestoreState':
+      return action.state;
+    case 'ClearState':
+      return initialState;
   }
 }
 

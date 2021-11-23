@@ -4,6 +4,7 @@ import {
   ButtonGroup,
   Col,
   FloatingLabel,
+  Modal,
   Form,
   Row,
   Table
@@ -31,8 +32,8 @@ export default function Sidebar() {
 
   const removeNode = (node: Node) => setNodes(nodes.remove(node));
 
-  const [selectedNode, selectNode] = useState<Node | null>(null);
-  const close = () => selectNode(null);
+  const [selectedNodeId, selectNodeId] = useState<UUID | null>(null);
+  const close = () => selectNodeId(null);
 
   return (
     <Row>
@@ -54,7 +55,7 @@ export default function Sidebar() {
                 <ButtonGroup>
                   <Button
                     variant='primary'
-                    onClick={() => selectNode(node)}
+                    onClick={() => selectNodeId(node.nodeId)}
                   >
                     <FaEllipsisH />
                   </Button>
@@ -70,9 +71,12 @@ export default function Sidebar() {
           <NodeAddingForm />
         </tbody>
       </Table>
-      {selectedNode &&
-        <VolumeEditor node={selectedNode} selectNode={selectNode} close={close} />
-      }
+      <Modal show={selectedNodeId !== null} onEscapeKeyDown={close}>
+        {selectedNodeId !== null  ?
+          <VolumeEditor nodeId={selectedNodeId} selectNodeId={selectNodeId} /> :
+          'No node selected'
+        }
+      </Modal>
     </Row>
   );
 }
