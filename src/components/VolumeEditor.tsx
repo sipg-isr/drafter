@@ -25,8 +25,9 @@ import {
 interface VolumeEditorProps {
   nodeId: UUID;
   selectNodeId: (id: UUID) => void;
+  close: () => void;
 };
-export default function VolumeEditor({ nodeId, selectNodeId }: VolumeEditorProps) {
+export default function VolumeEditor({ nodeId, selectNodeId, close }: VolumeEditorProps) {
   const [nodes] = useNodes();
   const updateNode = useUpdateNode();
   const node = nodes.find(node => node.nodeId === nodeId)

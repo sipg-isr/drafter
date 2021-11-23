@@ -73,7 +73,7 @@ export default function Sidebar() {
       </Table>
       <Modal show={selectedNodeId !== null} onEscapeKeyDown={close}>
         {selectedNodeId !== null  ?
-          <VolumeEditor nodeId={selectedNodeId} selectNodeId={selectNodeId} /> :
+          <VolumeEditor nodeId={selectedNodeId} selectNodeId={selectNodeId} close={close} /> :
           'No node selected'
         }
       </Modal>

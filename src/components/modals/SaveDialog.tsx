@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { saveAs } from 'file-saver';
 import { Button, Form, Modal, CloseButton } from 'react-bootstrap';
 import { serializeState } from '../../utils';
 import { useStore } from '../../state';
@@ -15,6 +16,7 @@ export default function SaveDialog({ show, close }: SaveDialogProps) {
   const save = () => {
     const serialized = serializeState(state);
     saveAs(new Blob([serialized]), filename);
+    close();
   };
 
   return (
