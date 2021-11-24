@@ -232,15 +232,15 @@ export async function exportState({ models, nodes, edges }: State): Promise<Blob
     }
   };
 
-  nodes.forEach(({ name, modelId, volumes }) => {
+  nodes.toList().forEach(({ name, modelId, volumes }, idx) => {
     const model = models.find(model => model.modelId === modelId);
     if (!(name in dockerCompose.services) && model) {
-      dockerCompose.services[name] = {
+      dockerCompose.services[name.replaceAll(/\s+/g, '-')] = {
         image: model.image,
         volumes: volumes
           .map(({ source, target, type }) => ({ source, target, type }))
           .toArray(),
-        ports: '8061:8062'
+        ports: [`${8061 + idx}:8062`]
       };
     }
   });
