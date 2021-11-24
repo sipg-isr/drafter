@@ -39,6 +39,10 @@ export interface HasEdgeId {
   edgeId: UUID;
 }
 
+export interface HasVolumeId {
+  volumeId: UUID;
+}
+
 /**
  * An RPC method that forms part of a Model's interface
  */
@@ -62,12 +66,32 @@ export interface Model extends HasModelId {
   methods: Set<RemoteMethod>;
 }
 
+/** A stage in the editor-- one computer */
 export interface Node extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasModelId {
   kind: 'Node';
-  // The name of the individual node
+  /** The name of the individual node */
   name: string;
 
+  /** a list of interfaces associated with the node */
   accessPoints: List<AccessPoint>;
+
+  /** A list of volumes to be mounted with this node */
+  volumes: List<Volume>;
+}
+
+export enum VolumeType {
+  Bind = 'bind'
+}
+
+/**
+ * A path on disk
+ */
+export type Path = string;
+
+export interface Volume extends HasVolumeId {
+  type: VolumeType;
+  source: Path;
+  target: Path;
 }
 
 export interface AccessPoint extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasRemoteMethodId, HasAccessPointId {
@@ -159,11 +183,28 @@ export interface SetNodes {
 }
 
 /**
+ * Delete the node with the given Id
+ */
+export interface DeleteNode {
+  type: 'DeleteNode';
+  node: Node;
+}
+
+/**
  * Used for updating one node, in-place
  */
 export interface UpdateNode {
   type: 'UpdateNode';
-  node: Node;
+  node: Partial<Node>;
+}
+
+/**
+ * Add a volume to an existing node
+ */
+export interface AddVolume {
+  type: 'AddVolume';
+  nodeId: UUID;
+  volume: Volume;
 }
 
 /**
@@ -193,4 +234,14 @@ export interface ClearState {
 /**
  * The action type is defined as the union of all the possible actions in the editor
  */
-export type Action = CreateModel | SetModels | UpdateModel | SetNodes | UpdateNode | SetEdges | RestoreState | ClearState;
+export type Action =
+  CreateModel  |
+  SetModels    |
+  UpdateModel  |
+  SetNodes     |
+  DeleteNode   |
+  UpdateNode   |
+  AddVolume    |
+  SetEdges     |
+  RestoreState |
+  ClearState;

@@ -26,13 +26,12 @@ const initialState: State = {
  * This is the fundamental state management function for the application. It takes a state, and an
  * action and returns a new state
  */
-function reducer(state: State, action: Action): State {
+function reducer(state: State, action: Action): Partial<State> {
   switch (action.type) {
   case 'CreateModel':
     const methods = protobufToRemoteMethods(action.protobufCode);
     if (methods) {
       return {
-        ...state,
         models: state.models.add({
           kind: 'Model',
           modelId: uuid(),
@@ -51,7 +50,6 @@ function reducer(state: State, action: Action): State {
     const currentModel = state.models.find(({ modelId }) => modelId === action.model.modelId);
     if (currentModel) {
       return {
-        ...state,
         models: state.models.remove(currentModel).add(action.model)
       };
     } else {
@@ -59,23 +57,45 @@ function reducer(state: State, action: Action): State {
       return state;
     }
   case 'SetNodes':
-    return { ...state, nodes: action.nodes };
+    return { nodes: action.nodes };
+  case 'DeleteNode':
+    const nodeToDelete = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
+    if (nodeToDelete) {
+      // We found the node, now delete it
+      return { nodes: state.nodes.remove(nodeToDelete) };
+    } else {
+      console.error(`Error in ${action.type} in not find nodewith id ${action.node.nodeId}`);
+      return state;
+    }
   case 'UpdateNode':
     // Find the current node in the set that has the given Id
     const currentNode = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
     // If the node exists...
     if (currentNode) {
       return {
-        ...state,
-        nodes: state.nodes.remove(currentNode).add(action.node)
+        nodes: state.nodes.remove(currentNode).add({ ...currentNode, ...action.node })
       };
     } else {
       // Couldn't find the existing node.
       console.error(`Refusing to modify state. Error in ${action.type}. Trying to update node with id ${action.node.nodeId} but no node with that id currently exists in state`);
       return state;
     }
+  case 'AddVolume':
+    const node = state.nodes.find(({ nodeId }) => nodeId === action.nodeId);
+    if (node) {
+      const nodeWithUpdatedVolumes = {
+        ...node,
+        volumes: node.volumes.push(action.volume)
+      };
+      const nodes = state.nodes.remove(node).add(nodeWithUpdatedVolumes);
+      return {
+        nodes
+      };
+    } else {
+      return state;
+    }
   case 'SetEdges':
-    return { ...state, edges: action.edges };
+    return { edges: action.edges };
   case 'RestoreState':
     return action.state;
   case 'ClearState':
@@ -83,15 +103,12 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-function addHistory(state: State, action: Action): State {
-  return { ...state, actions: state.actions.push(action) };
-}
-
-function reducerWithHistory(state: State, action: Action): State {
-  return addHistory(reducer(state, action), action);
-}
-
-export const useStore = create(redux(reducerWithHistory, initialState));
+export const useStore = create(redux(
+  (state: State, action: Action) => {
+    const partialState = reducer(state, action);
+    return { ...state, ...partialState, actions: state.actions.push(action) };
+  }
+  , initialState));
 
 export function useDispatch() {
   return useStore(state => state.dispatch);
@@ -111,6 +128,10 @@ export function useUpdateModel() {
   return useStore(({ dispatch }) => (model: Model) => dispatch({ type: 'UpdateModel', model }));
 }
 
+export function useDeleteNode() {
+  return useStore(({ dispatch }) => (node: Node) => dispatch({ type: 'DeleteNode', node }));
+}
+
 export function useUpdateNode() {
   return useStore(({ dispatch }) => (node: Node) => dispatch({ type: 'UpdateNode', node }));
 }
@@ -126,4 +147,7 @@ export function useEdges(): [Set<Edge>, (edges: Set<Edge>) => void] {
 }
 export function useActions(): List<Action> {
   return useStore(state => state.actions);
+}
+export function useRestoreState() {
+  return useStore(({ dispatch }) => (state: State) => dispatch({type: 'RestoreState', state }));
 }

@@ -117,6 +117,7 @@ export function instantiateModel(
     accessPoints: accessPoints.filter(({ type: { name, fields } }) =>
       name !== 'Empty' || Object.keys(fields).length > 0
     ),
+    volumes: List(),
     x: 0,
     y: 0
   };
@@ -181,7 +182,8 @@ export function deserializeState(serialized: string): State {
   const parsed = JSON.parse(serialized, (key, value) => {
     if (
       key === 'accessPoints' ||
-      key === 'actions'
+      key === 'actions' ||
+      key === 'volumes'
     ) {
       return List(value);
     } else if (
@@ -230,10 +232,15 @@ export async function exportState({ models, nodes, edges }: State): Promise<Blob
     }
   };
 
-  models.forEach(({ name, image }) => {
-    if (!(name in dockerCompose.services)) {
-      dockerCompose.services[name] = {
-        image
+  nodes.toList().forEach(({ name, modelId, volumes }, idx) => {
+    const model = models.find(model => model.modelId === modelId);
+    if (!(name in dockerCompose.services) && model) {
+      dockerCompose.services[name.replaceAll(/\s+/g, '-')] = {
+        image: model.image,
+        volumes: volumes
+          .map(({ source, target, type }) => ({ source, target, type }))
+          .toArray(),
+        ports: [`${8061 + idx}:8062`]
       };
     }
   });
