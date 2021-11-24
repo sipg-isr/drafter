@@ -1,5 +1,6 @@
 import { Set } from 'immutable';
-import { Edge, Model, Node, UUID, Volume } from './base';
+import { UUID } from './util';
+import { Edge, Model, Node, Volume } from './base';
 import { State } from './state';
 
 /*
