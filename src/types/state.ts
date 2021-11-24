@@ -1,5 +1,5 @@
-import { Set, List } from 'immutable';
-import { Model, Node, Edge } from './base';
+import { List, Set } from 'immutable';
+import { Edge, Model, Node } from './base';
 import { Action } from './actions';
 
 /**

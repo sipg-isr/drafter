@@ -1,4 +1,4 @@
-import { Coordinates, AccessPoint, Node } from './base';
+import { AccessPoint, Coordinates, Node } from './base';
 
 /**
  * Represents an active drag.

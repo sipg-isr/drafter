@@ -1,4 +1,4 @@
-import { Set, List } from 'immutable';
+import { List, Set } from 'immutable';
 import { SimulationNodeDatum } from 'd3-force';
 import { IType } from 'protobufjs';
 
