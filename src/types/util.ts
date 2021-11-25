@@ -24,18 +24,24 @@ export type Path = string;
  * Defines what kind of error something is
  */
 export enum ErrorKind {
-  StateRejection
+  ParsingError, ModelNotFound, NodeNotFound
 }
 
 /**
  * A custom error type, used for reporting errors in the result type below
  */
 export interface Error {
+  kind: 'Error';
   errorKind: ErrorKind;
   message: string;
+}
+
+export interface Success<T> {
+  kind: 'Success';
+  value: T;
 }
 
 /**
  * A result type, as in Haskell or Rust. Used to either produce a value or fail with a given error
  */
-export type Result<T> = T | Error;
+export type Result<T> = Success<T> | Error;

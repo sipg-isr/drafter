@@ -13,7 +13,10 @@ import {
   Node,
   RemoteMethod,
   State,
-  UUID
+  UUID,
+  Success,
+  Error,
+  ErrorKind
 } from './types';
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
 
@@ -270,4 +273,25 @@ export async function exportState({ models, nodes, edges }: State): Promise<Blob
 
   // Generate a blob and return
   return zip.generateAsync({ type: 'blob' });
+}
+
+/**
+ * Given a value, wrap it in a success object
+ */
+export function success<T>(value: T): Success<T> {
+  return {
+    kind: 'Success',
+    value
+  };
+}
+
+/**
+ * Simple error constructor
+ */
+export function error(errorKind: ErrorKind, message: string): Error {
+  return {
+    kind: 'Error',
+    errorKind,
+    message
+  };
 }
