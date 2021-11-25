@@ -14,7 +14,9 @@ import {
 import {
   error,
   protobufToRemoteMethods,
-  success
+  success,
+  findModel,
+  findNode
 } from './utils';
 
 /**
@@ -55,62 +57,48 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
   case 'SetModels':
     return success({ ...state, models: action.models });
   case 'UpdateModel':
-    const currentModel = state.models.find(({ modelId }) => modelId === action.model.modelId);
-    if (currentModel) {
-      return success({
-        models: state.models.remove(currentModel).add(action.model)
-      });
-    } else {
-      return error(
-        ErrorKind.ModelNotFound,
-        `Refusing to modify state. Error in ${action.type}. Trying to update model with id ${action.model.modelId} but no model with that id currently exists in state`
-      );
-    }
+    // Try to find the model
+    const findModelResult = findModel(state, action.model.modelId);
+    // If you can't find it, quit
+    if (findModelResult.kind === 'Error') { return findModelResult; }
+    // If we can find the current model, remove and replace it
+    const currentModel = findModelResult.value;
+    return success({
+      models: state.models.remove(currentModel).add(action.model)
+    });
   case 'SetNodes':
     return success({ nodes: action.nodes });
   case 'DeleteNode':
-    const nodeToDelete = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
-    if (nodeToDelete) {
-      // We found the node, now delete it
-      return success({ nodes: state.nodes.remove(nodeToDelete) });
-    } else {
-      return error(
-        ErrorKind.NodeNotFound,
-        `Error in ${action.type} in not find nodewith id ${action.node.nodeId}`
-      );
-    }
+    const findNodeResult = findNode(state, action.node.nodeId);
+    // If we can't find the given node, fail with an error
+    if (findNodeResult.kind === 'Error') { return findNodeResult; }
+    const nodeToDelete = findNodeResult.value;
+    return success({ nodes: state.nodes.remove(nodeToDelete) });
   case 'UpdateNode':
     // Find the current node in the set that has the given Id
-    const currentNode = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
+    const findNodeResult_ = findNode(state, action.node.nodeId);
+    // This name is supposed to be findNodeResult. It is called findNodeResult_ in protest of
+    // Javascript insisting that a switch/case not introduce a new block scope, meaning that
+    // naming the variable findNodeResult would be considered a name collision. ECMAScript
+    // committee, please implement a proper [match expression](https://doc.rust-lang.org/book/ch06-02-match.html)
+    if (findNodeResult_.kind === 'Error') { return findNodeResult_; }
+    const currentNode = findNodeResult_.value;
     // If the node exists...
-    if (currentNode) {
-      return success({
-        nodes: state.nodes.remove(currentNode).add({ ...currentNode, ...action.node })
-      });
-    } else {
-      // Couldn't find the existing node.
-      return error(
-        ErrorKind.ModelNotFound,
-        `Refusing to modify state. Error in ${action.type}. Trying to update node with id ${action.node.nodeId} but no node with that id currently exists in state`
-      );
-    }
+    return success({
+      nodes: state.nodes.remove(currentNode).add({ ...currentNode, ...action.node })
+    });
   case 'AddVolume':
-    const node = state.nodes.find(({ nodeId }) => nodeId === action.nodeId);
-    if (node) {
-      const nodeWithUpdatedVolumes = {
-        ...node,
-        volumes: node.volumes.push(action.volume)
-      };
-      const nodes = state.nodes.remove(node).add(nodeWithUpdatedVolumes);
-      return success({
-        nodes
-      });
-    } else {
-      return error(
-        ErrorKind.ModelNotFound,
-        `Refusing to modify state. Error in ${action.type}. Trying to add volume to node with id ${action.nodeId} but no node with that id currently exists in state`
-      );
-    }
+    const findNodeResult__ = findNode(state, action.nodeId)
+    if (findNodeResult__.kind === 'Error') { return findNodeResult__; }
+    const node = findNodeResult__.value;
+    const nodeWithUpdatedVolumes = {
+      ...node,
+      volumes: node.volumes.push(action.volume)
+    };
+    const nodes = state.nodes.remove(node).add(nodeWithUpdatedVolumes);
+    return success({
+      nodes
+    });
   case 'SetEdges':
     return success({ edges: action.edges });
   case 'RestoreState':

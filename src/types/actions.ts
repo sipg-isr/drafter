@@ -1,6 +1,6 @@
 import { Set } from 'immutable';
 import { UUID } from './util';
-import { Edge, Model, Node, Volume } from './base';
+import { Edge, Model, Node, Volume, HasNodeId } from './base';
 import { State } from './state';
 
 /*
@@ -49,7 +49,11 @@ export interface DeleteNode {
  */
 export interface UpdateNode {
   type: 'UpdateNode';
-  node: Partial<Node>;
+  /**
+   * The given node to update may have none or all of the properties. It does have to have a
+   * nodeId, however, so that the node to update can be identified
+   */
+  node: Partial<Node> & HasNodeId;
 }
 
 /**

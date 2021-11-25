@@ -15,6 +15,7 @@ import {
   Node,
   RemoteMethod,
   State,
+  Result,
   Success,
   UUID
 } from './types';
@@ -295,3 +296,33 @@ export function error(errorKind: ErrorKind, message: string): Error {
     message
   };
 }
+
+/**
+ * Attempt to find the model with the given ID
+ */
+export function findModel(state: State, id: UUID): Result<Model> {
+  const model = state.models.find(({ modelId }) => modelId === id);
+  if (model) {
+    return success(model);
+  } else {
+    return error(
+      ErrorKind.ModelNotFound,
+      `Cannot find Model with id ${id}`
+    );
+  }
+}
+
+/**
+ * Attempt to find the node with the given ID
+ */
+export function findNode(state: State, id: UUID): Result<Node> {
+  const node = state.nodes.find(({ nodeId }) => nodeId === id);
+  if (node) {
+    return success(node);
+  } else {
+    return error(
+      ErrorKind.NodeNotFound,
+      `Cannot find Node with id ${id}`
+    );
+  }
+};
