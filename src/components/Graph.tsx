@@ -71,24 +71,24 @@ export default function Graph() {
           setDrag({
             ...drag,
             cursor: { x: e.clientX, y: e.clientY }
-      });
-      }
+          });
+        }
       }}
       onMouseUp={() => {
         if (drag) {
           const { element } = drag;
-      element.fx = element.fy = null;
-      setDrag(null);
-      restartSimulation();
-      }
+          element.fx = element.fy = null;
+          setDrag(null);
+          restartSimulation();
+        }
       }}
       onMouseLeave={() => {
         if (drag) {
           const { element } = drag;
-      element.fx = element.fy = null;
-      setDrag(null);
-      restartSimulation();
-      }
+          element.fx = element.fy = null;
+          setDrag(null);
+          restartSimulation();
+        }
       }}
     >
       {edges.map(({ requesterId, responderId }) => {
@@ -103,9 +103,9 @@ export default function Graph() {
             x2={responder.x}
             y2={responder.y}
           />;
-      } else {
-        return null;
-      }
+        } else {
+          return null;
+        }
       })}
       {(() => {
         if (drag) {
@@ -113,16 +113,16 @@ export default function Graph() {
             offset,
             cursor,
             element
-      } = drag;
-      if (element.kind === 'AccessPoint') {
-        return <EdgeSVG
-          x1={element.x!}
-          y1={element.y!}
-          x2={cursor.x + offset.x}
-          y2={cursor.y + offset.y}
-        />;
-      }
-      }})()}
+          } = drag;
+          if (element.kind === 'AccessPoint') {
+            return <EdgeSVG
+              x1={element.x!}
+              y1={element.y!}
+              x2={cursor.x + offset.x}
+              y2={cursor.y + offset.y}
+            />;
+          }
+        }})()}
       {nodes.valueSeq().map(node => <NodeSVG
         node={node}
         key={node.nodeId}
