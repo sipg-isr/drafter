@@ -8,7 +8,7 @@ interface SaveDialogProps {
   show: boolean;
   close: () => void;
 }
-export default function SaveDialog({ show, close }: SaveDialogProps) {
+export function SaveDialog({ show, close }: SaveDialogProps) {
   const [filename, setFilename] = useState('solution.json');
   const state = useStore();
 

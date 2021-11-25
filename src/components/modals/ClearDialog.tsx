@@ -10,7 +10,7 @@ interface ClearDialogProps {
   show: boolean;
   close: () => void;
 }
-export default function ClearDialog({ show, close }: ClearDialogProps) {
+export function ClearDialog({ show, close }: ClearDialogProps) {
   const dispatch = useDispatch();
   return (
     <Modal show={show} onEscapeKeyDown={close}>

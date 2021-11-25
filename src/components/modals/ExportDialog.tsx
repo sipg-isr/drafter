@@ -13,7 +13,7 @@ interface ExportDialogProps {
   show: boolean;
   close: () => void;
 }
-export default function ExportDialog({ show, close }: ExportDialogProps) {
+export function ExportDialog({ show, close }: ExportDialogProps) {
   const state = useStore();
   const [filename, setFilename] = useState('solution.zip');
   const exportSolution = async () => {

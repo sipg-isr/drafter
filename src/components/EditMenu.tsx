@@ -4,11 +4,13 @@ import {
   ListGroup,
 } from 'react-bootstrap';
 import { DialogOption } from '../types';
-import SaveDialog from './modals/SaveDialog';
-import LoadDialog from './modals/LoadDialog';
-import ClearDialog from './modals/ClearDialog';
-import ExportDialog from './modals/ExportDialog';
-import DebugDialog from './modals/DebugDialog';
+import {
+  SaveDialog,
+  LoadDialog,
+  ClearDialog,
+  ExportDialog,
+  DebugDialog
+} from './modals';
 
 export default function EditMenu() {
   const [currentDialog, setCurrentDialog] = useState<DialogOption | null>(null);

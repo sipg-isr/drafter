@@ -10,7 +10,7 @@ interface DebugDialogProps {
   show: boolean;
   close: () => void;
 }
-export default function DebugDialog({ show, close }: DebugDialogProps) {
+export function DebugDialog({ show, close }: DebugDialogProps) {
   const state = useStore();
   return (
     <Modal show={show} onEscapeKeyDown={close}>
