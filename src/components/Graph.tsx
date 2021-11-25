@@ -130,6 +130,7 @@ export default function Graph() {
         setDrag={setDrag}
         restartSimulation={restartSimulation}
       />)}
+
     </svg>
   );
 }
