@@ -1,44 +1,19 @@
 import React, { useState } from 'react';
 import {
-  CloseButton,
   Container,
   ListGroup,
-  Modal
 } from 'react-bootstrap';
 import SaveDialog from './modals/SaveDialog';
 import LoadDialog from './modals/LoadDialog';
 import ClearDialog from './modals/ClearDialog';
 import ExportDialog from './modals/ExportDialog';
-import { useStore } from '../state';
+import DebugDialog from './modals/DebugDialog';
 
 /**
  * The different possible dialogs that can be displayed to the user
  */
 enum DialogOption {
   Save, Load, Export, Clear, Debug
-}
-
-
-interface DebugDialogProps {
-  show: boolean;
-  close: () => void;
-}
-function DebugDialog({ show, close }: DebugDialogProps) {
-  const state = useStore();
-  return (
-    <Modal show={show} onEscapeKeyDown={close}>
-      <Modal.Header>
-        <Modal.Title>Debug Info</Modal.Title>
-        <CloseButton onClick={close} />
-      </Modal.Header>
-      <Modal.Body>
-        <h5>State</h5>
-        <pre>
-          {JSON.stringify(state, null, 2)}
-        </pre>
-      </Modal.Body>
-    </Modal>
-  );
 }
 
 export default function EditMenu() {
