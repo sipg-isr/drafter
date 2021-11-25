@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import {
+  CloseButton,
   Container,
   ListGroup,
-  Modal,
-  CloseButton
+  Modal
 } from 'react-bootstrap';
 import SaveDialog from './modals/SaveDialog';
 import LoadDialog from './modals/LoadDialog';
