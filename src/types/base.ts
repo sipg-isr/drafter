@@ -1,23 +1,14 @@
 import { List, Set } from 'immutable';
 import { SimulationNodeDatum } from 'd3-force';
 import { IType } from 'protobufjs';
+import { Coordinates, Path, UUID } from './util';
 
 export interface MessageType extends IType {
   name: string;
   streamed: boolean;
 }
 
-/**
- * Represents a model that is being dragged and its coordinates, or a lack of drag
- */
-export interface Coordinates {
-  x: number;
-  y: number;
-}
-
 export type SimulationNodeDatumWithRequiredCoordinates = SimulationNodeDatum & Coordinates;
-
-export type UUID = string;
 
 export interface HasRemoteMethodId {
   remoteMethodId: UUID;
@@ -82,11 +73,6 @@ export interface Node extends SimulationNodeDatumWithRequiredCoordinates, HasNod
 export enum VolumeType {
   Bind = 'bind'
 }
-
-/**
- * A path on disk
- */
-export type Path = string;
 
 export interface Volume extends HasVolumeId {
   type: VolumeType;
