@@ -3,18 +3,12 @@ import {
   Container,
   ListGroup,
 } from 'react-bootstrap';
+import { DialogOption } from '../types';
 import SaveDialog from './modals/SaveDialog';
 import LoadDialog from './modals/LoadDialog';
 import ClearDialog from './modals/ClearDialog';
 import ExportDialog from './modals/ExportDialog';
 import DebugDialog from './modals/DebugDialog';
-
-/**
- * The different possible dialogs that can be displayed to the user
- */
-enum DialogOption {
-  Save, Load, Export, Clear, Debug
-}
 
 export default function EditMenu() {
   const [currentDialog, setCurrentDialog] = useState<DialogOption | null>(null);
