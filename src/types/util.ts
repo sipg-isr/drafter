@@ -19,3 +19,23 @@ export type UUID = string;
  * A path on disk
  */
 export type Path = string;
+
+/**
+ * Defines what kind of error something is
+ */
+export enum ErrorKind {
+  StateRejection
+}
+
+/**
+ * A custom error type, used for reporting errors in the result type below
+ */
+export interface Error {
+  errorKind: ErrorKind;
+  message: string;
+}
+
+/**
+ * A result type, as in Haskell or Rust. Used to either produce a value or fail with a given error
+ */
+export type Result<T> = T | Error;
