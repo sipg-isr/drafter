@@ -7,16 +7,16 @@ import JSZip from 'jszip';
 import equal from 'fast-deep-equal';
 import {
   AccessPoint,
+  Error,
+  ErrorKind,
   HasAccessPointId,
   HasNodeId,
   Model,
   Node,
   RemoteMethod,
   State,
-  UUID,
   Success,
-  Error,
-  ErrorKind
+  UUID
 } from './types';
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
 

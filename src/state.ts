@@ -5,16 +5,16 @@ import { v4 as uuid } from 'uuid';
 import {
   Action,
   Edge,
+  ErrorKind,
   Model,
   Node,
-  State,
   Result,
-  ErrorKind
+  State
 } from './types';
 import {
+  error,
   protobufToRemoteMethods,
-  success,
-  error
+  success
 } from './utils';
 
 /**
@@ -36,87 +36,87 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
   switch (action.type) {
   case 'CreateModel':
     const methods = protobufToRemoteMethods(action.protobufCode);
-      if (methods) {
-        return success({
-            models: state.models.add({
-              kind: 'Model',
-              modelId: uuid(),
-              name: action.name,
-              image: action.image,
-              methods
-            })
-        });
-      } else {
-        return error(
-          ErrorKind.ParsingError,
-          'Refusing to update state: Could not parse protobuf code'
-        );
-      }
-    case 'SetModels':
-      return success({ ...state, models: action.models });
-    case 'UpdateModel':
-      const currentModel = state.models.find(({ modelId }) => modelId === action.model.modelId);
-      if (currentModel) {
-        return success({
-          models: state.models.remove(currentModel).add(action.model)
-        });
-      } else {
-        return error(
-          ErrorKind.ModelNotFound,
-          `Refusing to modify state. Error in ${action.type}. Trying to update model with id ${action.model.modelId} but no model with that id currently exists in state`
-        );
-      }
-    case 'SetNodes':
-      return success({ nodes: action.nodes });
-    case 'DeleteNode':
-      const nodeToDelete = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
-      if (nodeToDelete) {
-        // We found the node, now delete it
-        return success({ nodes: state.nodes.remove(nodeToDelete) });
-      } else {
-        return error(
-          ErrorKind.NodeNotFound,
-          `Error in ${action.type} in not find nodewith id ${action.node.nodeId}`
-        );
-      }
-    case 'UpdateNode':
-      // Find the current node in the set that has the given Id
-      const currentNode = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
-      // If the node exists...
-      if (currentNode) {
-        return success({
-          nodes: state.nodes.remove(currentNode).add({ ...currentNode, ...action.node })
-        });
-      } else {
-        // Couldn't find the existing node.
-        return error(
-          ErrorKind.ModelNotFound,
-          `Refusing to modify state. Error in ${action.type}. Trying to update node with id ${action.node.nodeId} but no node with that id currently exists in state`
-        );
-      }
-    case 'AddVolume':
-      const node = state.nodes.find(({ nodeId }) => nodeId === action.nodeId);
-      if (node) {
-        const nodeWithUpdatedVolumes = {
-          ...node,
-          volumes: node.volumes.push(action.volume)
-        };
-        const nodes = state.nodes.remove(node).add(nodeWithUpdatedVolumes);
-        return success({
-          nodes
-        });
-      } else {
-        return error(
-          ErrorKind.ModelNotFound,
-          `Refusing to modify state. Error in ${action.type}. Trying to add volume to node with id ${action.nodeId} but no node with that id currently exists in state`
-        );
-      }
-    case 'SetEdges':
-      return success({ edges: action.edges });
-    case 'RestoreState':
-      return success(action.state);
-    case 'ClearState':
-      return success(initialState);
+    if (methods) {
+      return success({
+        models: state.models.add({
+          kind: 'Model',
+          modelId: uuid(),
+          name: action.name,
+          image: action.image,
+          methods
+        })
+      });
+    } else {
+      return error(
+        ErrorKind.ParsingError,
+        'Refusing to update state: Could not parse protobuf code'
+      );
+    }
+  case 'SetModels':
+    return success({ ...state, models: action.models });
+  case 'UpdateModel':
+    const currentModel = state.models.find(({ modelId }) => modelId === action.model.modelId);
+    if (currentModel) {
+      return success({
+        models: state.models.remove(currentModel).add(action.model)
+      });
+    } else {
+      return error(
+        ErrorKind.ModelNotFound,
+        `Refusing to modify state. Error in ${action.type}. Trying to update model with id ${action.model.modelId} but no model with that id currently exists in state`
+      );
+    }
+  case 'SetNodes':
+    return success({ nodes: action.nodes });
+  case 'DeleteNode':
+    const nodeToDelete = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
+    if (nodeToDelete) {
+      // We found the node, now delete it
+      return success({ nodes: state.nodes.remove(nodeToDelete) });
+    } else {
+      return error(
+        ErrorKind.NodeNotFound,
+        `Error in ${action.type} in not find nodewith id ${action.node.nodeId}`
+      );
+    }
+  case 'UpdateNode':
+    // Find the current node in the set that has the given Id
+    const currentNode = state.nodes.find(({ nodeId }) => nodeId === action.node.nodeId);
+    // If the node exists...
+    if (currentNode) {
+      return success({
+        nodes: state.nodes.remove(currentNode).add({ ...currentNode, ...action.node })
+      });
+    } else {
+      // Couldn't find the existing node.
+      return error(
+        ErrorKind.ModelNotFound,
+        `Refusing to modify state. Error in ${action.type}. Trying to update node with id ${action.node.nodeId} but no node with that id currently exists in state`
+      );
+    }
+  case 'AddVolume':
+    const node = state.nodes.find(({ nodeId }) => nodeId === action.nodeId);
+    if (node) {
+      const nodeWithUpdatedVolumes = {
+        ...node,
+        volumes: node.volumes.push(action.volume)
+      };
+      const nodes = state.nodes.remove(node).add(nodeWithUpdatedVolumes);
+      return success({
+        nodes
+      });
+    } else {
+      return error(
+        ErrorKind.ModelNotFound,
+        `Refusing to modify state. Error in ${action.type}. Trying to add volume to node with id ${action.nodeId} but no node with that id currently exists in state`
+      );
+    }
+  case 'SetEdges':
+    return success({ edges: action.edges });
+  case 'RestoreState':
+    return success(action.state);
+  case 'ClearState':
+    return success(initialState);
   }
 }
 

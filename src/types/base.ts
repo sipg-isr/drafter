@@ -1,7 +1,7 @@
 import { List, Set } from 'immutable';
 import { SimulationNodeDatum } from 'd3-force';
 import { IType } from 'protobufjs';
-import { UUID, Coordinates, Path } from './util';
+import { Coordinates, Path, UUID } from './util';
 
 export interface MessageType extends IType {
   name: string;
