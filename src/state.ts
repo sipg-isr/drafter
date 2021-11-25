@@ -125,7 +125,13 @@ export const useStore = create(redux(
     const result = reducer(state, action);
     if (result.kind === 'Success') {
       const partialState = result.value;
-      return { ...state, ...partialState, actions: state.actions.push(action) };
+      if (partialState.actions) {
+        // If the reducer actually specified or changed the actions, then use those
+        return { ...state, ...partialState };
+      } else {
+        // If it did not, then add the current action to the history
+        return { ...state, ...partialState, actions: state.actions.push(action) };
+      }
     } else {
       console.error(`Error ${result.errorKind} in ${action.type}: ${result.message}`);
       return state;
