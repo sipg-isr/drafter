@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import {
   Container,
-  ListGroup,
+  ListGroup
 } from 'react-bootstrap';
 import { DialogOption } from '../types';
 import {
-  SaveDialog,
-  LoadDialog,
   ClearDialog,
+  DebugDialog,
   ExportDialog,
-  DebugDialog
+  LoadDialog,
+  SaveDialog
 } from './modals';
 
 export default function EditMenu() {

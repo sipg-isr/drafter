@@ -1,8 +1,8 @@
 import React from 'react';
 import {
-  Modal,
+  Accordion,
   CloseButton,
-  Accordion
+  Modal
 } from 'react-bootstrap';
 import { useStore } from '../../state';
 

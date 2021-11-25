@@ -14,8 +14,8 @@ import {
   Model,
   Node,
   RemoteMethod,
-  State,
   Result,
+  State,
   Success,
   UUID
 } from './types';
@@ -325,4 +325,4 @@ export function findNode(state: State, id: UUID): Result<Node> {
       `Cannot find Node with id ${id}`
     );
   }
-};
+}

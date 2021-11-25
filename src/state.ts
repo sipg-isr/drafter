@@ -13,10 +13,10 @@ import {
 } from './types';
 import {
   error,
-  protobufToRemoteMethods,
-  success,
   findModel,
-  findNode
+  findNode,
+  protobufToRemoteMethods,
+  success
 } from './utils';
 
 /**
@@ -88,7 +88,7 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
       nodes: state.nodes.remove(currentNode).add({ ...currentNode, ...action.node })
     });
   case 'AddVolume':
-    const findNodeResult__ = findNode(state, action.nodeId)
+    const findNodeResult__ = findNode(state, action.nodeId);
     if (findNodeResult__.kind === 'Error') { return findNodeResult__; }
     const node = findNodeResult__.value;
     const nodeWithUpdatedVolumes = {
@@ -129,7 +129,6 @@ export const useStore = create(redux(
 export function useDispatch() {
   return useStore(state => state.dispatch);
 }
-
 export function useCreateModel() {
   return useStore(({ dispatch }) =>
     ({ name, image, protobufCode }: { name: string, image: string, protobufCode: string}) => dispatch({
@@ -139,7 +138,6 @@ export function useCreateModel() {
       protobufCode
     }));
 }
-
 export function useUpdateModel() {
   return useStore(({ dispatch }) => (model: Model) => dispatch({ type: 'UpdateModel', model }));
 }
