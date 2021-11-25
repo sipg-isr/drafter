@@ -1,7 +1,8 @@
 import React from 'react';
 import {
   Modal,
-  CloseButton
+  CloseButton,
+  Accordion
 } from 'react-bootstrap';
 import { useStore } from '../../state';
 
@@ -19,10 +20,17 @@ export function DebugDialog({ show, close }: DebugDialogProps) {
         <CloseButton onClick={close} />
       </Modal.Header>
       <Modal.Body>
-        <h5>State</h5>
-        <pre>
-          {JSON.stringify(state, null, 2)}
-        </pre>
+        <h5>Edit History</h5>
+        <Accordion>
+          {state.actions.reverse().map((action, idx) =>
+            <Accordion.Item eventKey={idx.toString()} key={idx} >
+              <Accordion.Header>{`${state.actions.size - idx}: ${action.type}`}</Accordion.Header>
+              <Accordion.Body>
+                <pre>{JSON.stringify(action)}</pre>
+              </Accordion.Body>
+            </Accordion.Item>
+          )}
+        </Accordion>
       </Modal.Body>
     </Modal>
   );
