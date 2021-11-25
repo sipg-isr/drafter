@@ -55,7 +55,8 @@ export default function NodeSVG({
         ry={ry}
         cx={x}
         cy={y}
-        fill='#fff'
+        fill='#e8e8e8'
+        fillOpacity='0.5'
         stroke='#000'
         strokeWidth='1px'
         cursor={drag ? 'grabbing' : 'grab'}

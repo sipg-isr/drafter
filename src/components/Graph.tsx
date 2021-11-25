@@ -71,49 +71,26 @@ export default function Graph() {
           setDrag({
             ...drag,
             cursor: { x: e.clientX, y: e.clientY }
-          });
-        }
+      });
+      }
       }}
       onMouseUp={() => {
         if (drag) {
           const { element } = drag;
-          element.fx = element.fy = null;
-          setDrag(null);
-          restartSimulation();
-        }
+      element.fx = element.fy = null;
+      setDrag(null);
+      restartSimulation();
+      }
       }}
       onMouseLeave={() => {
         if (drag) {
           const { element } = drag;
-          element.fx = element.fy = null;
-          setDrag(null);
-          restartSimulation();
-        }
+      element.fx = element.fy = null;
+      setDrag(null);
+      restartSimulation();
+      }
       }}
     >
-      {(() => {
-        if (drag) {
-          const {
-            offset,
-            cursor,
-            element
-          } = drag;
-          if (element.kind === 'AccessPoint') {
-            return <EdgeSVG
-              x1={element.x!}
-              y1={element.y!}
-              x2={cursor.x + offset.x}
-              y2={cursor.y + offset.y}
-            />;
-          }
-        }})()}
-      {nodes.valueSeq().map(node => <NodeSVG
-        node={node}
-        key={node.nodeId}
-        drag={drag}
-        setDrag={setDrag}
-        restartSimulation={restartSimulation}
-      />)}
       {edges.map(({ requesterId, responderId }) => {
         // Look up each id
         const [requester, responder] = [requesterId, responderId]
@@ -126,10 +103,34 @@ export default function Graph() {
             x2={responder.x}
             y2={responder.y}
           />;
-        } else {
-          return null;
-        }
+      } else {
+        return null;
+      }
       })}
+      {(() => {
+        if (drag) {
+          const {
+            offset,
+            cursor,
+            element
+      } = drag;
+      if (element.kind === 'AccessPoint') {
+        return <EdgeSVG
+          x1={element.x!}
+          y1={element.y!}
+          x2={cursor.x + offset.x}
+          y2={cursor.y + offset.y}
+        />;
+      }
+      }})()}
+      {nodes.valueSeq().map(node => <NodeSVG
+        node={node}
+        key={node.nodeId}
+        drag={drag}
+        setDrag={setDrag}
+        restartSimulation={restartSimulation}
+      />)}
+
     </svg>
   );
 }
