@@ -4,14 +4,18 @@ import { List, Map, Set } from 'immutable';
 import  { v4 as uuid } from 'uuid';
 import { dump } from 'js-yaml';
 import JSZip from 'jszip';
+import equal from 'fast-deep-equal';
 import {
   AccessPoint,
+  Error,
+  ErrorKind,
   HasAccessPointId,
   HasNodeId,
   Model,
   Node,
   RemoteMethod,
   State,
+  Success,
   UUID
 } from './types';
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
@@ -113,7 +117,10 @@ export function instantiateModel(
     name: `${name} ${nodeNumber}`,
     nodeId,
     modelId,
-    accessPoints,
+    accessPoints: accessPoints.filter(({ type: { name, fields } }) =>
+      name !== 'Empty' || Object.keys(fields).length > 0
+    ),
+    volumes: List(),
     x: 0,
     y: 0
   };
@@ -126,9 +133,7 @@ export function compatibleMethods(left: AccessPoint, right: AccessPoint): boolea
   const kinds = [left.role, right.role];
   return kinds.includes('Requester') &&
     kinds.includes('Responder') &&
-    // TODO do MUCH deeper type-checking than this
-    left.type.name === right.type.name &&
-    left.type.streamed === right.type.streamed;
+    equal(left.type, right.type);
 }
 
 /**
@@ -161,18 +166,13 @@ export async function fileContent(element: HTMLInputElement): Promise<string | n
   // Note that we coerce to undefined in case of a falsy value here because the `Set`
   // constructor does not accept null.
   const files = List(element?.files || undefined);
-  if (files) {
-    // If the thing actually exists...
-    // We should make sure it has exactly one file
-    if (files.size === 1) {
-      // We can assert-nonnull here because we know the files list has a first element
-      const file = files.first()!;
-      return file.text();
-    } else {
-      console.error(`Didn't find exactly one protobuf file for the model. Files were [${files.map(file => file.name).join(', ')}]}`);
-      return null;
-    }
+  // We should make sure that the list has exactly one file
+  if (files.size === 1) {
+    // We can assert-nonnull here because we know the files list has a first element
+    const file = files.first()!;
+    return file.text();
   } else {
+    console.error(`Didn't find exactly one protobuf file for the model. Files were [${files.map(file => file.name).join(', ')}]}`);
     return null;
   }
 }
@@ -185,7 +185,8 @@ export function deserializeState(serialized: string): State {
   const parsed = JSON.parse(serialized, (key, value) => {
     if (
       key === 'accessPoints' ||
-      key === 'actions'
+      key === 'actions' ||
+      key === 'volumes'
     ) {
       return List(value);
     } else if (
@@ -234,10 +235,15 @@ export async function exportState({ models, nodes, edges }: State): Promise<Blob
     }
   };
 
-  models.forEach(({ name, image }) => {
-    if (!(name in dockerCompose.services)) {
-      dockerCompose.services[name] = {
-        image
+  nodes.toList().forEach(({ name, modelId, volumes }, idx) => {
+    const model = models.find(model => model.modelId === modelId);
+    if (!(name in dockerCompose.services) && model) {
+      dockerCompose.services[name.replaceAll(/\s+/g, '-')] = {
+        image: model.image,
+        volumes: volumes
+          .map(({ source, target, type }) => ({ source, target, type }))
+          .toArray(),
+        ports: [`${8061 + idx}:8062`]
       };
     }
   });
@@ -267,4 +273,25 @@ export async function exportState({ models, nodes, edges }: State): Promise<Blob
 
   // Generate a blob and return
   return zip.generateAsync({ type: 'blob' });
+}
+
+/**
+ * Given a value, wrap it in a success object
+ */
+export function success<T>(value: T): Success<T> {
+  return {
+    kind: 'Success',
+    value
+  };
+}
+
+/**
+ * Simple error constructor
+ */
+export function error(errorKind: ErrorKind, message: string): Error {
+  return {
+    kind: 'Error',
+    errorKind,
+    message
+  };
 }
