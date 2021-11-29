@@ -5,6 +5,7 @@ import {
   Modal,
 } from 'react-bootstrap';
 import { useStore } from '../../state';
+import Listing from '../Listing';
 
 
 interface DebugDialogProps {
@@ -40,7 +41,7 @@ export function DebugDialog({ show, close }: DebugDialogProps) {
               </em>
             </Accordion.Header>
             <Accordion.Body>
-              <code><pre>{JSON.stringify(action)}</pre></code>
+              <Listing content={JSON.stringify(action)} />
             </Accordion.Body>
           </Accordion.Item>)}
         </Accordion>
