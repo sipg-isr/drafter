@@ -12,3 +12,10 @@ export interface Drag {
   /** the element being dragged */
   element: Node | AccessPoint;
 }
+
+/**
+ * The different possible dialogs that can be displayed to the user
+ */
+export enum DialogOption {
+  Save, Load, Export, Clear, Debug
+}

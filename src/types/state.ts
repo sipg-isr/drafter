@@ -17,5 +17,5 @@ export interface State {
   edges: Set<Edge>;
 
   /** A list of previous actions. Used for record-keeping */
-  actions: List<Action>;
+  actions: List<[Date, Action]>;
 }

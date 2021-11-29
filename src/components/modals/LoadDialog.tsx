@@ -7,7 +7,7 @@ interface LoadDialogProps {
   show: boolean;
   close: () => void;
 }
-export default function LoadDialog({ show, close }: LoadDialogProps) {
+export function LoadDialog({ show, close }: LoadDialogProps) {
   const restoreState = useRestoreState();
 
   const fileUploadRef = useRef<HTMLInputElement | null>(null);
