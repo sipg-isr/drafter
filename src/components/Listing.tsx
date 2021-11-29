@@ -11,21 +11,20 @@ interface ListingProps {
 export default function Listing({ content }: ListingProps) {
   // TODO make this div style configurable based on the current theme?
   // TODO add syntax highlighting?
-  return <pre style={{
+  return <div style={{
     position: 'relative',
     borderRadius: `${unit}px`,
     backgroundColor: '#eee',
-    padding: `${3 * unit}px`,
+    padding: `${unit}px`,
   }}>
     <code>{content}</code>
-    &nbsp;
     <Button
       variant='outline-secondary'
       size='sm'
       style={{
         position: 'absolute',
           right: `${unit}px`,
-          top: `${2 * unit}px`
+          top: `${unit}px`
       }}
       onClick={() =>
         navigator.clipboard.writeText(content)
@@ -33,5 +32,6 @@ export default function Listing({ content }: ListingProps) {
     >
       <FaCopy size={3 * unit}/>
     </Button>
-  </pre>
+  </div>
+
 }
