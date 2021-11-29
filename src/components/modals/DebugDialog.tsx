@@ -2,7 +2,8 @@ import React from 'react';
 import {
   Accordion,
   CloseButton,
-  Modal
+  Modal,
+  Table
 } from 'react-bootstrap';
 import { useStore } from '../../state';
 
@@ -13,6 +14,7 @@ interface DebugDialogProps {
 }
 export function DebugDialog({ show, close }: DebugDialogProps) {
   const state = useStore();
+
   return (
     <Modal show={show} onEscapeKeyDown={close}>
       <Modal.Header>
@@ -21,16 +23,22 @@ export function DebugDialog({ show, close }: DebugDialogProps) {
       </Modal.Header>
       <Modal.Body>
         <h5>Edit History</h5>
-        <Accordion>
-          {state.actions.reverse().map((action, idx) =>
-            <Accordion.Item eventKey={idx.toString()} key={idx} >
-              <Accordion.Header>{`${state.actions.size - idx}: ${action.type}`}</Accordion.Header>
-              <Accordion.Body>
-                <pre>{JSON.stringify(action)}</pre>
-              </Accordion.Body>
-            </Accordion.Item>
-          )}
-        </Accordion>
+        <Table striped hover>
+          <thead>
+            <tr>
+            <th>Action</th>
+            <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {state.actions.reverse().map(([date, action]) =>
+            <tr key={date.toString()} onClick={() => console.log('yo')}>
+                <td>{action.type}</td>
+                <td>{date.toLocaleString()}</td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
       </Modal.Body>
     </Modal>
   );

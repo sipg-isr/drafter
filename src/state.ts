@@ -118,7 +118,7 @@ export const useStore = create(redux(
         return { ...state, ...partialState };
       } else {
         // If it did not, then add the current action to the history
-        return { ...state, ...partialState, actions: state.actions.push(action) };
+        return { ...state, ...partialState, actions: state.actions.push([new Date(), action]) };
       }
     } else {
       console.error(`Error ${result.errorKind} in ${action.type}: ${result.message}`);
@@ -159,7 +159,7 @@ export function useNodes(): [Set<Node>, (nodes: Set<Node>) => void] {
 export function useEdges(): [Set<Edge>, (edges: Set<Edge>) => void] {
   return useStore(state => [state.edges, ((edges: Set<Edge>) => state.dispatch({ type: 'SetEdges', edges }))]);
 }
-export function useActions(): List<Action> {
+export function useActions(): List<[Date, Action]> {
   return useStore(state => state.actions);
 }
 export function useRestoreState() {
