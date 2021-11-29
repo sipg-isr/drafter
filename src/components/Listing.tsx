@@ -1,4 +1,6 @@
 import React from 'react';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { dark } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 import { Button } from 'react-bootstrap';
 import { FaCopy } from 'react-icons/fa';
 
@@ -13,11 +15,13 @@ export default function Listing({ content }: ListingProps) {
   // TODO add syntax highlighting?
   return <div style={{
     position: 'relative',
-    borderRadius: `${unit}px`,
-    backgroundColor: '#eee',
-    padding: `${unit}px`,
   }}>
-    <code>{content}</code>
+    <SyntaxHighlighter language='json' style={dark} customStyle={{
+      padding: `${2 * unit}px`,
+      borderRadius: `${unit}px`
+    }}>
+      {content}
+    </SyntaxHighlighter>
     <Button
       variant='outline-secondary'
       size='sm'

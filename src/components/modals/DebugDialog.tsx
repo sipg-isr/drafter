@@ -4,8 +4,8 @@ import {
   CloseButton,
   Modal,
 } from 'react-bootstrap';
-import { useStore } from '../../state';
 import Listing from '../Listing';
+import { useStore } from '../../state';
 
 
 interface DebugDialogProps {
