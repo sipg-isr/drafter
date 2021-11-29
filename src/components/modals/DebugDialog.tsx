@@ -41,7 +41,7 @@ export function DebugDialog({ show, close }: DebugDialogProps) {
               </em>
             </Accordion.Header>
             <Accordion.Body>
-              <Listing content={JSON.stringify(action)} />
+              <Listing content={JSON.stringify(action, null, 2)} />
             </Accordion.Body>
           </Accordion.Item>)}
         </Accordion>
