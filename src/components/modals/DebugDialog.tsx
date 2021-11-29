@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Accordion,
   CloseButton,
-  Modal,
+  Modal
 } from 'react-bootstrap';
 import Listing from '../Listing';
 import { useStore } from '../../state';
@@ -25,25 +25,25 @@ export function DebugDialog({ show, close }: DebugDialogProps) {
         <h5>Edit History</h5>
         <Accordion>
           {state.actions.reverse().map(([date, action], idx) =>
-          <Accordion.Item eventKey={idx.toString()}>
-            <Accordion.Header>
-              <span style={{
-                textAlign: 'left',
+            <Accordion.Item eventKey={idx.toString()} key={idx}>
+              <Accordion.Header>
+                <span style={{
+                  textAlign: 'left',
                   width: '40%',
                   display: 'inline-block'
-              }}>{action.type}</span>
-              <em style={{
-                textAlign: 'right',
+                }}>{action.type}</span>
+                <em style={{
+                  textAlign: 'right',
                   width: '50%',
                   display: 'inline-block'
-              }}
-              >{date.toLocaleString()}
-              </em>
-            </Accordion.Header>
-            <Accordion.Body>
-              <Listing content={JSON.stringify(action, null, 2)} />
-            </Accordion.Body>
-          </Accordion.Item>)}
+                }}
+                >{date.toLocaleString()}
+                </em>
+              </Accordion.Header>
+              <Accordion.Body>
+                <Listing content={JSON.stringify(action, null, 2)} />
+              </Accordion.Body>
+            </Accordion.Item>)}
         </Accordion>
       </Modal.Body>
     </Modal>
