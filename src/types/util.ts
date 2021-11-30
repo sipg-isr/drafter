@@ -24,7 +24,11 @@ export type Path = string;
  * Defines what kind of error something is
  */
 export enum ErrorKind {
-  ParsingError, AssetNotFound, StageNotFound
+  ParsingError,
+  AssetNotFound,
+  StageNotFound,
+  AccessPointNotFound,
+  FileInputError
 }
 
 /**
