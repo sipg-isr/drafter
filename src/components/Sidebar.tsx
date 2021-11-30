@@ -11,21 +11,21 @@ import {
 } from 'react-bootstrap';
 import { FaCheck, FaEllipsisH, FaPlus, FaTrash } from 'react-icons/fa';
 import {
-  Model,
-  Node,
+  Asset,
+  Stage,
   UUID
 } from '../types';
-import { instantiateModel } from '../utils';
+import { instantiateAsset } from '../utils';
 import {
-  useModels,
-  useNodes,
-  useUpdateNode
+  useAssets,
+  useStages,
+  useUpdateStage
 } from '../state';
 import EditField from './EditField';
 import VolumeEditor from './VolumeEditor';
 
-function NodeAddingForm() {
-  const [models] = useModels();
+function StageAddingForm() {
+  const [assets] = useAssets();
 
   // This is a hack-- the select element won't accept null as a value, so we define an alternate
   // null value-- nil. This hack isn't comprehensive. If the user somehow gets a UUID that is
@@ -33,40 +33,40 @@ function NodeAddingForm() {
   const nil = '0';
 
 
-  const [selectedModelId, setSelectedModelId] = useState<UUID | typeof nil>(nil);
+  const [selectedAssetId, setSelectedAssetId] = useState<UUID | typeof nil>(nil);
 
-  const [nodes, setNodes] = useNodes();
+  const [stages, setStages] = useStages();
 
-  const addModelToEditor = (model: Model) => {
-    const node = instantiateModel(model, model.name);
-    setNodes(nodes.add(node));
+  const addAssetToEditor = (asset: Asset) => {
+    const stage = instantiateAsset(asset, asset.name);
+    setStages(stages.add(stage));
   };
 
-  // Whenever models change, set back to nil
+  // Whenever assets change, set back to nil
   useEffect(() => {
-    setSelectedModelId(nil);
-  }, [models]);
+    setSelectedAssetId(nil);
+  }, [assets]);
 
   return (
     <tr>
       <td colSpan={2}>
-        <FloatingLabel controlId='floatingSelectGrid' label='Add model' defaultValue={nil}>
-          <Form.Select aria-label='Add another model' onChange={({ target: { value } }) => setSelectedModelId(value)}>
-            <option value={nil}>Select Model to add</option>
-            {models.map(({ modelId, name }) =>
-              <option key={modelId }value={modelId}>{name}</option>
+        <FloatingLabel controlId='floatingSelectGrid' label='Add asset' defaultValue={nil}>
+          <Form.Select aria-label='Add another asset' onChange={({ target: { value } }) => setSelectedAssetId(value)}>
+            <option value={nil}>Select Asset to add</option>
+            {assets.map(({ assetId, name }) =>
+              <option key={assetId }value={assetId}>{name}</option>
             )}
           </Form.Select>
         </FloatingLabel>
       </td>
       <td>
         <Button
-          disabled={ selectedModelId === nil }
+          disabled={ selectedAssetId === nil }
           variant='primary'
           onClick={() => {
-            const model = models.find(({ modelId }) => modelId === selectedModelId);
-            if (model) {
-              addModelToEditor(model);
+            const asset = assets.find(({ assetId }) => assetId === selectedAssetId);
+            if (asset) {
+              addAssetToEditor(asset);
             }
           }}
         >
@@ -78,56 +78,56 @@ function NodeAddingForm() {
 }
 
 export default function Sidebar() {
-  const [models] = useModels();
-  const [nodes, setNodes] = useNodes();
-  // This function updates a node in-place
-  const updateNode = useUpdateNode();
+  const [assets] = useAssets();
+  const [stages, setStages] = useStages();
+  // This function updates a stage in-place
+  const updateStage = useUpdateStage();
 
-  const removeNode = (node: Node) => setNodes(nodes.remove(node));
+  const removeStage = (stage: Stage) => setStages(stages.remove(stage));
 
-  const [selectedNodeId, selectNodeId] = useState<UUID | null>(null);
-  const close = () => selectNodeId(null);
+  const [selectedStageId, selectStageId] = useState<UUID | null>(null);
+  const close = () => selectStageId(null);
 
   return (
     <Row>
-      <h6>Nodes</h6>
+      <h6>Stages</h6>
       <Table>
         <thead>
           <tr>
             <th>Name</th>
-            <th>Model</th>
+            <th>Asset</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {nodes.toList().map(node =>
-            <tr key={node.nodeId}>
-              <td><EditField value={node.name} setValue={name => updateNode({ ...node, name })} /></td>
-              <td>{models.find(({ modelId }) => node.modelId === modelId)?.name || 'No model found'}</td>
+          {stages.toList().map(stage =>
+            <tr key={stage.stageId}>
+              <td><EditField value={stage.name} setValue={name => updateStage({ ...stage, name })} /></td>
+              <td>{assets.find(({ assetId }) => stage.assetId === assetId)?.name || 'No asset found'}</td>
               <td>
                 <ButtonGroup>
                   <Button
                     variant='primary'
-                    onClick={() => selectNodeId(node.nodeId)}
+                    onClick={() => selectStageId(stage.stageId)}
                   >
                     <FaEllipsisH />
                   </Button>
                   <Button
                     variant='danger'
-                    onClick={() => removeNode(node)}>
+                    onClick={() => removeStage(stage)}>
                     <FaTrash />
                   </Button>
                 </ButtonGroup>
               </td>
             </tr>
           )}
-          <NodeAddingForm />
+          <StageAddingForm />
         </tbody>
       </Table>
-      <Modal show={selectedNodeId !== null} onEscapeKeyDown={close}>
-        {selectedNodeId !== null  ?
-          <VolumeEditor nodeId={selectedNodeId} selectNodeId={selectNodeId} close={close} /> :
-          'No node selected'
+      <Modal show={selectedStageId !== null} onEscapeKeyDown={close}>
+        {selectedStageId !== null  ?
+          <VolumeEditor stageId={selectedStageId} selectStageId={selectStageId} close={close} /> :
+          'No stage selected'
         }
       </Modal>
     </Row>

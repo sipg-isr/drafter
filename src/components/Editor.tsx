@@ -9,48 +9,48 @@ import {
   is as equal
 } from 'immutable';
 import {
-  Model,
-  Node
+  Asset,
+  Stage
 } from '../types';
 import Sidebar from './Sidebar';
 import Graph from './Graph';
-import { instantiateModel, lookupAccessPoint } from '../utils';
-import { useEdges, useModels, useNodes } from '../state';
+import { instantiateAsset, lookupAccessPoint } from '../utils';
+import { useAssets, useEdges, useStages } from '../state';
 
 export default function Editor() {
   // TODO store state somewhere like localStorage or idb-keyval
   // write a custom hook to serialize / deserialize this
-  const [models ] = useModels();
-  const [nodes, setNodes] = useNodes();
+  const [assets ] = useAssets();
+  const [stages, setStages] = useStages();
   const [edges, setEdges] = useEdges();
 
   useEffect(() => {
-    // Whenever the models are changed,
-    // filter out only the nodes that are from these models
+    // Whenever the assets are changed,
+    // filter out only the stages that are from these assets
 
-    setNodes(nodes
-      .filter(node =>
-        models.find(({ modelId }) => node.modelId === modelId))
-      .map(node => {
-        const model = models.find(({ modelId }) => node.modelId === modelId)!;
+    setStages(stages
+      .filter(stage =>
+        assets.find(({ assetId }) => stage.assetId === assetId))
+      .map(stage => {
+        const asset = assets.find(({ assetId }) => stage.assetId === assetId)!;
         if (equal(
-          node.accessPoints.map(({ remoteMethodId }) => remoteMethodId).toSet(),
-          model.methods.map(({ remoteMethodId }) => remoteMethodId).toSet()
+          stage.accessPoints.map(({ remoteMethodId }) => remoteMethodId).toSet(),
+          asset.methods.map(({ remoteMethodId }) => remoteMethodId).toSet()
         )) {
-          return node;
+          return stage;
         } else {
-          return instantiateModel(model, node.name);
+          return instantiateAsset(asset, stage.name);
         }
       })
     );
-  }, [models]);
+  }, [assets]);
 
   useEffect(() => {
-    // Whenever the nodes are changed, keep only the edges with surviving points
+    // Whenever the stages are changed, keep only the edges with surviving points
     setEdges(edges.filter(({ requesterId, responderId }) =>
-      lookupAccessPoint(nodes, requesterId) !== null &&
-      lookupAccessPoint(nodes, responderId) !== null));
-  }, [nodes]);
+      lookupAccessPoint(stages, requesterId) !== null &&
+      lookupAccessPoint(stages, responderId) !== null));
+  }, [stages]);
 
   return (
     <>

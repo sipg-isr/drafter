@@ -3,7 +3,7 @@
  */
 
 /**
- * Represents a model that is being dragged and its coordinates, or a lack of drag
+ * Represents a asset that is being dragged and its coordinates, or a lack of drag
  */
 export interface Coordinates {
   x: number;
@@ -24,7 +24,7 @@ export type Path = string;
  * Defines what kind of error something is
  */
 export enum ErrorKind {
-  ParsingError, ModelNotFound, NodeNotFound
+  ParsingError, AssetNotFound, StageNotFound
 }
 
 /**

@@ -7,11 +7,11 @@ import {
   Edge,
   HasAccessPointId,
   HasEdgeId,
-  HasNodeId,
-  Node,
+  HasStageId,
+  Stage,
   UUID
 } from '../types';
-import { useEdges, useNodes } from '../state';
+import { useEdges, useStages } from '../state';
 import {
   compatibleMethods,
   objectToColor
@@ -27,16 +27,16 @@ export default function AccessPointSVG({
   drag,
   setDrag
 }: AccessPointSVGProps) {
-  const [nodes ] = useNodes();
+  const [stages ] = useStages();
   const [edges, setEdges] = useEdges();
 
-  // A function to add an edge connection two nodes
+  // A function to add an edge connection two stages
   const addEdge = (left: AccessPoint, right: AccessPoint) => {
     const [requester, responder] = sortBy([left, right], ap => ap.role);
     setEdges(edges.add({
       edgeId: uuid(),
-      requesterId: { nodeId: requester.nodeId, accessPointId: requester.accessPointId },
-      responderId: { nodeId: responder.nodeId, accessPointId: responder.accessPointId }
+      requesterId: { stageId: requester.stageId, accessPointId: requester.accessPointId },
+      responderId: { stageId: responder.stageId, accessPointId: responder.accessPointId }
     }));
   };
 
@@ -65,8 +65,8 @@ export default function AccessPointSVG({
           removeEdge(edge);
           const otherId =
             accessPoint.role === 'Requester' ? edge.responderId : edge.requesterId;
-          const other = nodes
-            .find(({ nodeId }) => otherId.nodeId === nodeId)
+          const other = stages
+            .find(({ stageId }) => otherId.stageId === stageId)
             ?.accessPoints
             ?.find(ap => ap.accessPointId === otherId.accessPointId);
           if (other) {

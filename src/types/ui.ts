@@ -1,5 +1,5 @@
 import { Coordinates } from './util';
-import { AccessPoint, Node } from './base';
+import { AccessPoint, Stage } from './base';
 
 /**
  * Represents an active drag.
@@ -10,7 +10,7 @@ export interface Drag {
   /** the current location of the cursor */
   cursor: Coordinates;
   /** the element being dragged */
-  element: Node | AccessPoint;
+  element: Stage | AccessPoint;
 }
 
 /**

@@ -1,5 +1,5 @@
 import { List, Set } from 'immutable';
-import { Edge, Model, Node } from './base';
+import { Asset, Edge, Stage } from './base';
 import { Action } from './actions';
 
 /**
@@ -7,13 +7,13 @@ import { Action } from './actions';
  *
  */
 export interface State {
-  /** A set of models that have been onboarded onto the platform  */
-  models: Set<Model>;
+  /** A set of assets that have been onboarded onto the platform  */
+  assets: Set<Asset>;
 
-  /** A set of nodes that were instantiated into the graph */
-  nodes: Set<Node>;
+  /** A set of stages that were instantiated into the graph */
+  stages: Set<Stage>;
 
-  /** A set of edges that connect the nodes in the graph */
+  /** A set of edges that connect the stages in the graph */
   edges: Set<Edge>;
 
   /** A list of previous actions. Used for record-keeping */

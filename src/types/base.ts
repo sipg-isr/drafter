@@ -14,12 +14,12 @@ export interface HasRemoteMethodId {
   remoteMethodId: UUID;
 }
 
-export interface HasModelId {
-  modelId: UUID;
+export interface HasAssetId {
+  assetId: UUID;
 }
 
-export interface HasNodeId {
-  nodeId: UUID;
+export interface HasStageId {
+  stageId: UUID;
 }
 
 export interface HasAccessPointId {
@@ -35,7 +35,7 @@ export interface HasVolumeId {
 }
 
 /**
- * An RPC method that forms part of a Model's interface
+ * An RPC method that forms part of a Asset's interface
  */
 export interface RemoteMethod extends HasRemoteMethodId {
   name: string;
@@ -45,11 +45,11 @@ export interface RemoteMethod extends HasRemoteMethodId {
 
 
 /**
- * this defines a model, which is a template from which nodes in the editor can be made
+ * this defines a asset, which is a template from which stages in the editor can be made
  */
-export interface Model extends HasModelId {
-  kind: 'Model';
-  // The human-readable name of the model
+export interface Asset extends HasAssetId {
+  kind: 'Asset';
+  // The human-readable name of the asset
   name: string;
   // An image name, like sipgisr/image-source:latest
   image: string;
@@ -58,15 +58,15 @@ export interface Model extends HasModelId {
 }
 
 /** A stage in the editor-- one computer */
-export interface Node extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasModelId {
-  kind: 'Node';
-  /** The name of the individual node */
+export interface Stage extends SimulationNodeDatumWithRequiredCoordinates, HasStageId, HasAssetId {
+  kind: 'Stage';
+  /** The name of the individual stage */
   name: string;
 
-  /** a list of interfaces associated with the node */
+  /** a list of interfaces associated with the stage */
   accessPoints: List<AccessPoint>;
 
-  /** A list of volumes to be mounted with this node */
+  /** A list of volumes to be mounted with this stage */
   volumes: List<Volume>;
 }
 
@@ -80,10 +80,10 @@ export interface Volume extends HasVolumeId {
   target: Path;
 }
 
-export interface AccessPoint extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasRemoteMethodId, HasAccessPointId {
+export interface AccessPoint extends SimulationNodeDatumWithRequiredCoordinates, HasStageId, HasRemoteMethodId, HasAccessPointId {
   kind: 'AccessPoint';
   /**
-   * An AccessPoint can either be a Requester, which calls the methods of other nodes, or a
+   * An AccessPoint can either be a Requester, which calls the methods of other stages, or a
    * Responder, which responds to such calls
    */
   role: 'Requester' | 'Responder';
@@ -101,6 +101,6 @@ export interface AccessPoint extends SimulationNodeDatumWithRequiredCoordinates,
 
 export interface Edge extends HasEdgeId {
   // TODO - use newtype pattern here?
-  requesterId: HasNodeId & HasAccessPointId;
-  responderId: HasNodeId & HasAccessPointId;
+  requesterId: HasStageId & HasAccessPointId;
+  responderId: HasStageId & HasAccessPointId;
 }

@@ -12,33 +12,33 @@ import {
   FaTrash
 } from 'react-icons/fa';
 import {
-  Node,
+  Stage,
   UUID,
   Volume,
   VolumeType
 } from '../types';
 import {
-  useNodes,
-  useUpdateNode
+  useStages,
+  useUpdateStage
 } from '../state';
 
 interface VolumeAddingFormProps {
-  node: Node;
-  selectNodeId: (id: UUID) => void;
+  stage: Stage;
+  selectStageId: (id: UUID) => void;
 }
-function VolumeAddingForm({ node, selectNodeId }: VolumeAddingFormProps) {
-  const updateNode = useUpdateNode();
+function VolumeAddingForm({ stage, selectStageId }: VolumeAddingFormProps) {
+  const updateStage = useUpdateStage();
   const [source, setSource] = useState('');
   const clearSource = () => setSource('');
   const [target, setTarget] = useState('');
   const clearTarget = () => setTarget('');
   const [type ] = useState(VolumeType.Bind);
   const addVolume = () => {
-    const updated = { ...node, volumes: node.volumes.push({
+    const updated = { ...stage, volumes: stage.volumes.push({
       volumeId: uuid(), source, target, type
     }) };
-    updateNode(updated);
-    selectNodeId(updated.nodeId);
+    updateStage(updated);
+    selectStageId(updated.stageId);
     clearSource();
     clearTarget();
   };
@@ -78,23 +78,23 @@ function VolumeAddingForm({ node, selectNodeId }: VolumeAddingFormProps) {
 }
 
 interface VolumeEditorProps {
-  nodeId: UUID;
-  selectNodeId: (id: UUID) => void;
+  stageId: UUID;
+  selectStageId: (id: UUID) => void;
   close: () => void;
 }
-export default function VolumeEditor({ nodeId, selectNodeId, close }: VolumeEditorProps) {
-  const [nodes] = useNodes();
-  const updateNode = useUpdateNode();
-  const node = nodes.find(node => node.nodeId === nodeId);
-  if (!node) { return null; }
+export default function VolumeEditor({ stageId, selectStageId, close }: VolumeEditorProps) {
+  const [stages] = useStages();
+  const updateStage = useUpdateStage();
+  const stage = stages.find(stage => stage.stageId === stageId);
+  if (!stage) { return null; }
   const deleteVolume = (id: UUID) => {
-    const idx = node.volumes.findIndex(({ volumeId }) => volumeId === id);
+    const idx = stage.volumes.findIndex(({ volumeId }) => volumeId === id);
     if (idx !== -1) {
-      const nodeWithoutVolume = {
-        ...node,
-        volumes: node.volumes.remove(idx)
+      const stageWithoutVolume = {
+        ...stage,
+        volumes: stage.volumes.remove(idx)
       };
-      updateNode(nodeWithoutVolume);
+      updateStage(stageWithoutVolume);
     } else {
       console.error('attempt to delete volume that does not exist');
     }
@@ -102,7 +102,7 @@ export default function VolumeEditor({ nodeId, selectNodeId, close }: VolumeEdit
   return (
     <>
       <Modal.Header>
-        <Modal.Title>{node.name || 'No node selected'}</Modal.Title>
+        <Modal.Title>{stage.name || 'No stage selected'}</Modal.Title>
         <CloseButton onClick={close} />
       </Modal.Header>
       <Modal.Body>
@@ -117,7 +117,7 @@ export default function VolumeEditor({ nodeId, selectNodeId, close }: VolumeEdit
             </tr>
           </thead>
           <tbody>
-            {node?.volumes.map(({ source, target, type, volumeId }) =>
+            {stage?.volumes.map(({ source, target, type, volumeId }) =>
               <tr key={volumeId}>
                 <td>{source}</td>
                 <td>{target}</td>
@@ -130,9 +130,9 @@ export default function VolumeEditor({ nodeId, selectNodeId, close }: VolumeEdit
                     <FaTrash />
                   </Button>
                 </td>
-              </tr> || 'No node selected')}
-            {nodeId &&
-            <VolumeAddingForm node={node} selectNodeId={selectNodeId} />}
+              </tr> || 'No stage selected')}
+            {stageId &&
+            <VolumeAddingForm stage={stage} selectStageId={selectStageId} />}
           </tbody>
         </Table>
       </Modal.Body>
