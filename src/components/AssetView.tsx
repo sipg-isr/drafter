@@ -117,11 +117,11 @@ function EditAsset({ entry: { asset }, setEntry, removeEntry }: EditAssetProps) 
                       // TODO show an error message and abort if this is null
                       methods: methodsResult.kind === 'Success' ? methodsResult.value : Set(),
                       assetId: asset ? asset.assetId : uuid()
-              }
-              });
-              } else {
-                reportError(contentResult);
-              }
+                    }
+                  });
+                } else {
+                  reportError(contentResult);
+                }
               }}><FaCheck /></Button>
             <Button
               variant='danger'

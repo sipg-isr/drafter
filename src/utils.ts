@@ -19,7 +19,32 @@ import {
   Success,
   UUID
 } from './types';
+
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
+/**
+ * Given a value, wrap it in a success object
+ * @param {T} any value
+ * @return {Success<T>} a Result object entailing success
+ */
+export function success<T>(value: T): Success<T> {
+  return {
+    kind: 'Success',
+    value
+  };
+}
+
+/**
+ * Create an error with an ErrorKind and message
+ * @param {ErrorKind} errorKind
+ * @param {string} message
+ */
+export function error(errorKind: ErrorKind, message: string): Error {
+  return {
+    kind: 'Error',
+    errorKind,
+    message
+  };
+}
 
 /**
  * Convert literal ProtoBuf code into a list of RemoteMethod's
@@ -257,8 +282,8 @@ export function lookupAccessPoint(
   if (stage) {
     const accessPoint =
       stage
-      .accessPoints
-      .find(ap => ap.accessPointId === accessPointId)
+        .accessPoints
+        .find(ap => ap.accessPointId === accessPointId);
     if (accessPoint) {
       return success(accessPoint);
     } else {
@@ -310,8 +335,8 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
       dockerCompose.services[name.replaceAll(/\s+/g, '-')] = {
         image: asset.image,
         volumes: volumes
-        .map(({ source, target, type }) => ({ source, target, type }))
-        .toArray(),
+          .map(({ source, target, type }) => ({ source, target, type }))
+          .toArray(),
         ports: [`${8061 + idx}:8062`]
       };
     }
@@ -336,7 +361,7 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
           stage: stages.find(({ stageId }) => stageId === requesterId.stageId)?.name || 'Stage not found',
           field: targetFieldResult.kind === 'Success' ? targetFieldResult.value : 'Method not found'
         }
-      })
+      });
     }).toArray()
   };
 
@@ -346,31 +371,6 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
 
   // Generate a blob and return
   return zip.generateAsync({ type: 'blob' });
-}
-
-/**
- * Given a value, wrap it in a success object
- * @param {T} any value
- * @return {Success<T>} a Result object entailing success
- */
-export function success<T>(value: T): Success<T> {
-  return {
-    kind: 'Success',
-    value
-  };
-}
-
-/**
- * Create an error with an ErrorKind and message
- * @param {ErrorKind} errorKind
- * @param {string} message
- */
-export function error(errorKind: ErrorKind, message: string): Error {
-  return {
-    kind: 'Error',
-    errorKind,
-    message
-  };
 }
 
 /**
