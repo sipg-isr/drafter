@@ -1,0 +1,48 @@
+env:
+  browser: true
+  es2021: true
+extends:
+  - plugin:react/recommended
+  - plugin:@typescript-eslint/recommended
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaFeatures:
+    jsx: true
+  ecmaVersion: 13
+  sourceType: module
+plugins:
+  - react
+  - '@typescript-eslint'
+rules:
+  indent:
+    - error
+    - 2
+  linebreak-style:
+    - error
+    - unix
+  quotes:
+    - error
+    - single
+  jsx-quotes:
+    - error
+    - prefer-single
+  semi:
+    - error
+    - always
+  comma-dangle:
+    - error
+    - never
+  sort-imports:
+    - error
+    - ignoreDeclarationSort: true
+  no-trailing-spaces:
+    - error
+  eol-last:
+    - error
+    - never
+  # It is necessary here to disable the normal eslint rule before we can enable the typescript
+  # no-use-before-define rule
+  no-use-before-define:
+    - off
+  '@typescript-eslint/no-use-before-define':
+    - error

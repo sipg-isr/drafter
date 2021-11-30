@@ -1,84 +1,135 @@
+import React, { useEffect, useState } from 'react';
 import {
-  Row,
   Button,
+  ButtonGroup,
+  Col,
+  FloatingLabel,
+  Form,
+  Modal,
+  Row,
   Table
 } from 'react-bootstrap';
+import { FaCheck, FaEllipsisH, FaPlus, FaTrash } from 'react-icons/fa';
 import {
-  List,
-  Set
-} from 'immutable';
-import { FaPlus, FaTrash } from 'react-icons/fa';
-import {
-  Model,
-  Node,
+  Asset,
+  Stage,
+  UUID
 } from '../types';
+import { instantiateAsset } from '../utils';
+import {
+  useAssets,
+  useStages,
+  useUpdateStage
+} from '../state';
+import EditField from './EditField';
+import VolumeEditor from './VolumeEditor';
 
-interface SidebarProps {
-  models: List<Model>;
-  addModelToEditor: (model: Model) => void;
-  nodes: Set<Node>;
-  removeNode: (node: Node) => void;
-};
-export default function Sidebar({
-  models,
-  addModelToEditor,
-  nodes,
-  removeNode
-}: SidebarProps) {
+function StageAddingForm() {
+  const [assets] = useAssets();
+
+  // This is a hack-- the select element won't accept null as a value, so we define an alternate
+  // null value-- nil. This hack isn't comprehensive. If the user somehow gets a UUID that is
+  // equal to '0', then this will fail. However, this shouldn't happen for a UUID
+  const nil = '0';
+
+
+  const [selectedAssetId, setSelectedAssetId] = useState<UUID | typeof nil>(nil);
+
+  const [stages, setStages] = useStages();
+
+  const addAssetToEditor = (asset: Asset) => {
+    const stage = instantiateAsset(asset, asset.name);
+    setStages(stages.add(stage));
+  };
+
+  // Whenever assets change, set back to nil
+  useEffect(() => {
+    setSelectedAssetId(nil);
+  }, [assets]);
+
   return (
-    <>
-      <Row>
-        <h6>Available models</h6>
-        <Table>
-          <thead>
-            <tr>
-              <th>Model</th>
-              <th>Image</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-          {models.map(model =>
-          <tr key={model.name}>
-            <td>{model.name}</td>
-            <td><pre>{model.image}</pre></td>
-            <td>
-              <Button onClick={() => addModelToEditor(model)}>
-              <FaPlus />
-              </Button>
-            </td>
+    <tr>
+      <td colSpan={2}>
+        <FloatingLabel controlId='floatingSelectGrid' label='Add asset' defaultValue={nil}>
+          <Form.Select aria-label='Add another asset' onChange={({ target: { value } }) => setSelectedAssetId(value)}>
+            <option value={nil}>Select Asset to add</option>
+            {assets.map(({ assetId, name }) =>
+              <option key={assetId }value={assetId}>{name}</option>
+            )}
+          </Form.Select>
+        </FloatingLabel>
+      </td>
+      <td>
+        <Button
+          disabled={ selectedAssetId === nil }
+          variant='primary'
+          onClick={() => {
+            const asset = assets.find(({ assetId }) => assetId === selectedAssetId);
+            if (asset) {
+              addAssetToEditor(asset);
+            }
+          }}
+        >
+          <FaPlus />
+        </Button>
+      </td>
+    </tr>
+  );
+}
+
+export default function Sidebar() {
+  const [assets] = useAssets();
+  const [stages, setStages] = useStages();
+  // This function updates a stage in-place
+  const updateStage = useUpdateStage();
+
+  const removeStage = (stage: Stage) => setStages(stages.remove(stage));
+
+  const [selectedStageId, selectStageId] = useState<UUID | null>(null);
+  const close = () => selectStageId(null);
+
+  return (
+    <Row>
+      <h6>Stages</h6>
+      <Table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Asset</th>
+            <th>Action</th>
           </tr>
-          )}
-          </tbody>
-        </Table>
-      </Row>
-      <Row>
-        <h6>Nodes</h6>
-        <Table>
-          <thead>
-            <tr>
-              <th>Node</th>
-              <th>Model</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {nodes.map(node =>
-            <tr key={node.id}>
-              <td>{node.name}</td>
-              <td>{node.modelName}</td>
+        </thead>
+        <tbody>
+          {stages.toList().map(stage =>
+            <tr key={stage.stageId}>
+              <td><EditField value={stage.name} setValue={name => updateStage({ ...stage, name })} /></td>
+              <td>{assets.find(({ assetId }) => stage.assetId === assetId)?.name || 'No asset found'}</td>
               <td>
-                <Button
-                  variant="danger"
-                  onClick={() => removeNode(node)}>
-                  <FaTrash />
-                </Button>
+                <ButtonGroup>
+                  <Button
+                    variant='primary'
+                    onClick={() => selectStageId(stage.stageId)}
+                  >
+                    <FaEllipsisH />
+                  </Button>
+                  <Button
+                    variant='danger'
+                    onClick={() => removeStage(stage)}>
+                    <FaTrash />
+                  </Button>
+                </ButtonGroup>
               </td>
             </tr>
-            )}
-          </tbody>
-        </Table>
-      </Row>
-    </>
+          )}
+          <StageAddingForm />
+        </tbody>
+      </Table>
+      <Modal show={selectedStageId !== null} onEscapeKeyDown={close}>
+        {selectedStageId !== null  ?
+          <VolumeEditor stageId={selectedStageId} selectStageId={selectStageId} close={close} /> :
+          'No stage selected'
+        }
+      </Modal>
+    </Row>
   );
 }
