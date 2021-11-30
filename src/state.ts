@@ -4,11 +4,11 @@ import { List, Set } from 'immutable';
 import { v4 as uuid } from 'uuid';
 import {
   Action,
+  Asset,
   Edge,
   ErrorKind,
-  Asset,
-  Stage,
   Result,
+  Stage,
   State
 } from './types';
 import {

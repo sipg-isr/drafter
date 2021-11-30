@@ -4,7 +4,7 @@
  */
 
 import { Force } from 'd3';
-import { Asset, Stage, RemoteMethod } from './types';
+import { Asset, RemoteMethod, Stage } from './types';
 import { List } from 'immutable';
 
 /**

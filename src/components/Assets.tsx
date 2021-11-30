@@ -7,7 +7,7 @@ import {
 import { List, Map, Set } from 'immutable';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import { fileContent, remoteMethodToString } from '../utils';
-import { useCreateAsset, useAssets, useUpdateAsset } from '../state';
+import { useAssets, useCreateAsset, useUpdateAsset } from '../state';
 import EditField from './EditField';
 
 function AssetAddingForm() {

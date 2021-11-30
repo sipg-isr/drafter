@@ -1,6 +1,6 @@
 import { Set } from 'immutable';
 import { UUID } from './util';
-import { Edge, HasStageId, Asset, Stage, Volume } from './base';
+import { Asset, Edge, HasStageId, Stage, Volume } from './base';
 import { State } from './state';
 
 /*

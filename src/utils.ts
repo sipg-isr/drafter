@@ -7,14 +7,14 @@ import JSZip from 'jszip';
 import equal from 'fast-deep-equal';
 import {
   AccessPoint,
+  Asset,
   Error,
   ErrorKind,
   HasAccessPointId,
   HasStageId,
-  Asset,
-  Stage,
   RemoteMethod,
   Result,
+  Stage,
   State,
   Success,
   UUID

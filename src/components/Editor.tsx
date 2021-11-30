@@ -15,7 +15,7 @@ import {
 import Sidebar from './Sidebar';
 import Graph from './Graph';
 import { instantiateAsset, lookupAccessPoint } from '../utils';
-import { useEdges, useAssets, useStages } from '../state';
+import { useAssets, useEdges, useStages } from '../state';
 
 export default function Editor() {
   // TODO store state somewhere like localStorage or idb-keyval
