@@ -8,7 +8,7 @@ import { List, Set } from 'immutable';
 import { v4 as uuid } from 'uuid';
 import { FaCheck, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
 import { Asset } from '../types';
-import { fileContent, protobufToRemoteMethods, remoteMethodToString } from '../utils';
+import { fileContent, protobufToRemoteMethods, remoteMethodToString, reportError } from '../utils';
 
 interface Edit {
   kind: 'Edit';
@@ -105,17 +105,23 @@ function EditAsset({ entry: { asset }, setEntry, removeEntry }: EditAssetProps) 
             <Button
               variant='success'
               onClick={async () => {
-                setEntry({
-                  kind: 'Display',
-                  asset: {
-                    kind: 'Asset',
-                    name,
-                    image,
-                    // TODO show an error message and abort if this is null
-                    methods: protobufToRemoteMethods(await fileContent(filesRef!.current!) || '') || Set(),
-                    assetId: asset ? asset.assetId : uuid()
-                  }
-                });
+                const contentResult = await fileContent(filesRef!.current!);
+                if (contentResult.kind === 'Success') {
+                  const methodsResult = protobufToRemoteMethods(contentResult.value);
+                  setEntry({
+                    kind: 'Display',
+                    asset: {
+                      kind: 'Asset',
+                      name,
+                      image,
+                      // TODO show an error message and abort if this is null
+                      methods: methodsResult.kind === 'Success' ? methodsResult.value : Set(),
+                      assetId: asset ? asset.assetId : uuid()
+              }
+              });
+              } else {
+                reportError(contentResult);
+              }
               }}><FaCheck /></Button>
             <Button
               variant='danger'

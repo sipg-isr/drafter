@@ -37,8 +37,9 @@ const initialState: State = {
 function reducer(state: State, action: Action): Result<Partial<State>> {
   switch (action.type) {
   case 'CreateAsset':
-    const methods = protobufToRemoteMethods(action.protobufCode);
-    if (methods) {
+    const methodsResult = protobufToRemoteMethods(action.protobufCode);
+    if (methodsResult.kind === 'Success') {
+      const methods = methodsResult.value;
       return success({
         assets: state.assets.add({
           kind: 'Asset',
@@ -49,10 +50,7 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
         })
       });
     } else {
-      return error(
-        ErrorKind.ParsingError,
-        'Refusing to update state: Could not parse protobuf code'
-      );
+      return methodsResult;
     }
   case 'SetAssets':
     return success({ ...state, assets: action.assets });

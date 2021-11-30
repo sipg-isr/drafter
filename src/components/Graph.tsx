@@ -93,9 +93,11 @@ export default function Graph() {
     >
       {edges.map(({ requesterId, responderId }) => {
         // Look up each id
-        const [requester, responder] = [requesterId, responderId]
+        const [requesterResult, responderResult] = [requesterId, responderId]
           .map(id => lookupAccessPoint(stages, id));
-        if (requester && responder) {
+        if (requesterResult.kind === 'Success' && responderResult.kind === 'Success') {
+          const requester = requesterResult.value;
+          const responder = responderResult.value;
           return <EdgeSVG
             key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
             x1={requester.x}

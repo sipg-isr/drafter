@@ -324,16 +324,20 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
       host: assets.find(asset => asset.assetId === assetId)?.name || 'Asset not found',
       port: 8061
     })).toArray(),
-    links: edges.map(({ requesterId, responderId }) => ({
-      source: {
-        stage: stages.find(({ stageId }) => stageId === responderId.stageId)?.name || 'Stage not found',
-        field: lookupAccessPoint(stages, responderId)?.name || 'Method not found'
-      },
-      target: {
-        stage: stages.find(({ stageId }) => stageId === requesterId.stageId)?.name || 'Stage not found',
-        field: lookupAccessPoint(stages, requesterId)?.name || 'Method not found'
-      }
-    })).toArray()
+    links: edges.map(({ requesterId, responderId }) => {
+      const sourceFieldResult = lookupAccessPoint(stages, responderId);
+      const targetFieldResult = lookupAccessPoint(stages, requesterId);
+      return ({
+        source: {
+          stage: stages.find(({ stageId }) => stageId === responderId.stageId)?.name || 'Stage not found',
+          field: sourceFieldResult.kind === 'Success' ? sourceFieldResult.value : 'Method not found'
+        },
+        target: {
+          stage: stages.find(({ stageId }) => stageId === requesterId.stageId)?.name || 'Stage not found',
+          field: targetFieldResult.kind === 'Success' ? targetFieldResult.value : 'Method not found'
+        }
+      })
+    }).toArray()
   };
 
   // Add the data to the zip as yaml
@@ -403,4 +407,12 @@ export function findStage(state: State, id: UUID): Result<Stage> {
       `Cannot find Stage with id ${id}`
     );
   }
+}
+
+/**
+ * Given an error, print it to the console
+ * @param {Error}
+ */
+export function reportError({ errorKind, message }: Error) {
+  console.error(`${errorKind}: ${message}`);
 }
