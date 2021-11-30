@@ -4,8 +4,6 @@ import Header from './Header';
 import Editor from './Editor';
 import Assets from './Assets';
 import { BrowserRouter } from 'react-router-dom';
-import { List } from 'immutable';
-import { filter } from 'lodash';
 import {
   Container,
   Row,

@@ -11,17 +11,17 @@ import {
 import {
   Drag,
   Edge,
-  Node
+  Stage
 } from '../types';
 import { lookupAccessPoint } from '../utils';
-import { useEdges, useNodes } from '../state';
+import { useEdges, useStages } from '../state';
 import EdgeSVG from './EdgeSVG';
-import NodeSVG from './NodeSVG';
+import StageSVG from './StageSVG';
 
 export default function Graph() {
-  const [simulation] = useState(forceSimulation<Node>().stop());
+  const [simulation] = useState(forceSimulation<Stage>().stop());
   const [drag, setDrag] = useState<Drag | null>(null);
-  const [nodes, setNodes] = useNodes();
+  const [stages, setStages] = useStages();
   // TODO move these into state container
   const [edges, setEdges] = useEdges();
 
@@ -32,14 +32,14 @@ export default function Graph() {
   const height = 800;
 
   useEffect(() => {
-    simulation.nodes(nodes.valueSeq().toArray());
+    simulation.nodes(stages.valueSeq().toArray());
     simulation
       .force('vertical-center', forceX(width / 2).strength(0.01))
       .force('horizontal-center', forceY(height / 2).strength(0.01))
       .force('charge', forceManyBody().strength(-100));
     simulation.alpha(0.5);
     simulation.alphaTarget(0.0).restart();
-  }, [nodes, edges]);
+  }, [stages, edges]);
 
   simulation.on('tick', () => {
     update();
@@ -52,7 +52,7 @@ export default function Graph() {
   useEffect(() => {
     if (drag) {
       const {cursor, offset, element} = drag;
-      if (element.kind === 'Node') {
+      if (element.kind === 'Stage') {
         element.fx! = cursor.x + offset.x;
         element.fy! = cursor.y + offset.y;
       }
@@ -94,7 +94,7 @@ export default function Graph() {
       {edges.map(({ requesterId, responderId }) => {
         // Look up each id
         const [requester, responder] = [requesterId, responderId]
-          .map(id => lookupAccessPoint(nodes, id));
+          .map(id => lookupAccessPoint(stages, id));
         if (requester && responder) {
           return <EdgeSVG
             key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
@@ -123,9 +123,9 @@ export default function Graph() {
             />;
           }
         }})()}
-      {nodes.valueSeq().map(node => <NodeSVG
-        node={node}
-        key={node.nodeId}
+      {stages.valueSeq().map(stage => <StageSVG
+        stage={stage}
+        key={stage.stageId}
         drag={drag}
         setDrag={setDrag}
         restartSimulation={restartSimulation}

@@ -7,14 +7,14 @@ import {
   Edge,
   ErrorKind,
   Asset,
-  Node,
+  Stage,
   Result,
   State
 } from './types';
 import {
   error,
   findAsset,
-  findNode,
+  findStage,
   protobufToRemoteMethods,
   success
 } from './utils';
@@ -25,7 +25,7 @@ import {
  */
 const initialState: State = {
   assets: Set(),
-  nodes: Set(),
+  stages: Set(),
   edges: Set(),
   actions: List()
 };
@@ -66,38 +66,38 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
     return success({
       assets: state.assets.remove(currentAsset).add(action.asset)
     });
-  case 'SetNodes':
-    return success({ nodes: action.nodes });
-  case 'DeleteNode':
-    const findNodeResult = findNode(state, action.node.nodeId);
-    // If we can't find the given node, fail with an error
-    if (findNodeResult.kind === 'Error') { return findNodeResult; }
-    const nodeToDelete = findNodeResult.value;
-    return success({ nodes: state.nodes.remove(nodeToDelete) });
-  case 'UpdateNode':
-    // Find the current node in the set that has the given Id
-    const findNodeResult_ = findNode(state, action.node.nodeId);
-    // This name is supposed to be findNodeResult. It is called findNodeResult_ in protest of
+  case 'SetStages':
+    return success({ stages: action.stages });
+  case 'DeleteStage':
+    const findStageResult = findStage(state, action.stage.stageId);
+    // If we can't find the given stage, fail with an error
+    if (findStageResult.kind === 'Error') { return findStageResult; }
+    const stageToDelete = findStageResult.value;
+    return success({ stages: state.stages.remove(stageToDelete) });
+  case 'UpdateStage':
+    // Find the current stage in the set that has the given Id
+    const findStageResult_ = findStage(state, action.stage.stageId);
+    // This name is supposed to be findStageResult. It is called findStageResult_ in protest of
     // Javascript insisting that a switch/case not introduce a new block scope, meaning that
-    // naming the variable findNodeResult would be considered a name collision. ECMAScript
+    // naming the variable findStageResult would be considered a name collision. ECMAScript
     // committee, please implement a proper [match expression](https://doc.rust-lang.org/book/ch06-02-match.html)
-    if (findNodeResult_.kind === 'Error') { return findNodeResult_; }
-    const currentNode = findNodeResult_.value;
-    // If the node exists...
+    if (findStageResult_.kind === 'Error') { return findStageResult_; }
+    const currentStage = findStageResult_.value;
+    // If the stage exists...
     return success({
-      nodes: state.nodes.remove(currentNode).add({ ...currentNode, ...action.node })
+      stages: state.stages.remove(currentStage).add({ ...currentStage, ...action.stage })
     });
   case 'AddVolume':
-    const findNodeResult__ = findNode(state, action.nodeId);
-    if (findNodeResult__.kind === 'Error') { return findNodeResult__; }
-    const node = findNodeResult__.value;
-    const nodeWithUpdatedVolumes = {
-      ...node,
-      volumes: node.volumes.push(action.volume)
+    const findStageResult__ = findStage(state, action.stageId);
+    if (findStageResult__.kind === 'Error') { return findStageResult__; }
+    const stage = findStageResult__.value;
+    const stageWithUpdatedVolumes = {
+      ...stage,
+      volumes: stage.volumes.push(action.volume)
     };
-    const nodes = state.nodes.remove(node).add(nodeWithUpdatedVolumes);
+    const stages = state.stages.remove(stage).add(stageWithUpdatedVolumes);
     return success({
-      nodes
+      stages
     });
   case 'SetEdges':
     return success({ edges: action.edges });
@@ -142,19 +142,19 @@ export function useUpdateAsset() {
   return useStore(({ dispatch }) => (asset: Asset) => dispatch({ type: 'UpdateAsset', asset }));
 }
 
-export function useDeleteNode() {
-  return useStore(({ dispatch }) => (node: Node) => dispatch({ type: 'DeleteNode', node }));
+export function useDeleteStage() {
+  return useStore(({ dispatch }) => (stage: Stage) => dispatch({ type: 'DeleteStage', stage }));
 }
 
-export function useUpdateNode() {
-  return useStore(({ dispatch }) => (node: Node) => dispatch({ type: 'UpdateNode', node }));
+export function useUpdateStage() {
+  return useStore(({ dispatch }) => (stage: Stage) => dispatch({ type: 'UpdateStage', stage }));
 }
 
 export function useAssets(): [Set<Asset>, (assets: Set<Asset>) => void] {
   return useStore(state => [state.assets, ((assets: Set<Asset>) => state.dispatch({ type: 'SetAssets', assets }))]);
 }
-export function useNodes(): [Set<Node>, (nodes: Set<Node>) => void] {
-  return useStore(state => [state.nodes, ((nodes: Set<Node>) => state.dispatch({ type: 'SetNodes', nodes }))]);
+export function useStages(): [Set<Stage>, (stages: Set<Stage>) => void] {
+  return useStore(state => [state.stages, ((stages: Set<Stage>) => state.dispatch({ type: 'SetStages', stages }))]);
 }
 export function useEdges(): [Set<Edge>, (edges: Set<Edge>) => void] {
   return useStore(state => [state.edges, ((edges: Set<Edge>) => state.dispatch({ type: 'SetEdges', edges }))]);

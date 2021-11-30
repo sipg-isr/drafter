@@ -10,47 +10,47 @@ import {
 } from 'immutable';
 import {
   Asset,
-  Node
+  Stage
 } from '../types';
 import Sidebar from './Sidebar';
 import Graph from './Graph';
 import { instantiateAsset, lookupAccessPoint } from '../utils';
-import { useEdges, useAssets, useNodes } from '../state';
+import { useEdges, useAssets, useStages } from '../state';
 
 export default function Editor() {
   // TODO store state somewhere like localStorage or idb-keyval
   // write a custom hook to serialize / deserialize this
   const [assets ] = useAssets();
-  const [nodes, setNodes] = useNodes();
+  const [stages, setStages] = useStages();
   const [edges, setEdges] = useEdges();
 
   useEffect(() => {
     // Whenever the assets are changed,
-    // filter out only the nodes that are from these assets
+    // filter out only the stages that are from these assets
 
-    setNodes(nodes
-      .filter(node =>
-        assets.find(({ assetId }) => node.assetId === assetId))
-      .map(node => {
-        const asset = assets.find(({ assetId }) => node.assetId === assetId)!;
+    setStages(stages
+      .filter(stage =>
+        assets.find(({ assetId }) => stage.assetId === assetId))
+      .map(stage => {
+        const asset = assets.find(({ assetId }) => stage.assetId === assetId)!;
         if (equal(
-          node.accessPoints.map(({ remoteMethodId }) => remoteMethodId).toSet(),
+          stage.accessPoints.map(({ remoteMethodId }) => remoteMethodId).toSet(),
           asset.methods.map(({ remoteMethodId }) => remoteMethodId).toSet()
         )) {
-          return node;
+          return stage;
         } else {
-          return instantiateAsset(asset, node.name);
+          return instantiateAsset(asset, stage.name);
         }
       })
     );
   }, [assets]);
 
   useEffect(() => {
-    // Whenever the nodes are changed, keep only the edges with surviving points
+    // Whenever the stages are changed, keep only the edges with surviving points
     setEdges(edges.filter(({ requesterId, responderId }) =>
-      lookupAccessPoint(nodes, requesterId) !== null &&
-      lookupAccessPoint(nodes, responderId) !== null));
-  }, [nodes]);
+      lookupAccessPoint(stages, requesterId) !== null &&
+      lookupAccessPoint(stages, responderId) !== null));
+  }, [stages]);
 
   return (
     <>

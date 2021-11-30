@@ -12,19 +12,19 @@ import {
 import { FaCheck, FaEllipsisH, FaPlus, FaTrash } from 'react-icons/fa';
 import {
   Asset,
-  Node,
+  Stage,
   UUID
 } from '../types';
 import { instantiateAsset } from '../utils';
 import {
   useAssets,
-  useNodes,
-  useUpdateNode
+  useStages,
+  useUpdateStage
 } from '../state';
 import EditField from './EditField';
 import VolumeEditor from './VolumeEditor';
 
-function NodeAddingForm() {
+function StageAddingForm() {
   const [assets] = useAssets();
 
   // This is a hack-- the select element won't accept null as a value, so we define an alternate
@@ -35,11 +35,11 @@ function NodeAddingForm() {
 
   const [selectedAssetId, setSelectedAssetId] = useState<UUID | typeof nil>(nil);
 
-  const [nodes, setNodes] = useNodes();
+  const [stages, setStages] = useStages();
 
   const addAssetToEditor = (asset: Asset) => {
-    const node = instantiateAsset(asset, asset.name);
-    setNodes(nodes.add(node));
+    const stage = instantiateAsset(asset, asset.name);
+    setStages(stages.add(stage));
   };
 
   // Whenever assets change, set back to nil
@@ -79,18 +79,18 @@ function NodeAddingForm() {
 
 export default function Sidebar() {
   const [assets] = useAssets();
-  const [nodes, setNodes] = useNodes();
-  // This function updates a node in-place
-  const updateNode = useUpdateNode();
+  const [stages, setStages] = useStages();
+  // This function updates a stage in-place
+  const updateStage = useUpdateStage();
 
-  const removeNode = (node: Node) => setNodes(nodes.remove(node));
+  const removeStage = (stage: Stage) => setStages(stages.remove(stage));
 
-  const [selectedNodeId, selectNodeId] = useState<UUID | null>(null);
-  const close = () => selectNodeId(null);
+  const [selectedStageId, selectStageId] = useState<UUID | null>(null);
+  const close = () => selectStageId(null);
 
   return (
     <Row>
-      <h6>Nodes</h6>
+      <h6>Stages</h6>
       <Table>
         <thead>
           <tr>
@@ -100,34 +100,34 @@ export default function Sidebar() {
           </tr>
         </thead>
         <tbody>
-          {nodes.toList().map(node =>
-            <tr key={node.nodeId}>
-              <td><EditField value={node.name} setValue={name => updateNode({ ...node, name })} /></td>
-              <td>{assets.find(({ assetId }) => node.assetId === assetId)?.name || 'No asset found'}</td>
+          {stages.toList().map(stage =>
+            <tr key={stage.stageId}>
+              <td><EditField value={stage.name} setValue={name => updateStage({ ...stage, name })} /></td>
+              <td>{assets.find(({ assetId }) => stage.assetId === assetId)?.name || 'No asset found'}</td>
               <td>
                 <ButtonGroup>
                   <Button
                     variant='primary'
-                    onClick={() => selectNodeId(node.nodeId)}
+                    onClick={() => selectStageId(stage.stageId)}
                   >
                     <FaEllipsisH />
                   </Button>
                   <Button
                     variant='danger'
-                    onClick={() => removeNode(node)}>
+                    onClick={() => removeStage(stage)}>
                     <FaTrash />
                   </Button>
                 </ButtonGroup>
               </td>
             </tr>
           )}
-          <NodeAddingForm />
+          <StageAddingForm />
         </tbody>
       </Table>
-      <Modal show={selectedNodeId !== null} onEscapeKeyDown={close}>
-        {selectedNodeId !== null  ?
-          <VolumeEditor nodeId={selectedNodeId} selectNodeId={selectNodeId} close={close} /> :
-          'No node selected'
+      <Modal show={selectedStageId !== null} onEscapeKeyDown={close}>
+        {selectedStageId !== null  ?
+          <VolumeEditor stageId={selectedStageId} selectStageId={selectStageId} close={close} /> :
+          'No stage selected'
         }
       </Modal>
     </Row>

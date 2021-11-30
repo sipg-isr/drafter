@@ -1,6 +1,6 @@
 import { Set } from 'immutable';
 import { UUID } from './util';
-import { Edge, HasNodeId, Asset, Node, Volume } from './base';
+import { Edge, HasStageId, Asset, Stage, Volume } from './base';
 import { State } from './state';
 
 /*
@@ -29,39 +29,39 @@ export interface UpdateAsset {
 }
 
 /**
- * Set the nodes. Used when nodes are added or removed from the editor
+ * Set the stages. Used when stages are added or removed from the editor
  */
-export interface SetNodes {
-  type: 'SetNodes';
-  nodes: Set<Node>;
+export interface SetStages {
+  type: 'SetStages';
+  stages: Set<Stage>;
 }
 
 /**
- * Delete the node with the given Id
+ * Delete the stage with the given Id
  */
-export interface DeleteNode {
-  type: 'DeleteNode';
-  node: Node;
+export interface DeleteStage {
+  type: 'DeleteStage';
+  stage: Stage;
 }
 
 /**
- * Used for updating one node, in-place
+ * Used for updating one stage, in-place
  */
-export interface UpdateNode {
-  type: 'UpdateNode';
+export interface UpdateStage {
+  type: 'UpdateStage';
   /**
-   * The given node to update may have none or all of the properties. It does have to have a
-   * nodeId, however, so that the node to update can be identified
+   * The given stage to update may have none or all of the properties. It does have to have a
+   * stageId, however, so that the stage to update can be identified
    */
-  node: Partial<Node> & HasNodeId;
+  stage: Partial<Stage> & HasStageId;
 }
 
 /**
- * Add a volume to an existing node
+ * Add a volume to an existing stage
  */
 export interface AddVolume {
   type: 'AddVolume';
-  nodeId: UUID;
+  stageId: UUID;
   volume: Volume;
 }
 
@@ -96,9 +96,9 @@ export type Action =
   CreateAsset  |
   SetAssets    |
   UpdateAsset  |
-  SetNodes     |
-  DeleteNode   |
-  UpdateNode   |
+  SetStages     |
+  DeleteStage   |
+  UpdateStage   |
   AddVolume    |
   SetEdges     |
   RestoreState |

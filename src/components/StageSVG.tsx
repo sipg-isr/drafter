@@ -8,37 +8,37 @@ import {
 import {
   Drag,
   Edge,
-  Node
+  Stage
 } from '../types';
 import {
   ellipsePolarToCartesian
 } from '../utils';
 import AccessPointSVG from './AccessPointSVG';
 
-interface NodeSVGProps {
-  node: Node;
+interface StageSVGProps {
+  stage: Stage;
   drag: Drag | null;
   setDrag: (drag: Drag) => void;
   restartSimulation: () => void;
 }
-export default function NodeSVG({
-  node,
+export default function StageSVG({
+  stage,
   drag,
   setDrag,
   restartSimulation
-} : NodeSVGProps) {
+} : StageSVGProps) {
   const { PI, max } = Math;
-  const { name, x, y } = node;
+  const { name, x, y } = stage;
 
   const displayName = truncate(name, { length: 25 });
   // The radii of the ellipse
   const rx = max(displayName.length * 6, 50);
   const ry = rx * 0.65;
 
-  const interval = (2 * PI) / node.accessPoints.size;
+  const interval = (2 * PI) / stage.accessPoints.size;
 
   useEffect(() => {
-    node
+    stage
       .accessPoints
       .forEach((accessPoint, idx) => {
         [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
@@ -69,7 +69,7 @@ export default function NodeSVG({
             cursor: {
               x: e.clientX, y: e.clientY
             },
-            element: node
+            element: stage
           });
           restartSimulation();
         }}
@@ -85,7 +85,7 @@ export default function NodeSVG({
         x={x}
         y={y}
       >{displayName}</text>
-      {node.accessPoints.map(ap =>
+      {stage.accessPoints.map(ap =>
         (
           <AccessPointSVG
             accessPoint={ap}

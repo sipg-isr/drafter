@@ -10,9 +10,9 @@ import {
   Error,
   ErrorKind,
   HasAccessPointId,
-  HasNodeId,
+  HasStageId,
   Asset,
-  Node,
+  Stage,
   RemoteMethod,
   Result,
   State,
@@ -76,8 +76,8 @@ let idCounter: Map<UUID, number> = Map();
  */
 export function instantiateAsset(
   { assetId, methods }: Asset, name: string
-): Node {
-  const nodeId = uuid();
+): Stage {
+  const stageId = uuid();
   const accessPoints = methods.reduce<List<AccessPoint>>((acc, { name, requestType, responseType, remoteMethodId}) => {
     const requesterId = uuid();
     const responderId = uuid();
@@ -89,7 +89,7 @@ export function instantiateAsset(
         type:          requestType,
         accessPointId: requesterId,
         remoteMethodId,
-        nodeId,
+        stageId,
         x: 0,
         y: 0
       })
@@ -99,24 +99,24 @@ export function instantiateAsset(
         name:          name,
         type:          responseType,
         accessPointId: responderId,
-        nodeId,
+        stageId,
         remoteMethodId,
         x: 0,
         y: 0
       });
   }, List());
 
-  // Get the number for this node
-  const nodeNumber = (idCounter.get(assetId) || 1);
+  // Get the number for this stage
+  const stageNumber = (idCounter.get(assetId) || 1);
   // Increment the number for the assetId
   idCounter = idCounter.set(assetId,
-    nodeNumber + 1
+    stageNumber + 1
   );
 
   return {
-    kind: 'Node',
-    name: `${name} ${nodeNumber}`,
-    nodeId,
+    kind: 'Stage',
+    name: `${name} ${stageNumber}`,
+    stageId,
     assetId,
     accessPoints: accessPoints.filter(({ type: { name, fields } }) =>
       name !== 'Empty' || Object.keys(fields).length > 0
@@ -193,7 +193,7 @@ export function deserializeState(serialized: string): State {
     } else if (
       key === 'methods' ||
       key === 'assets' ||
-      key === 'nodes' ||
+      key === 'stages' ||
       key === 'edges'
     ) {
       return Set(value);
@@ -205,15 +205,15 @@ export function deserializeState(serialized: string): State {
 }
 
 export function lookupAccessPoint(
-  nodes: Set<Node>,
-  { nodeId, accessPointId }: HasNodeId & HasAccessPointId): AccessPoint | null {
-  return nodes
-    .find(node => node.nodeId === nodeId)
+  stages: Set<Stage>,
+  { stageId, accessPointId }: HasStageId & HasAccessPointId): AccessPoint | null {
+  return stages
+    .find(stage => stage.stageId === stageId)
     ?.accessPoints
     .find(ap => ap.accessPointId === accessPointId) || null;
 }
 
-export async function exportState({ assets, nodes, edges }: State): Promise<Blob> {
+export async function exportState({ assets, stages, edges }: State): Promise<Blob> {
   const zip = new JSZip();
 
   // This object represents the docker-compose file
@@ -222,7 +222,7 @@ export async function exportState({ assets, nodes, edges }: State): Promise<Blob
   const dockerCompose: any = {
     version: '3',
     services: {
-      'orchestrator-node': {
+      'orchestrator-stage': {
         image: 'sipgisr/grpc-orchestrator:latest',
         volumes: [{
           type: 'bind',
@@ -236,7 +236,7 @@ export async function exportState({ assets, nodes, edges }: State): Promise<Blob
     }
   };
 
-  nodes.toList().forEach(({ name, assetId, volumes }, idx) => {
+  stages.toList().forEach(({ name, assetId, volumes }, idx) => {
     const asset = assets.find(asset => asset.assetId === assetId);
     if (!(name in dockerCompose.services) && asset) {
       dockerCompose.services[name.replaceAll(/\s+/g, '-')] = {
@@ -251,19 +251,19 @@ export async function exportState({ assets, nodes, edges }: State): Promise<Blob
 
   // This object represents the `config.yml` file
   const config: any = {
-    stages: nodes.map(({ name, assetId }) => ({
+    stages: stages.map(({ name, assetId }) => ({
       name,
       host: assets.find(asset => asset.assetId === assetId)?.name || 'Asset not found',
       port: 8061
     })).toArray(),
     links: edges.map(({ requesterId, responderId }) => ({
       source: {
-        stage: nodes.find(({ nodeId }) => nodeId === responderId.nodeId)?.name || 'Node not found',
-        field: lookupAccessPoint(nodes, responderId)?.name || 'Method not found'
+        stage: stages.find(({ stageId }) => stageId === responderId.stageId)?.name || 'Stage not found',
+        field: lookupAccessPoint(stages, responderId)?.name || 'Method not found'
       },
       target: {
-        stage: nodes.find(({ nodeId }) => nodeId === requesterId.nodeId)?.name || 'Node not found',
-        field: lookupAccessPoint(nodes, requesterId)?.name || 'Method not found'
+        stage: stages.find(({ stageId }) => stageId === requesterId.stageId)?.name || 'Stage not found',
+        field: lookupAccessPoint(stages, requesterId)?.name || 'Method not found'
       }
     })).toArray()
   };
@@ -313,16 +313,16 @@ export function findAsset(state: State, id: UUID): Result<Asset> {
 }
 
 /**
- * Attempt to find the node with the given ID
+ * Attempt to find the stage with the given ID
  */
-export function findNode(state: State, id: UUID): Result<Node> {
-  const node = state.nodes.find(({ nodeId }) => nodeId === id);
-  if (node) {
-    return success(node);
+export function findStage(state: State, id: UUID): Result<Stage> {
+  const stage = state.stages.find(({ stageId }) => stageId === id);
+  if (stage) {
+    return success(stage);
   } else {
     return error(
-      ErrorKind.NodeNotFound,
-      `Cannot find Node with id ${id}`
+      ErrorKind.StageNotFound,
+      `Cannot find Stage with id ${id}`
     );
   }
 }
