@@ -25,9 +25,9 @@ import StageSVG from './StageSVG';
 export default function Graph() {
   const [simulation] = useState(forceSimulation<Stage>().stop());
   const [drag, setDrag] = useState<Drag | null>(null);
-  const [stages, ] = useStages();
+  const [stages ] = useStages();
   // TODO move these into state container
-  const [edges, ] = useEdges();
+  const [edges ] = useEdges();
 
   const [, update] = useReducer(x => x + 1, 0);
 
