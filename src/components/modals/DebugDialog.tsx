@@ -45,6 +45,18 @@ export function DebugDialog({ show, close }: DebugDialogProps) {
               </Accordion.Body>
             </Accordion.Item>)}
         </Accordion>
+        <br />
+        <h5>Application State</h5>
+        <Accordion>
+          <Accordion.Item eventKey='state'>
+            <Accordion.Header>
+              State
+            </Accordion.Header>
+            <Accordion.Body>
+              <Listing content={JSON.stringify(state, null, 2)}/>
+            </Accordion.Body>
+          </Accordion.Item>
+        </Accordion>
       </Modal.Body>
     </Modal>
   );
