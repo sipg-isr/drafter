@@ -7,34 +7,34 @@ import {
 import { List, Set } from 'immutable';
 import { v4 as uuid } from 'uuid';
 import { FaCheck, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
-import { Model } from '../types';
+import { Asset } from '../types';
 import { fileContent, protobufToRemoteMethods, remoteMethodToString } from '../utils';
 
 interface Edit {
   kind: 'Edit';
-  model: Model | null;
+  asset: Asset | null;
 }
 
 interface Display {
   kind: 'Display';
-  model: Model;
+  asset: Asset;
 }
 
-export type ModelEntry = | Edit | Display;
+export type AssetEntry = | Edit | Display;
 
-interface DisplayModelProps {
+interface DisplayAssetProps {
   entry: Display;
-  setEntry: (entry: ModelEntry) => void;
+  setEntry: (entry: AssetEntry) => void;
   removeEntry: () => void;
 }
-function DisplayModel({ entry: { model }, setEntry, removeEntry }: DisplayModelProps) {
+function DisplayAsset({ entry: { asset }, setEntry, removeEntry }: DisplayAssetProps) {
 
   return (
     <>
       <tr>
-        <td>{model.name}</td>
-        <td><pre>{model.image}</pre></td>
-        <td>{model.methods.map(method => <pre key={`${model.modelId}-${method.name}`}>{remoteMethodToString(method)}</pre>)}</td>
+        <td>{asset.name}</td>
+        <td><pre>{asset.image}</pre></td>
+        <td>{asset.methods.map(method => <pre key={`${asset.assetId}-${method.name}`}>{remoteMethodToString(method)}</pre>)}</td>
         <td style={{whiteSpace: 'nowrap'}}>
           <ButtonGroup>
             <Button
@@ -42,7 +42,7 @@ function DisplayModel({ entry: { model }, setEntry, removeEntry }: DisplayModelP
               onClick={() =>
                 setEntry({
                   kind: 'Edit',
-                  model
+                  asset
                 })
               }
             ><FaPen /></Button>
@@ -58,15 +58,15 @@ function DisplayModel({ entry: { model }, setEntry, removeEntry }: DisplayModelP
 
 }
 
-interface EditModelProps {
+interface EditAssetProps {
   entry: Edit;
-  setEntry: (entry: ModelEntry) => void;
+  setEntry: (entry: AssetEntry) => void;
   removeEntry: () => void;
 }
 
-function EditModel({ entry: { model }, setEntry, removeEntry }: EditModelProps) {
-  const [name, setName] = useState(model?.name || '');
-  const [image, setImage] = useState(model?.image || '');
+function EditAsset({ entry: { asset }, setEntry, removeEntry }: EditAssetProps) {
+  const [name, setName] = useState(asset?.name || '');
+  const [image, setImage] = useState(asset?.image || '');
   // Protobuf file input
   const filesRef = useRef<HTMLInputElement | null>(null);
 
@@ -75,7 +75,7 @@ function EditModel({ entry: { model }, setEntry, removeEntry }: EditModelProps) 
       <tr>
         <td>
           <Form.Control
-            placeholder='My model name'
+            placeholder='My asset name'
             value={name}
             onChange={event => setName(event.target.value)}
           />
@@ -96,10 +96,10 @@ function EditModel({ entry: { model }, setEntry, removeEntry }: EditModelProps) 
         </td>
         <td style={{whiteSpace: 'nowrap'}}>
           <ButtonGroup>
-            { model ?
+            { asset ?
               <Button
                 variant='secondary'
-                onClick={() => setEntry({ kind: 'Display', model })}
+                onClick={() => setEntry({ kind: 'Display', asset })}
               ><FaTimes /></Button> : null
             }
             <Button
@@ -107,13 +107,13 @@ function EditModel({ entry: { model }, setEntry, removeEntry }: EditModelProps) 
               onClick={async () => {
                 setEntry({
                   kind: 'Display',
-                  model: {
-                    kind: 'Model',
+                  asset: {
+                    kind: 'Asset',
                     name,
                     image,
                     // TODO show an error message and abort if this is null
                     methods: protobufToRemoteMethods(await fileContent(filesRef!.current!) || '') || Set(),
-                    modelId: model ? model.modelId : uuid()
+                    assetId: asset ? asset.assetId : uuid()
                   }
                 });
               }}><FaCheck /></Button>
@@ -128,17 +128,17 @@ function EditModel({ entry: { model }, setEntry, removeEntry }: EditModelProps) 
   );
 }
 
-interface ModelViewProps {
-  entry: ModelEntry;
-  setEntry: (entry: ModelEntry) => void;
+interface AssetViewProps {
+  entry: AssetEntry;
+  setEntry: (entry: AssetEntry) => void;
   removeEntry: () => void;
 }
-export default function ModelView({ entry, setEntry, removeEntry }: ModelViewProps) {
+export default function AssetView({ entry, setEntry, removeEntry }: AssetViewProps) {
   if (entry.kind === 'Display') {
-    return <DisplayModel entry={entry} setEntry={setEntry} removeEntry={removeEntry} />;
+    return <DisplayAsset entry={entry} setEntry={setEntry} removeEntry={removeEntry} />;
   } else if (entry.kind === 'Edit') {
-    return <EditModel entry={entry} setEntry={setEntry} removeEntry={removeEntry} />;
+    return <EditAsset entry={entry} setEntry={setEntry} removeEntry={removeEntry} />;
   } else {
-    throw new Error(`Unexpected Model View State ${entry}`);
+    throw new Error(`Unexpected Asset View State ${entry}`);
   }
 }

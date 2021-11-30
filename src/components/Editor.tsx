@@ -9,41 +9,41 @@ import {
   is as equal
 } from 'immutable';
 import {
-  Model,
+  Asset,
   Node
 } from '../types';
 import Sidebar from './Sidebar';
 import Graph from './Graph';
-import { instantiateModel, lookupAccessPoint } from '../utils';
-import { useEdges, useModels, useNodes } from '../state';
+import { instantiateAsset, lookupAccessPoint } from '../utils';
+import { useEdges, useAssets, useNodes } from '../state';
 
 export default function Editor() {
   // TODO store state somewhere like localStorage or idb-keyval
   // write a custom hook to serialize / deserialize this
-  const [models ] = useModels();
+  const [assets ] = useAssets();
   const [nodes, setNodes] = useNodes();
   const [edges, setEdges] = useEdges();
 
   useEffect(() => {
-    // Whenever the models are changed,
-    // filter out only the nodes that are from these models
+    // Whenever the assets are changed,
+    // filter out only the nodes that are from these assets
 
     setNodes(nodes
       .filter(node =>
-        models.find(({ modelId }) => node.modelId === modelId))
+        assets.find(({ assetId }) => node.assetId === assetId))
       .map(node => {
-        const model = models.find(({ modelId }) => node.modelId === modelId)!;
+        const asset = assets.find(({ assetId }) => node.assetId === assetId)!;
         if (equal(
           node.accessPoints.map(({ remoteMethodId }) => remoteMethodId).toSet(),
-          model.methods.map(({ remoteMethodId }) => remoteMethodId).toSet()
+          asset.methods.map(({ remoteMethodId }) => remoteMethodId).toSet()
         )) {
           return node;
         } else {
-          return instantiateModel(model, node.name);
+          return instantiateAsset(asset, node.name);
         }
       })
     );
-  }, [models]);
+  }, [assets]);
 
   useEffect(() => {
     // Whenever the nodes are changed, keep only the edges with surviving points

@@ -6,14 +6,14 @@ import {
   Action,
   Edge,
   ErrorKind,
-  Model,
+  Asset,
   Node,
   Result,
   State
 } from './types';
 import {
   error,
-  findModel,
+  findAsset,
   findNode,
   protobufToRemoteMethods,
   success
@@ -24,7 +24,7 @@ import {
  * and restoring to this first state
  */
 const initialState: State = {
-  models: Set(),
+  assets: Set(),
   nodes: Set(),
   edges: Set(),
   actions: List()
@@ -36,13 +36,13 @@ const initialState: State = {
  */
 function reducer(state: State, action: Action): Result<Partial<State>> {
   switch (action.type) {
-  case 'CreateModel':
+  case 'CreateAsset':
     const methods = protobufToRemoteMethods(action.protobufCode);
     if (methods) {
       return success({
-        models: state.models.add({
-          kind: 'Model',
-          modelId: uuid(),
+        assets: state.assets.add({
+          kind: 'Asset',
+          assetId: uuid(),
           name: action.name,
           image: action.image,
           methods
@@ -54,17 +54,17 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
         'Refusing to update state: Could not parse protobuf code'
       );
     }
-  case 'SetModels':
-    return success({ ...state, models: action.models });
-  case 'UpdateModel':
-    // Try to find the model
-    const findModelResult = findModel(state, action.model.modelId);
+  case 'SetAssets':
+    return success({ ...state, assets: action.assets });
+  case 'UpdateAsset':
+    // Try to find the asset
+    const findAssetResult = findAsset(state, action.asset.assetId);
     // If you can't find it, quit
-    if (findModelResult.kind === 'Error') { return findModelResult; }
-    // If we can find the current model, remove and replace it
-    const currentModel = findModelResult.value;
+    if (findAssetResult.kind === 'Error') { return findAssetResult; }
+    // If we can find the current asset, remove and replace it
+    const currentAsset = findAssetResult.value;
     return success({
-      models: state.models.remove(currentModel).add(action.model)
+      assets: state.assets.remove(currentAsset).add(action.asset)
     });
   case 'SetNodes':
     return success({ nodes: action.nodes });
@@ -129,17 +129,17 @@ export const useStore = create(redux(
 export function useDispatch() {
   return useStore(state => state.dispatch);
 }
-export function useCreateModel() {
+export function useCreateAsset() {
   return useStore(({ dispatch }) =>
     ({ name, image, protobufCode }: { name: string, image: string, protobufCode: string}) => dispatch({
-      type: 'CreateModel',
+      type: 'CreateAsset',
       name,
       image,
       protobufCode
     }));
 }
-export function useUpdateModel() {
-  return useStore(({ dispatch }) => (model: Model) => dispatch({ type: 'UpdateModel', model }));
+export function useUpdateAsset() {
+  return useStore(({ dispatch }) => (asset: Asset) => dispatch({ type: 'UpdateAsset', asset }));
 }
 
 export function useDeleteNode() {
@@ -150,8 +150,8 @@ export function useUpdateNode() {
   return useStore(({ dispatch }) => (node: Node) => dispatch({ type: 'UpdateNode', node }));
 }
 
-export function useModels(): [Set<Model>, (models: Set<Model>) => void] {
-  return useStore(state => [state.models, ((models: Set<Model>) => state.dispatch({ type: 'SetModels', models }))]);
+export function useAssets(): [Set<Asset>, (assets: Set<Asset>) => void] {
+  return useStore(state => [state.assets, ((assets: Set<Asset>) => state.dispatch({ type: 'SetAssets', assets }))]);
 }
 export function useNodes(): [Set<Node>, (nodes: Set<Node>) => void] {
   return useStore(state => [state.nodes, ((nodes: Set<Node>) => state.dispatch({ type: 'SetNodes', nodes }))]);

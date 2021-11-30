@@ -1,6 +1,6 @@
 import { Set } from 'immutable';
 import { UUID } from './util';
-import { Edge, HasNodeId, Model, Node, Volume } from './base';
+import { Edge, HasNodeId, Asset, Node, Volume } from './base';
 import { State } from './state';
 
 /*
@@ -8,24 +8,24 @@ import { State } from './state';
  * made on the application state.
  **/
 
-export interface CreateModel {
-  type: 'CreateModel';
+export interface CreateAsset {
+  type: 'CreateAsset';
   name: string;
   image: string;
   protobufCode: string;
 }
 
 /**
- * Set the models. Used for adding and removing models from the editor, as well as modifying them
+ * Set the assets. Used for adding and removing assets from the editor, as well as modifying them
  */
-export interface SetModels {
-  type: 'SetModels';
-  models: Set<Model>;
+export interface SetAssets {
+  type: 'SetAssets';
+  assets: Set<Asset>;
 }
 
-export interface UpdateModel {
-  type: 'UpdateModel';
-  model: Model;
+export interface UpdateAsset {
+  type: 'UpdateAsset';
+  asset: Asset;
 }
 
 /**
@@ -93,9 +93,9 @@ export interface ClearState {
  * The action type is defined as the union of all the possible actions in the editor
  */
 export type Action =
-  CreateModel  |
-  SetModels    |
-  UpdateModel  |
+  CreateAsset  |
+  SetAssets    |
+  UpdateAsset  |
   SetNodes     |
   DeleteNode   |
   UpdateNode   |

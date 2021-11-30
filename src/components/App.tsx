@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Header from './Header';
 import Editor from './Editor';
-import Models from './Models';
+import Assets from './Assets';
 import { BrowserRouter } from 'react-router-dom';
 import { List } from 'immutable';
 import { filter } from 'lodash';
@@ -22,9 +22,9 @@ function App() {
           <hr />
         </Row>
         <Row>
-          <Tabs defaultValue='models'>
-            <Tab eventKey='models' title='Models'>
-              <Models />
+          <Tabs defaultValue='assets'>
+            <Tab eventKey='assets' title='Assets'>
+              <Assets />
             </Tab>
             <Tab style={{padding:15}} eventKey='editor' title='Editor'>
               <Editor />

@@ -1,5 +1,5 @@
 import { List, Set } from 'immutable';
-import { Edge, Model, Node } from './base';
+import { Edge, Asset, Node } from './base';
 import { Action } from './actions';
 
 /**
@@ -7,8 +7,8 @@ import { Action } from './actions';
  *
  */
 export interface State {
-  /** A set of models that have been onboarded onto the platform  */
-  models: Set<Model>;
+  /** A set of assets that have been onboarded onto the platform  */
+  assets: Set<Asset>;
 
   /** A set of nodes that were instantiated into the graph */
   nodes: Set<Node>;

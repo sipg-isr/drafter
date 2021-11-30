@@ -4,20 +4,20 @@
  */
 
 import { Force } from 'd3';
-import { Model, Node, RemoteMethod } from './types';
+import { Asset, Node, RemoteMethod } from './types';
 import { List } from 'immutable';
 
 /**
- * All methods are attracted to the model that defines them
+ * All methods are attracted to the asset that defines them
  */
-// export function forceParentModelAttraction(nodes: Set<Node>, strength: number = 1): Force<Node, any> {
+// export function forceParentAssetAttraction(nodes: Set<Node>, strength: number = 1): Force<Node, any> {
 //   return (alpha: number) => {
 //     nodes.forEach(node => {
-//       // For each model...
+//       // For each asset...
 //       nodes.inputs.forEach(input => {
-//         // Each method of the model should be attracted to it
-//         method.vx! += (model.x! - method.x!) * alpha * strength;
-//         method.vy! += (model.y! - method.y!) * alpha * strength;
+//         // Each method of the asset should be attracted to it
+//         method.vx! += (asset.x! - method.x!) * alpha * strength;
+//         method.vy! += (asset.y! - method.y!) * alpha * strength;
 //       });
 //     });
 //   };

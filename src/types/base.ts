@@ -14,8 +14,8 @@ export interface HasRemoteMethodId {
   remoteMethodId: UUID;
 }
 
-export interface HasModelId {
-  modelId: UUID;
+export interface HasAssetId {
+  assetId: UUID;
 }
 
 export interface HasNodeId {
@@ -35,7 +35,7 @@ export interface HasVolumeId {
 }
 
 /**
- * An RPC method that forms part of a Model's interface
+ * An RPC method that forms part of a Asset's interface
  */
 export interface RemoteMethod extends HasRemoteMethodId {
   name: string;
@@ -45,11 +45,11 @@ export interface RemoteMethod extends HasRemoteMethodId {
 
 
 /**
- * this defines a model, which is a template from which nodes in the editor can be made
+ * this defines a asset, which is a template from which nodes in the editor can be made
  */
-export interface Model extends HasModelId {
-  kind: 'Model';
-  // The human-readable name of the model
+export interface Asset extends HasAssetId {
+  kind: 'Asset';
+  // The human-readable name of the asset
   name: string;
   // An image name, like sipgisr/image-source:latest
   image: string;
@@ -58,7 +58,7 @@ export interface Model extends HasModelId {
 }
 
 /** A stage in the editor-- one computer */
-export interface Node extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasModelId {
+export interface Node extends SimulationNodeDatumWithRequiredCoordinates, HasNodeId, HasAssetId {
   kind: 'Node';
   /** The name of the individual node */
   name: string;

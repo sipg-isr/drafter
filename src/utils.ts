@@ -11,7 +11,7 @@ import {
   ErrorKind,
   HasAccessPointId,
   HasNodeId,
-  Model,
+  Asset,
   Node,
   RemoteMethod,
   Result,
@@ -68,14 +68,14 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
 }
 
 /**
- * Keeps track of how many of each model have been instantiated
+ * Keeps track of how many of each asset have been instantiated
  */
 let idCounter: Map<UUID, number> = Map();
 /**
- * Given a model, instantiate it so that it can be used in the simulation
+ * Given a asset, instantiate it so that it can be used in the simulation
  */
-export function instantiateModel(
-  { modelId, methods }: Model, name: string
+export function instantiateAsset(
+  { assetId, methods }: Asset, name: string
 ): Node {
   const nodeId = uuid();
   const accessPoints = methods.reduce<List<AccessPoint>>((acc, { name, requestType, responseType, remoteMethodId}) => {
@@ -107,9 +107,9 @@ export function instantiateModel(
   }, List());
 
   // Get the number for this node
-  const nodeNumber = (idCounter.get(modelId) || 1);
-  // Increment the number for the modelId
-  idCounter = idCounter.set(modelId,
+  const nodeNumber = (idCounter.get(assetId) || 1);
+  // Increment the number for the assetId
+  idCounter = idCounter.set(assetId,
     nodeNumber + 1
   );
 
@@ -117,7 +117,7 @@ export function instantiateModel(
     kind: 'Node',
     name: `${name} ${nodeNumber}`,
     nodeId,
-    modelId,
+    assetId,
     accessPoints: accessPoints.filter(({ type: { name, fields } }) =>
       name !== 'Empty' || Object.keys(fields).length > 0
     ),
@@ -173,7 +173,7 @@ export async function fileContent(element: HTMLInputElement): Promise<string | n
     const file = files.first()!;
     return file.text();
   } else {
-    console.error(`Didn't find exactly one protobuf file for the model. Files were [${files.map(file => file.name).join(', ')}]}`);
+    console.error(`Didn't find exactly one protobuf file for the asset. Files were [${files.map(file => file.name).join(', ')}]}`);
     return null;
   }
 }
@@ -192,7 +192,7 @@ export function deserializeState(serialized: string): State {
       return List(value);
     } else if (
       key === 'methods' ||
-      key === 'models' ||
+      key === 'assets' ||
       key === 'nodes' ||
       key === 'edges'
     ) {
@@ -213,7 +213,7 @@ export function lookupAccessPoint(
     .find(ap => ap.accessPointId === accessPointId) || null;
 }
 
-export async function exportState({ models, nodes, edges }: State): Promise<Blob> {
+export async function exportState({ assets, nodes, edges }: State): Promise<Blob> {
   const zip = new JSZip();
 
   // This object represents the docker-compose file
@@ -236,11 +236,11 @@ export async function exportState({ models, nodes, edges }: State): Promise<Blob
     }
   };
 
-  nodes.toList().forEach(({ name, modelId, volumes }, idx) => {
-    const model = models.find(model => model.modelId === modelId);
-    if (!(name in dockerCompose.services) && model) {
+  nodes.toList().forEach(({ name, assetId, volumes }, idx) => {
+    const asset = assets.find(asset => asset.assetId === assetId);
+    if (!(name in dockerCompose.services) && asset) {
       dockerCompose.services[name.replaceAll(/\s+/g, '-')] = {
-        image: model.image,
+        image: asset.image,
         volumes: volumes
           .map(({ source, target, type }) => ({ source, target, type }))
           .toArray(),
@@ -251,9 +251,9 @@ export async function exportState({ models, nodes, edges }: State): Promise<Blob
 
   // This object represents the `config.yml` file
   const config: any = {
-    stages: nodes.map(({ name, modelId }) => ({
+    stages: nodes.map(({ name, assetId }) => ({
       name,
-      host: models.find(model => model.modelId === modelId)?.name || 'Model not found',
+      host: assets.find(asset => asset.assetId === assetId)?.name || 'Asset not found',
       port: 8061
     })).toArray(),
     links: edges.map(({ requesterId, responderId }) => ({
@@ -298,16 +298,16 @@ export function error(errorKind: ErrorKind, message: string): Error {
 }
 
 /**
- * Attempt to find the model with the given ID
+ * Attempt to find the asset with the given ID
  */
-export function findModel(state: State, id: UUID): Result<Model> {
-  const model = state.models.find(({ modelId }) => modelId === id);
-  if (model) {
-    return success(model);
+export function findAsset(state: State, id: UUID): Result<Asset> {
+  const asset = state.assets.find(({ assetId }) => assetId === id);
+  if (asset) {
+    return success(asset);
   } else {
     return error(
-      ErrorKind.ModelNotFound,
-      `Cannot find Model with id ${id}`
+      ErrorKind.AssetNotFound,
+      `Cannot find Asset with id ${id}`
     );
   }
 }
