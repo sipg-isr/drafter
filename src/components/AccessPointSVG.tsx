@@ -5,11 +5,7 @@ import {
   AccessPoint,
   Drag,
   Edge,
-  HasAccessPointId,
-  HasEdgeId,
-  HasStageId,
-  Stage,
-  UUID
+  HasAccessPointId
 } from '../types';
 import { useEdges, useStages } from '../state';
 import {
@@ -22,6 +18,9 @@ interface AccessPointSVGProps {
   setDrag: (drag: Drag) => void;
   drag: Drag | null;
 }
+/**
+ * An SVG component that renders the given AccessPoint as a colored circle
+ */
 export default function AccessPointSVG({
   accessPoint,
   drag,

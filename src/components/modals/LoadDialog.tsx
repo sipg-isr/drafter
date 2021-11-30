@@ -7,6 +7,9 @@ interface LoadDialogProps {
   show: boolean;
   close: () => void;
 }
+/**
+ * A component representing a modal dialog that allows a user to load a saved file
+ */
 export function LoadDialog({ show, close }: LoadDialogProps) {
   const restoreState = useRestoreState();
 

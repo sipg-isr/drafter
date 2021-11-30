@@ -67,6 +67,9 @@ function AssetAddingForm() {
   );
 }
 
+/**
+ * This component lists the current Assets and allows you to modify them, delete them, or add more
+ */
 export default function Assets() {
   // Keep a list of the state assets
   const [assets] = useAssets();

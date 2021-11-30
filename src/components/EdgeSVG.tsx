@@ -6,6 +6,9 @@ interface EdgeSVGProps {
   x2: number;
   y2: number;
 }
+/**
+ * A simple SVG component for rendering edges between stages
+ */
 export default function EdgeSVG({
   x1, x2, y1, y2
 }: EdgeSVGProps) {

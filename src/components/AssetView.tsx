@@ -139,6 +139,9 @@ interface AssetViewProps {
   setEntry: (entry: AssetEntry) => void;
   removeEntry: () => void;
 }
+/**
+ * A component that displays a given asset and allows the user to edit it
+ */
 export default function AssetView({ entry, setEntry, removeEntry }: AssetViewProps) {
   if (entry.kind === 'Display') {
     return <DisplayAsset entry={entry} setEntry={setEntry} removeEntry={removeEntry} />;

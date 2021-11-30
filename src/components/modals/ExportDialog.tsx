@@ -13,6 +13,9 @@ interface ExportDialogProps {
   show: boolean;
   close: () => void;
 }
+/**
+ * Simple modal dialog component allowing to export the editor state to a particular format
+ */
 export function ExportDialog({ show, close }: ExportDialogProps) {
   const state = useStore();
   const [filename, setFilename] = useState('solution.zip');
