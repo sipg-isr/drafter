@@ -26,11 +26,11 @@ export type Path = string;
  * A type identifying what kind of problem caused an error
  */
 export enum ErrorKind {
-  ParsingError,
-  AssetNotFound,
-  StageNotFound,
-  AccessPointNotFound,
-  FileInputError
+  ParsingError = 'ParsingError',
+  AssetNotFound = 'AssetNotFound',
+  StageNotFound = 'StageNotFound',
+  AccessPointNotFound = 'AccessPointNotFound',
+  FileInputError = 'FileInputError'
 }
 
 /**
@@ -40,23 +40,12 @@ export enum ErrorKind {
  * @property {string} message - a human-language description of what caused the error
  */
 export interface Error {
-  // flat-out identify that this is an error and not a success
-  success: false
-  error: true
+  kind: 'Error',
   errorKind: ErrorKind;
   message: string;
 }
 
 /**
- * A successful execution of Result. Simply tag the exiting type with two properties identifying
- * that the run succeeded
- */
-export type Success<T> = T & {
-  success: true
-  error: false
-}
-
-/**
  * A result type, as in Haskell or Rust. Used to either produce a value or fail with a given error
  */
-export type Result<T> = Success<T> | Error;
+export type Result<T> = T | Error;

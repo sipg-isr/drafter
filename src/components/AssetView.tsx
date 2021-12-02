@@ -4,7 +4,7 @@ import {
   ButtonGroup,
   Form
 } from 'react-bootstrap';
-import { List, Set } from 'immutable';
+import { Set } from 'immutable';
 import { v4 as uuid } from 'uuid';
 import { FaCheck, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
 import { Asset } from '../types';
@@ -106,7 +106,7 @@ function EditAsset({ entry: { asset }, setEntry, removeEntry }: EditAssetProps) 
               variant='success'
               onClick={async () => {
                 const content = await fileContent(filesRef!.current!);
-                if (content.success) {
+                if (typeof content === 'string') {
                   const methods = protobufToRemoteMethods(content);
                   setEntry({
                     kind: 'Display',
@@ -115,7 +115,7 @@ function EditAsset({ entry: { asset }, setEntry, removeEntry }: EditAssetProps) 
                       name,
                       image,
                       // TODO show an error message and abort if this is null
-                      methods: methods.success ? methods : Set(),
+                      methods: 'errorKind' in methods ? Set() : methods,
                       assetId: asset ? asset.assetId : uuid()
                     }
                   });

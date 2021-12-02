@@ -7,6 +7,7 @@ import { Action } from './actions';
  *
  */
 export interface State {
+  kind: 'State';
   /** A set of assets that have been onboarded onto the platform  */
   assets: Set<Asset>;
 
