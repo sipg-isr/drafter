@@ -32,7 +32,17 @@ const initialState: State = {
 
 /**
  * This is the fundamental state management function for the application. It takes a state, and an
- * action and returns a new state
+ * action and returns a new state.
+ *
+ * The core of all Drafter Application logic is defined in this function
+ *
+ * @param {State} state -
+ *   The initial state, before any action takes place. If any failure occurs,
+ *   this state will be restored
+ * @param {Action} action - An action, which will be applied as a a modification against the State
+ * @return {Result<Partial<State>>}
+ *   A partial state object. This will define some properties of State, and the missing ones will
+ *   be filled in from the initial State.
  */
 function reducer(state: State, action: Action): Result<Partial<State>> {
   switch (action.type) {
@@ -106,6 +116,9 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
   }
 }
 
+/**
+ * A React Hook to bring the application State into scope
+ */
 export const useStore = create(redux(
   (state: State, action: Action) => {
     const result = reducer(state, action);
