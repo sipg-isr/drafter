@@ -12,11 +12,9 @@ import {
   State
 } from './types';
 import {
-  error,
   findAsset,
   findStage,
-  protobufToRemoteMethods,
-  success
+  protobufToRemoteMethods
 } from './utils';
 
 /**
@@ -24,6 +22,7 @@ import {
  * and restoring to this first state
  */
 const initialState: State = {
+  kind: 'State',
   assets: Set(),
   stages: Set(),
   edges: Set(),
@@ -48,8 +47,8 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
   switch (action.type) {
   case 'CreateAsset':
     const methods = protobufToRemoteMethods(action.protobufCode);
-    if (methods.success) {
-      return success({
+    if (!('errorKind' in methods)) {
+      return {
         assets: state.assets.add({
           kind: 'Asset',
           assetId: uuid(),
@@ -57,55 +56,55 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
           image: action.image,
           methods
         })
-      });
+      };
     } else {
       // If this is an error, than just return the error
       return methods;
     }
   case 'SetAssets':
-    return success({ ...state, assets: action.assets });
+    return { ...state, assets: action.assets };
   case 'UpdateAsset':
     // Try to find the asset
     const asset = findAsset(state, action.asset.assetId);
     // If finding the asset returned an error, then just propagate that error
-    if (asset.error) { return asset; }
+    if (asset.kind === 'Error') { return asset; }
     // If we can find the current asset, remove and replace it
-    return success({
-      assets: state.assets.remove(asset).add(action.asset)
-    });
+      return {
+        assets: state.assets.remove(asset).add(action.asset)
+      };
   case 'SetStages':
-    return success({ stages: action.stages });
+    return { stages: action.stages };
   case 'DeleteStage':
     const stageToDelete = findStage(state, action.stage.stageId);
     // If finding the stage gave us an error, return that error
-    if (stageToDelete.error) { return stageToDelete; }
-    return success({ stages: state.stages.remove(stageToDelete) });
+    if (stageToDelete.kind === 'Error') { return stageToDelete; }
+    return { stages: state.stages.remove(stageToDelete) };
   case 'UpdateStage':
     // Find the current stage in the set that has the given Id
     const stageToUpdate = findStage(state, action.stage.stageId);
     // If we've got an error, return it
-    if (stageToUpdate.error) { return stageToUpdate; }
+    if (stageToUpdate.kind === 'Error' ) { return stageToUpdate; }
     // If the stage exists...
-    return success({
-      stages: state.stages.remove(stageToUpdate).add({ ...stageToUpdate, ...action.stage })
-    });
+      return {
+        stages: state.stages.remove(stageToUpdate).add({ ...stageToUpdate, ...action.stage })
+      };
   case 'AddVolume':
     const stageToAddVolume = findStage(state, action.stageId);
-    if (stageToAddVolume.error) { return stageToAddVolume; }
+    if (stageToAddVolume.kind === 'Error') { return stageToAddVolume; }
     const stageWithUpdatedVolumes = {
       ...stageToAddVolume,
       volumes: stageToAddVolume.volumes.push(action.volume)
     };
     const stages = state.stages.remove(stageToAddVolume).add(stageWithUpdatedVolumes);
-    return success({
-      stages
-    });
+      return {
+        stages
+      };
   case 'SetEdges':
-    return success({ edges: action.edges });
+    return { edges: action.edges };
   case 'RestoreState':
-    return success(action.state);
+    return action.state;
   case 'ClearState':
-    return success(initialState);
+    return initialState;
   }
 }
 
@@ -115,7 +114,7 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
 export const useStore = create(redux(
   (state: State, action: Action) => {
     const partialState = reducer(state, action);
-    if (partialState.success) {
+    if (partialState.kind !== 'Error') {
       if (partialState.actions) {
         // If the reducer actually specified or changed the actions, then use those
         return { ...state, ...partialState };

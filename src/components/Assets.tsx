@@ -4,7 +4,6 @@ import {
   Form,
   Table
 } from 'react-bootstrap';
-import { List, Map, Set } from 'immutable';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import { fileContent, remoteMethodToString, reportError } from '../utils';
 import { useAssets, useCreateAsset, useUpdateAsset } from '../state';
@@ -44,9 +43,8 @@ function AssetAddingForm() {
           onClick={async () => {
             const inputElement = filesRef.current;
             if (inputElement) {
-              const content= await fileContent(inputElement);
-
-              if (content.success) {
+              const content = await fileContent(inputElement);
+              if (typeof content === 'string') {
                 createAsset({
                   name,
                   image,

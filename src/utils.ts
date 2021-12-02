@@ -16,23 +16,10 @@ import {
   Result,
   Stage,
   State,
-  Success,
   UUID
 } from './types';
 
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
-/**
- * Given a value, wrap it in a success object
- * @param {T} any value
- * @return {Success<T>} a Result object entailing success
- */
-export function success<T>(value: T): Success<T> {
-  return {
-    ...value,
-    success: true,
-    error: false
-  };
-}
 
 /**
  * Create an error with an ErrorKind and message
@@ -41,10 +28,9 @@ export function success<T>(value: T): Success<T> {
  */
 export function error(errorKind: ErrorKind, message: string): Error {
   return {
+    kind: 'Error',
     errorKind,
-    message,
-    success: false,
-    error: true
+    message
   };
 }
 
@@ -68,7 +54,7 @@ export function protobufToRemoteMethods(code: string): Result<Set<RemoteMethod>>
       .map(obj => obj as Service);
 
     // FlatMap all services' methodsArray's into one Set of RemoteMethods
-    return success(Set(services.flatMap(service => service
+    return Set(services.flatMap(service => service
       .methodsArray
       .map(method => ({
         name: method.name,
@@ -84,7 +70,7 @@ export function protobufToRemoteMethods(code: string): Result<Set<RemoteMethod>>
         },
         remoteMethodId: uuid()
       })))
-    ));
+    );
   } catch (e: any) {
     // If we get an exception at any point, return a ParsingError
     return error(ErrorKind.ParsingError, e.message);
@@ -226,7 +212,7 @@ export async function fileContent(element: HTMLInputElement): Promise<Result<str
     const file = files.first()!;
     // Get the content of the file
     const text = await file.text();
-    return success(text);
+    return text;
   } else {
     return error(ErrorKind.FileInputError, `Didn't find exactly one protobuf file for the asset. Files were [${files.map(file => file.name).join(', ')}]}`);
   }
@@ -287,7 +273,7 @@ export function lookupAccessPoint(
         .accessPoints
         .find(ap => ap.accessPointId === accessPointId);
     if (accessPoint) {
-      return success(accessPoint);
+      return accessPoint;
     } else {
       return error(
         ErrorKind.AccessPointNotFound,
@@ -357,11 +343,11 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
       return ({
         source: {
           stage: stages.find(({ stageId }) => stageId === responderId.stageId)?.name || 'Stage not found',
-          field: sourceField.success ? sourceField : 'Method not found'
+          field: sourceField.kind === 'AccessPoint' ? sourceField : 'Method not found'
         },
         target: {
           stage: stages.find(({ stageId }) => stageId === requesterId.stageId)?.name || 'Stage not found',
-          field: targetField.success ? targetField : 'Method not found'
+          field: targetField.kind === 'AccessPoint' ? targetField : 'Method not found'
         }
       });
     }).toArray()
@@ -384,7 +370,7 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
 export function findAsset(state: State, id: UUID): Result<Asset> {
   const asset = state.assets.find(({ assetId }) => assetId === id);
   if (asset) {
-    return success(asset);
+    return asset;
   } else {
     return error(
       ErrorKind.AssetNotFound,
@@ -402,7 +388,7 @@ export function findAsset(state: State, id: UUID): Result<Asset> {
 export function findStage(state: State, id: UUID): Result<Stage> {
   const stage = state.stages.find(({ stageId }) => stageId === id);
   if (stage) {
-    return success(stage);
+    return stage;
   } else {
     return error(
       ErrorKind.StageNotFound,
