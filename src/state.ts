@@ -69,9 +69,9 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
     // If finding the asset returned an error, then just propagate that error
     if (asset.kind === 'Error') { return asset; }
     // If we can find the current asset, remove and replace it
-      return {
-        assets: state.assets.remove(asset).add(action.asset)
-      };
+    return {
+      assets: state.assets.remove(asset).add(action.asset)
+    };
   case 'SetStages':
     return { stages: action.stages };
   case 'DeleteStage':
@@ -85,9 +85,9 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
     // If we've got an error, return it
     if (stageToUpdate.kind === 'Error' ) { return stageToUpdate; }
     // If the stage exists...
-      return {
-        stages: state.stages.remove(stageToUpdate).add({ ...stageToUpdate, ...action.stage })
-      };
+    return {
+      stages: state.stages.remove(stageToUpdate).add({ ...stageToUpdate, ...action.stage })
+    };
   case 'AddVolume':
     const stageToAddVolume = findStage(state, action.stageId);
     if (stageToAddVolume.kind === 'Error') { return stageToAddVolume; }
@@ -96,9 +96,7 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
       volumes: stageToAddVolume.volumes.push(action.volume)
     };
     const stages = state.stages.remove(stageToAddVolume).add(stageWithUpdatedVolumes);
-      return {
-        stages
-      };
+    return { stages };
   case 'SetEdges':
     return { edges: action.edges };
   case 'RestoreState':
