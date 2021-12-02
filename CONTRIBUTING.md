@@ -4,12 +4,12 @@
 
 To quickly get developing:
   - Make sure you have [Yarn](https://yarnpkg.com/) installed
-  - Set up [EditorConfig](https://editorconfig.org/) for your text editor
-    - Links for
-      [VSCode](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
-      [Vim](https://github.com/editorconfig/editorconfig-vim#readme)
-      [Emacs](https://github.com/editorconfig/editorconfig-emacs#readme)
-      [others](https://editorconfig.org/#download)
+  - Set up an [EditorConfig](https://editorconfig.org/) plugin for your text editor
+    - Links for:
+      - [VSCode](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
+      - [Vim](https://github.com/editorconfig/editorconfig-vim#readme)
+      - [Emacs](https://github.com/editorconfig/editorconfig-emacs#readme)
+      - [others](https://editorconfig.org/#download)
   - run `yarn --dev` to install all development dependencies
 
 Drafter uses [ESLint](https://eslint.org/) for project linting. ESLint will automatically be
