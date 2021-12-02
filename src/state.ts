@@ -47,9 +47,8 @@ const initialState: State = {
 function reducer(state: State, action: Action): Result<Partial<State>> {
   switch (action.type) {
   case 'CreateAsset':
-    const methodsResult = protobufToRemoteMethods(action.protobufCode);
-    if (methodsResult.kind === 'Success') {
-      const methods = methodsResult.value;
+    const methods = protobufToRemoteMethods(action.protobufCode);
+    if (methods.success) {
       return success({
         assets: state.assets.add({
           kind: 'Asset',
@@ -60,50 +59,44 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
         })
       });
     } else {
-      return methodsResult;
+      // If this is an error, than just return the error
+      return methods;
     }
   case 'SetAssets':
     return success({ ...state, assets: action.assets });
   case 'UpdateAsset':
     // Try to find the asset
-    const findAssetResult = findAsset(state, action.asset.assetId);
-    // If you can't find it, quit
-    if (findAssetResult.kind === 'Error') { return findAssetResult; }
+    const asset = findAsset(state, action.asset.assetId);
+    // If finding the asset returned an error, then just propagate that error
+    if (asset.error) { return asset; }
     // If we can find the current asset, remove and replace it
-    const currentAsset = findAssetResult.value;
     return success({
-      assets: state.assets.remove(currentAsset).add(action.asset)
+      assets: state.assets.remove(asset).add(action.asset)
     });
   case 'SetStages':
     return success({ stages: action.stages });
   case 'DeleteStage':
-    const findStageResult = findStage(state, action.stage.stageId);
-    // If we can't find the given stage, fail with an error
-    if (findStageResult.kind === 'Error') { return findStageResult; }
-    const stageToDelete = findStageResult.value;
+    const stageToDelete = findStage(state, action.stage.stageId);
+    // If finding the stage gave us an error, return that error
+    if (stageToDelete.error) { return stageToDelete; }
     return success({ stages: state.stages.remove(stageToDelete) });
   case 'UpdateStage':
     // Find the current stage in the set that has the given Id
-    const findStageResult_ = findStage(state, action.stage.stageId);
-    // This name is supposed to be findStageResult. It is called findStageResult_ in protest of
-    // Javascript insisting that a switch/case not introduce a new block scope, meaning that
-    // naming the variable findStageResult would be considered a name collision. ECMAScript
-    // committee, please implement a proper [match expression](https://doc.rust-lang.org/book/ch06-02-match.html)
-    if (findStageResult_.kind === 'Error') { return findStageResult_; }
-    const currentStage = findStageResult_.value;
+    const stageToUpdate = findStage(state, action.stage.stageId);
+    // If we've got an error, return it
+    if (stageToUpdate.error) { return stageToUpdate; }
     // If the stage exists...
     return success({
-      stages: state.stages.remove(currentStage).add({ ...currentStage, ...action.stage })
+      stages: state.stages.remove(stageToUpdate).add({ ...stageToUpdate, ...action.stage })
     });
   case 'AddVolume':
-    const findStageResult__ = findStage(state, action.stageId);
-    if (findStageResult__.kind === 'Error') { return findStageResult__; }
-    const stage = findStageResult__.value;
+    const stageToAddVolume = findStage(state, action.stageId);
+    if (stageToAddVolume.error) { return stageToAddVolume; }
     const stageWithUpdatedVolumes = {
-      ...stage,
-      volumes: stage.volumes.push(action.volume)
+      ...stageToAddVolume,
+      volumes: stageToAddVolume.volumes.push(action.volume)
     };
-    const stages = state.stages.remove(stage).add(stageWithUpdatedVolumes);
+    const stages = state.stages.remove(stageToAddVolume).add(stageWithUpdatedVolumes);
     return success({
       stages
     });
@@ -121,9 +114,8 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
  */
 export const useStore = create(redux(
   (state: State, action: Action) => {
-    const result = reducer(state, action);
-    if (result.kind === 'Success') {
-      const partialState = result.value;
+    const partialState = reducer(state, action);
+    if (partialState.success) {
       if (partialState.actions) {
         // If the reducer actually specified or changed the actions, then use those
         return { ...state, ...partialState };
@@ -132,7 +124,12 @@ export const useStore = create(redux(
         return { ...state, ...partialState, actions: state.actions.push([new Date(), action]) };
       }
     } else {
-      console.error(`Error ${result.errorKind} in ${action.type}: ${result.message}`);
+      // If our reducer returned an error:
+      // Pull out the kind of error and message...
+      const { errorKind, message } = partialState;
+      // Log them to console
+      console.error(`Error ${errorKind} in ${action.type}: ${message}`);
+      // And keep the existing state
       return state;
     }
   }, initialState));

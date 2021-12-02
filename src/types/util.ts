@@ -40,17 +40,20 @@ export enum ErrorKind {
  * @property {string} message - a human-language description of what caused the error
  */
 export interface Error {
-  kind: 'Error';
+  // flat-out identify that this is an error and not a success
+  success: false
+  error: true
   errorKind: ErrorKind;
   message: string;
 }
 
 /**
- * A successful execution of Result
+ * A successful execution of Result. Simply tag the exiting type with two properties identifying
+ * that the run succeeded
  */
-export interface Success<T> {
-  kind: 'Success';
-  value: T;
+export type Success<T> = T & {
+  success: true
+  error: false
 }
 
 /**

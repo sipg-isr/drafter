@@ -26,9 +26,8 @@ export function LoadDialog({ show, close }: LoadDialogProps) {
         <Form.Control type='file' ref={fileUploadRef} />
         <br />
         <Button onClick={async () => {
-          const contentResult = await fileContent(fileUploadRef!.current!);
-          if (contentResult.kind === 'Success') {
-            const content = contentResult.value;
+          const content = await fileContent(fileUploadRef!.current!);
+          if (content.success) {
             restoreState(deserializeState(content));
           }
           close();
