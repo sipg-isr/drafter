@@ -28,8 +28,9 @@ import {
  */
 export function success<T>(value: T): Success<T> {
   return {
-    kind: 'Success',
-    value
+    ...value,
+    success: true,
+    error: false
   };
 }
 
@@ -40,9 +41,10 @@ export function success<T>(value: T): Success<T> {
  */
 export function error(errorKind: ErrorKind, message: string): Error {
   return {
-    kind: 'Error',
     errorKind,
-    message
+    message,
+    success: false,
+    error: true
   };
 }
 
@@ -350,16 +352,16 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
       port: 8061
     })).toArray(),
     links: edges.map(({ requesterId, responderId }) => {
-      const sourceFieldResult = lookupAccessPoint(stages, responderId);
-      const targetFieldResult = lookupAccessPoint(stages, requesterId);
+      const sourceField = lookupAccessPoint(stages, responderId);
+      const targetField = lookupAccessPoint(stages, requesterId);
       return ({
         source: {
           stage: stages.find(({ stageId }) => stageId === responderId.stageId)?.name || 'Stage not found',
-          field: sourceFieldResult.kind === 'Success' ? sourceFieldResult.value : 'Method not found'
+          field: sourceField.success ? sourceField : 'Method not found'
         },
         target: {
           stage: stages.find(({ stageId }) => stageId === requesterId.stageId)?.name || 'Stage not found',
-          field: targetFieldResult.kind === 'Success' ? targetFieldResult.value : 'Method not found'
+          field: targetField.success ? targetField : 'Method not found'
         }
       });
     }).toArray()

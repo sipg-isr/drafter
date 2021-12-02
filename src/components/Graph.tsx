@@ -6,11 +6,7 @@ import {
   forceY
 } from 'd3-force';
 import {
-  Map
-} from 'immutable';
-import {
   Drag,
-  Edge,
   Stage
 } from '../types';
 import { lookupAccessPoint } from '../utils';
@@ -97,11 +93,9 @@ export default function Graph() {
     >
       {edges.map(({ requesterId, responderId }) => {
         // Look up each id
-        const [requesterResult, responderResult] = [requesterId, responderId]
+        const [requester, responder] = [requesterId, responderId]
           .map(id => lookupAccessPoint(stages, id));
-        if (requesterResult.kind === 'Success' && responderResult.kind === 'Success') {
-          const requester = requesterResult.value;
-          const responder = responderResult.value;
+        if (requester.success && responder.success) {
           return <EdgeSVG
             key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
             x1={requester.x}

@@ -105,9 +105,9 @@ function EditAsset({ entry: { asset }, setEntry, removeEntry }: EditAssetProps) 
             <Button
               variant='success'
               onClick={async () => {
-                const contentResult = await fileContent(filesRef!.current!);
-                if (contentResult.kind === 'Success') {
-                  const methodsResult = protobufToRemoteMethods(contentResult.value);
+                const content = await fileContent(filesRef!.current!);
+                if (content.success) {
+                  const methods = protobufToRemoteMethods(content);
                   setEntry({
                     kind: 'Display',
                     asset: {
@@ -115,12 +115,12 @@ function EditAsset({ entry: { asset }, setEntry, removeEntry }: EditAssetProps) 
                       name,
                       image,
                       // TODO show an error message and abort if this is null
-                      methods: methodsResult.kind === 'Success' ? methodsResult.value : Set(),
+                      methods: methods.success ? methods : Set(),
                       assetId: asset ? asset.assetId : uuid()
                     }
                   });
                 } else {
-                  reportError(contentResult);
+                  reportError(content);
                 }
               }}><FaCheck /></Button>
             <Button

@@ -44,16 +44,16 @@ function AssetAddingForm() {
           onClick={async () => {
             const inputElement = filesRef.current;
             if (inputElement) {
-              const contentResult = await fileContent(inputElement);
+              const content= await fileContent(inputElement);
 
-              if (contentResult.kind === 'Success') {
+              if (content.success) {
                 createAsset({
                   name,
                   image,
-                  protobufCode: contentResult.value
+                  protobufCode: content
                 });
               } else {
-                reportError(contentResult);
+                reportError(content);
               }
 
               setName('');
