@@ -17,6 +17,10 @@ import Graph from './Graph';
 import { instantiateAsset, lookupAccessPoint } from '../utils';
 import { useAssets, useEdges, useStages } from '../state';
 
+/**
+ * This component contains all functionality for adding, removing, and editing stages.
+ * It contains the Sidebar and the Graph.
+ */
 export default function Editor() {
   // TODO store state somewhere like localStorage or idb-keyval
   // write a custom hook to serialize / deserialize this

@@ -14,6 +14,9 @@ interface EditFieldProps {
   value: string;
   setValue: (value: string) => void;
 }
+/**
+ * A simple utility component that displays text that can be changed when clicked
+ */
 export default function EditField({ value, setValue }: EditFieldProps) {
   const [editState, setEditState] = useState(EditState.Display);
   const [fieldValue, setFieldValue] = useState(value);

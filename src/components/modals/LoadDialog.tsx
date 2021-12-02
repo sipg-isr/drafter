@@ -7,6 +7,9 @@ interface LoadDialogProps {
   show: boolean;
   close: () => void;
 }
+/**
+ * A component representing a modal dialog that allows a user to load a saved file
+ */
 export function LoadDialog({ show, close }: LoadDialogProps) {
   const restoreState = useRestoreState();
 
@@ -23,8 +26,9 @@ export function LoadDialog({ show, close }: LoadDialogProps) {
         <Form.Control type='file' ref={fileUploadRef} />
         <br />
         <Button onClick={async () => {
-          const content = await fileContent(fileUploadRef!.current!);
-          if (content) {
+          const contentResult = await fileContent(fileUploadRef!.current!);
+          if (contentResult.kind === 'Success') {
+            const content = contentResult.value;
             restoreState(deserializeState(content));
           }
           close();

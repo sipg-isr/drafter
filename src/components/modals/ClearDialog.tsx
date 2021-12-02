@@ -10,6 +10,9 @@ interface ClearDialogProps {
   show: boolean;
   close: () => void;
 }
+/**
+ * A modal dialog component for confirming whether the user wishes to clear the editor
+ */
 export function ClearDialog({ show, close }: ClearDialogProps) {
   const dispatch = useDispatch();
   return (

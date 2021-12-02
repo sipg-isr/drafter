@@ -12,6 +12,9 @@ interface DebugDialogProps {
   show: boolean;
   close: () => void;
 }
+/**
+ * Modal dialog component that shows debug information
+ */
 export function DebugDialog({ show, close }: DebugDialogProps) {
   const state = useStore();
 
@@ -41,7 +44,10 @@ export function DebugDialog({ show, close }: DebugDialogProps) {
                 </em>
               </Accordion.Header>
               <Accordion.Body>
-                <Listing content={JSON.stringify(action, null, 2)} />
+                <Listing
+                  content={JSON.stringify(action, null, 2)}
+                  language='json'
+                />
               </Accordion.Body>
             </Accordion.Item>)}
         </Accordion>
@@ -53,7 +59,10 @@ export function DebugDialog({ show, close }: DebugDialogProps) {
               State
             </Accordion.Header>
             <Accordion.Body>
-              <Listing content={JSON.stringify(state, null, 2)}/>
+              <Listing
+                content={JSON.stringify(state, null, 2)}
+                language='json'
+              />
             </Accordion.Body>
           </Accordion.Item>
         </Accordion>

@@ -6,7 +6,7 @@ import {
 } from 'react-bootstrap';
 import { List, Map, Set } from 'immutable';
 import { FaPlus, FaTrash } from 'react-icons/fa';
-import { fileContent, remoteMethodToString } from '../utils';
+import { fileContent, remoteMethodToString, reportError } from '../utils';
 import { useAssets, useCreateAsset, useUpdateAsset } from '../state';
 import EditField from './EditField';
 
@@ -44,11 +44,17 @@ function AssetAddingForm() {
           onClick={async () => {
             const inputElement = filesRef.current;
             if (inputElement) {
-              createAsset({
-                name,
-                image,
-                protobufCode: await fileContent(inputElement) || ''
-              });
+              const contentResult = await fileContent(inputElement);
+
+              if (contentResult.kind === 'Success') {
+                createAsset({
+                  name,
+                  image,
+                  protobufCode: contentResult.value
+                });
+              } else {
+                reportError(contentResult);
+              }
 
               setName('');
               setImage('');
@@ -61,6 +67,9 @@ function AssetAddingForm() {
   );
 }
 
+/**
+ * This component lists the current Assets and allows you to modify them, delete them, or add more
+ */
 export default function Assets() {
   // Keep a list of the state assets
   const [assets] = useAssets();

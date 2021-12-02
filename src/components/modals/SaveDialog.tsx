@@ -8,7 +8,11 @@ interface SaveDialogProps {
   show: boolean;
   close: () => void;
 }
+/**
+ * Component with a modal dialog asking the user to save the current editor state
+ */
 export function SaveDialog({ show, close }: SaveDialogProps) {
+  // TODO choose a custom extension for drafter saved documents?
   const [filename, setFilename] = useState('solution.json');
   const state = useStore();
 

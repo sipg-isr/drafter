@@ -18,12 +18,16 @@ import { useEdges, useStages } from '../state';
 import EdgeSVG from './EdgeSVG';
 import StageSVG from './StageSVG';
 
+/**
+ * This component is the core of Drafter. It displays the network of stages and allows you to drag
+ * them around, edit, or remove them
+ */
 export default function Graph() {
   const [simulation] = useState(forceSimulation<Stage>().stop());
   const [drag, setDrag] = useState<Drag | null>(null);
-  const [stages, setStages] = useStages();
+  const [stages ] = useStages();
   // TODO move these into state container
-  const [edges, setEdges] = useEdges();
+  const [edges ] = useEdges();
 
   const [, update] = useReducer(x => x + 1, 0);
 
@@ -93,9 +97,11 @@ export default function Graph() {
     >
       {edges.map(({ requesterId, responderId }) => {
         // Look up each id
-        const [requester, responder] = [requesterId, responderId]
+        const [requesterResult, responderResult] = [requesterId, responderId]
           .map(id => lookupAccessPoint(stages, id));
-        if (requester && responder) {
+        if (requesterResult.kind === 'Success' && responderResult.kind === 'Success') {
+          const requester = requesterResult.value;
+          const responder = responderResult.value;
           return <EdgeSVG
             key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
             x1={requester.x}

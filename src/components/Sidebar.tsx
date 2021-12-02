@@ -77,6 +77,9 @@ function StageAddingForm() {
   );
 }
 
+/**
+ * This component is used to add and remove stages from the editor
+ */
 export default function Sidebar() {
   const [assets] = useAssets();
   const [stages, setStages] = useStages();

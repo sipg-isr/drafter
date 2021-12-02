@@ -21,6 +21,11 @@ interface StageSVGProps {
   setDrag: (drag: Drag) => void;
   restartSimulation: () => void;
 }
+/**
+ * An SVG component for visualizing stages
+ * Each stage is represented as an ellipse with its name written
+ * It also has a set of colored ovals representing accessPoints around its edge
+ */
 export default function StageSVG({
   stage,
   drag,

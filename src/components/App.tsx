@@ -11,6 +11,9 @@ import {
   Tabs
 } from 'react-bootstrap';
 
+/**
+ * The global App container for Drafter
+ */
 function App() {
   return (
     <BrowserRouter basename={process.env.PUBLIC_URL}>
