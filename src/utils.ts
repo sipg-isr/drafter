@@ -334,9 +334,12 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
   const config: any = {
     stages: stages.map(({ name, assetId }) => ({
       name,
-      host: assets.find(asset => asset.assetId === assetId)?.name || 'Asset not found',
+      // This must be the same as the name of the service, which is used as the key above
+      host: name.replaceAll(/\s+/g, '-'),
       port: 8061
+      // method
     })).toArray(),
+
     links: edges.map(({ requesterId, responderId }) => {
       const sourceField = lookupAccessPoint(stages, responderId);
       const targetField = lookupAccessPoint(stages, requesterId);

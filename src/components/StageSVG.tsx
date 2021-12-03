@@ -52,7 +52,6 @@ export default function StageSVG({
       });
   }, [x, y]);
 
-
   return (
     <g>
       <ellipse

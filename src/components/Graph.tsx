@@ -46,7 +46,7 @@ export default function Graph() {
   });
 
   const restartSimulation = () => {
-    simulation.alphaTarget(0.3).restart();
+    simulation.alphaTarget(0.0).restart();
   };
 
   useEffect(() => {
