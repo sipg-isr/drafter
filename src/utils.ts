@@ -336,7 +336,7 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
       name,
       // This must be the same as the name of the service, which is used as the key above
       host: name.replaceAll(/\s+/g, '-'),
-      port: 8061,
+      port: 8061
       // method
     })).toArray(),
 
