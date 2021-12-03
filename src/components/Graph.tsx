@@ -9,7 +9,7 @@ import {
   Drag,
   Stage
 } from '../types';
-import { lookupAccessPoint } from '../utils';
+import { } from '../utils';
 import { useEdges, useStages } from '../state';
 import EdgeSVG from './EdgeSVG';
 import StageSVG from './StageSVG';
@@ -75,7 +75,7 @@ export default function Graph() {
         }
       }}
       onMouseUp={() => {
-        if (drag) {
+        if (drag && drag.element.kind === 'Stage') {
           const { element } = drag;
           element.fx = element.fy = null;
           setDrag(null);
@@ -83,7 +83,7 @@ export default function Graph() {
         }
       }}
       onMouseLeave={() => {
-        if (drag) {
+        if (drag && drag.element.kind === 'Stage') {
           const { element } = drag;
           element.fx = element.fy = null;
           setDrag(null);
@@ -91,7 +91,7 @@ export default function Graph() {
         }
       }}
     >
-      {edges.map(({ requesterId, responderId }) => {
+      {/*edges.map(({ requesterId, responderId }) => {
         // Look up each id
         const [requester, responder] = [requesterId, responderId]
           .map(id => lookupAccessPoint(stages, id));
@@ -130,7 +130,7 @@ export default function Graph() {
         drag={drag}
         setDrag={setDrag}
         restartSimulation={restartSimulation}
-      />)}
+      />)*/}
 
     </svg>
   );

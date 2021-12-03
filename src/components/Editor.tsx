@@ -14,7 +14,7 @@ import {
 } from '../types';
 import Sidebar from './Sidebar';
 import Graph from './Graph';
-import { instantiateAsset, lookupAccessPoint } from '../utils';
+import { instantiateAsset } from '../utils';
 import { useAssets, useEdges, useStages } from '../state';
 
 /**
@@ -32,7 +32,7 @@ export default function Editor() {
     // Whenever the assets are changed,
     // filter out only the stages that are from these assets
 
-    setStages(stages
+    /*setStages(stages
       .filter(stage =>
         assets.find(({ assetId }) => stage.assetId === assetId))
       .map(stage => {
@@ -46,14 +46,15 @@ export default function Editor() {
           return instantiateAsset(asset, stage.name);
         }
       })
-    );
+    );*/
   }, [assets]);
 
   useEffect(() => {
     // Whenever the stages are changed, keep only the edges with surviving points
-    setEdges(edges.filter(({ requesterId, responderId }) =>
-      lookupAccessPoint(stages, requesterId) !== null &&
-      lookupAccessPoint(stages, responderId) !== null));
+    // setEdges(edges.filter(({ requesterId, responderId }) =>
+      // lookupAccessPoint(stages, requesterId) !== null &&
+      // lookupAccessPoint(stages, responderId) !== null)
+    // );
   }, [stages]);
 
   return (

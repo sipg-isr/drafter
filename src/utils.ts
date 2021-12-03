@@ -10,13 +10,16 @@ import {
   Asset,
   Error,
   ErrorKind,
-  HasAccessPointId,
   HasStageId,
   RemoteMethod,
   Result,
   Stage,
   State,
-  UUID
+  UUID,
+  Requester,
+  Responder,
+  HasAssetId,
+  HasRemoteMethodId
 } from './types';
 
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
@@ -57,6 +60,7 @@ export function protobufToRemoteMethods(code: string): Result<Set<RemoteMethod>>
     return Set(services.flatMap(service => service
       .methodsArray
       .map(method => ({
+        kind: 'RemoteMethod',
         name: method.name,
         requestType: {
           ...root.lookupType(method.requestType).toJSON(),
@@ -98,55 +102,47 @@ let idCounter: Map<UUID, number> = Map();
  * @return {Stage} a stage object created from the given `asset`, and named `name`
  */
 export function instantiateAsset(
-  { assetId, methods }: Asset, name: string
-): Stage {
+  asset: Asset,
+  { remoteMethodId }: HasRemoteMethodId
+): Result<Stage> {
   const stageId = uuid();
-  const accessPoints = methods.reduce<List<AccessPoint>>((acc, { name, requestType, responseType, remoteMethodId}) => {
-    const requesterId = uuid();
-    const responderId = uuid();
-    return acc
-      .push({
-        kind:         'AccessPoint',
-        role:         'Requester',
-        name:          name,
-        type:          requestType,
-        accessPointId: requesterId,
-        remoteMethodId,
-        stageId,
-        x: 0,
-        y: 0
-      })
-      .push({
-        kind:         'AccessPoint',
-        role:         'Responder',
-        name:          name,
-        type:          responseType,
-        accessPointId: responderId,
-        stageId,
-        remoteMethodId,
-        x: 0,
-        y: 0
-      });
-  }, List());
 
-  // Get the number for this stage
-  const stageNumber = (idCounter.get(assetId) || 1);
-  // Increment the number for the assetId
-  idCounter = idCounter.set(assetId,
-    stageNumber + 1
-  );
+  const method = findRemoteMethod(asset, remoteMethodId);
 
+  if (method.kind === 'RemoteMethod') {
+    const { requester, responder } = methodToRequesterAndResponder(method);
+    return {
+      kind: 'Stage',
+      name: asset.name, // TODO make htis better
+      methodName: method.name,
+      requester,
+      responder,
+      stageId,
+      assetId: asset.assetId,
+      volumes: List(),
+      x: 0,
+      y: 0
+    };
+  } else {
+    return method;
+  }
+}
+
+export function methodToRequesterAndResponder({ requestType, responseType }: RemoteMethod): {
+  requester: Requester,
+  responder: Responder
+} {
   return {
-    kind: 'Stage',
-    name: `${name} ${stageNumber}`,
-    stageId,
-    assetId,
-    accessPoints: accessPoints.filter(({ type: { name, fields } }) =>
-      name !== 'Empty' || Object.keys(fields).length > 0
-    ),
-    volumes: List(),
-    x: 0,
-    y: 0
+    requester: {
+      kind: 'AccessPoint',
+      role: 'Requester',
+      type: requestType
+    },
+    responder: {
+      kind: 'AccessPoint',
+      role: 'Responder',
+      type: responseType
+    }
   };
 }
 
@@ -257,38 +253,6 @@ export function deserializeState(serialized: string): State {
 }
 
 /**
- * Given a set of stages, a `stageId` and an `accessPointId`, find the `AccessPoint`
- * @param {Set<Stage>} stages - the stages to search
- * @param {HasStageId & HasAccessPointId} id's - the stageId and accessPointId to find the given AccessPoint
- * @return {Result<AccessPoint>} The `AccessPoint`, if it is found, or an error if it is not
- */
-export function lookupAccessPoint(
-  stages: Set<Stage>,
-  { stageId, accessPointId }: HasStageId & HasAccessPointId
-): Result<AccessPoint> {
-  const stage = stages.find(stage => stage.stageId === stageId);
-  if (stage) {
-    const accessPoint =
-      stage
-        .accessPoints
-        .find(ap => ap.accessPointId === accessPointId);
-    if (accessPoint) {
-      return accessPoint;
-    } else {
-      return error(
-        ErrorKind.AccessPointNotFound,
-        `Unable to find accessPoint on stage ${stage} with id ${accessPointId}`
-      );
-    }
-  } else {
-    return error(
-      ErrorKind.StageNotFound,
-      `Unable to find stage with id ${stageId}`
-    );
-  }
-}
-
-/**
  * Convert the current application state into a docker-compose format
  * that can be used with https://github.com/DuarteMRAlves/Pipeline-Orchestrator
  * @param {State} state - the application state
@@ -323,8 +287,8 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
       dockerCompose.services[name.replaceAll(/\s+/g, '-')] = {
         image: asset.image,
         volumes: volumes
-          .map(({ source, target, type }) => ({ source, target, type }))
-          .toArray(),
+        .map(({ source, target, type }) => ({ source, target, type }))
+        .toArray(),
         ports: [`${8061 + idx}:8062`]
       };
     }
@@ -340,7 +304,7 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
       // method
     })).toArray(),
 
-    links: edges.map(({ requesterId, responderId }) => {
+    /*links: edges.map(({ requesterId, responderId }) => {
       const sourceField = lookupAccessPoint(stages, responderId);
       const targetField = lookupAccessPoint(stages, requesterId);
       return ({
@@ -353,7 +317,7 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
           field: targetField.kind === 'AccessPoint' ? targetField : 'Method not found'
         }
       });
-    }).toArray()
+    }).toArray()*/
   };
 
   // Add the data to the zip as yaml
@@ -396,6 +360,18 @@ export function findStage(state: State, id: UUID): Result<Stage> {
     return error(
       ErrorKind.StageNotFound,
       `Cannot find Stage with id ${id}`
+    );
+  }
+}
+
+export function findRemoteMethod(asset: Asset, remoteMethodId: UUID): Result<RemoteMethod> {
+  const method = asset.methods.find(method => method.remoteMethodId === remoteMethodId);
+  if (method) {
+    return method;
+  } else {
+    return error(
+      ErrorKind.RemoteMethodNotFound,
+      `Cannot find Remote Method with id ${remoteMethodId} in asset ${asset}`
     );
   }
 }

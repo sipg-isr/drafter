@@ -37,10 +37,10 @@ function StageAddingForm() {
 
   const [stages, setStages] = useStages();
 
-  const addAssetToEditor = (asset: Asset) => {
+  /*const addAssetToEditor = (asset: Asset) => {
     const stage = instantiateAsset(asset, asset.name);
     setStages(stages.add(stage));
-  };
+  };*/
 
   // Whenever assets change, set back to nil
   useEffect(() => {
@@ -66,7 +66,7 @@ function StageAddingForm() {
           onClick={() => {
             const asset = assets.find(({ assetId }) => assetId === selectedAssetId);
             if (asset) {
-              addAssetToEditor(asset);
+              // addAssetToEditor(asset);
             }
           }}
         >

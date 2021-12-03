@@ -40,9 +40,9 @@ export default function StageSVG({
   const rx = max(displayName.length * 6, 50);
   const ry = rx * 0.65;
 
-  const interval = (2 * PI) / stage.accessPoints.size;
+  // const interval = (2 * PI) / stage.accessPoints.size;
 
-  useEffect(() => {
+  /*useEffect(() => {
     stage
       .accessPoints
       .forEach((accessPoint, idx) => {
@@ -50,7 +50,7 @@ export default function StageSVG({
           idx * interval, rx, ry, x, y
         );
       });
-  }, [x, y]);
+  }, [x, y]);*/
 
   return (
     <g>
@@ -89,7 +89,7 @@ export default function StageSVG({
         x={x}
         y={y}
       >{displayName}</text>
-      {stage.accessPoints.map(ap =>
+      {/*stage.accessPoints.map(ap =>
         (
           <AccessPointSVG
             accessPoint={ap}
@@ -98,7 +98,7 @@ export default function StageSVG({
             key={ap.accessPointId}
           />
         )
-      )}
+      )*/}
     </g>
   );
 }

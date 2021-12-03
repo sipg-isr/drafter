@@ -33,6 +33,14 @@ export interface HasRemoteMethodId {
   remoteMethodId: UUID;
 }
 
+export interface HasRequesterId {
+  requesterId: UUID;
+}
+
+export interface HasResponderId {
+  responderId: UUID;
+}
+
 /**
  * An object that either is an Asset or has exactly one associated Asset
  * @interface
@@ -49,15 +57,6 @@ export interface HasAssetId {
  */
 export interface HasStageId {
   stageId: UUID;
-}
-
-/**
- * An object that either is an AccessPoint or has exactly one associated AccessPoint
- * @interface
- * @property {UUID} accessPointId - a UUID to uniquely identify the AccessPoint
- */
-export interface HasAccessPointId {
-  accessPointId: UUID;
 }
 
 /**
@@ -86,6 +85,7 @@ export interface HasVolumeId {
  * @property {MessageType} responseType - the type of the outputs of the method
  */
 export interface RemoteMethod extends HasRemoteMethodId {
+  kind: 'RemoteMethod';
   name: string;
   requestType: MessageType;
   responseType: MessageType
@@ -123,9 +123,25 @@ export interface Asset extends HasAssetId {
 export interface Stage extends SimulationNodeDatumWithRequiredCoordinates, HasStageId, HasAssetId {
   kind: 'Stage';
   name: string;
-  accessPoints: List<AccessPoint>;
+  methodName: string;
+  requester: Requester;
+  responder: Responder;
   volumes: List<Volume>;
 }
+
+export interface Requester {
+  kind: 'AccessPoint';
+  role: 'Requester';
+  type: MessageType;
+}
+
+export interface Responder {
+  kind: 'AccessPoint';
+  role: 'Responder';
+  type: MessageType;
+}
+
+export type AccessPoint = Requester | Responder;
 
 /**
  * A simple enum specifying what kind of volume binding will be used. Currently, only bind is
@@ -145,26 +161,6 @@ export interface Volume extends HasVolumeId {
 }
 
 /**
- * An input or output for a Stage.
- * @interface
- * @property {string} name - The human-readable name of the method
- * @property {'Requester' | 'Responder'} role -
- *   An AccessPoint can either be a Requester, which calls the methods of other stages, or a
- *   Responder, which responds to such calls. An AccessPoint can only be connected to another
- *   AccessPoint of the opposite role
- * @property {MessageType} type -
- *  The message type is either the 'parameter type' of a requester or the 'return type' of a
- *  responder. It determines which methods can be connected. An AccessPoint can only be connected
- *  to another AccessPoint that has a matching type
- */
-export interface AccessPoint extends SimulationNodeDatumWithRequiredCoordinates, HasStageId, HasRemoteMethodId, HasAccessPointId {
-  name: string;
-  kind: 'AccessPoint';
-  role: 'Requester' | 'Responder';
-  type: MessageType;
-}
-
-/**
  * An edge connecting two matching AccessPoint's
  * @interface
  * @property {HasStageId & HasAccessPointId} requesterId -
@@ -175,6 +171,6 @@ export interface AccessPoint extends SimulationNodeDatumWithRequiredCoordinates,
  */
 export interface Edge extends HasEdgeId {
   // TODO - use newtype pattern here?
-  requesterId: HasStageId & HasAccessPointId;
-  responderId: HasStageId & HasAccessPointId;
+  requesterId: HasStageId & HasRequesterId;
+  responderId: HasStageId & HasResponderId;
 }

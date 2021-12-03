@@ -28,6 +28,7 @@ export type Path = string;
 export enum ErrorKind {
   ParsingError = 'ParsingError',
   AssetNotFound = 'AssetNotFound',
+  RemoteMethodNotFound = 'RemoteMethodNotFound',
   StageNotFound = 'StageNotFound',
   AccessPointNotFound = 'AccessPointNotFound',
   FileInputError = 'FileInputError'
