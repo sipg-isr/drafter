@@ -129,7 +129,7 @@ export default function AccessPointSVG({
         r={innerRadius}
         cx={x}
         cy={y}
-        fill={accessPoint.role === 'Responder' ? color: 'white'}
+        fill={accessPoint.role === 'Responder' ? color : 'white'}
         stroke='black'
       />
     </g>
