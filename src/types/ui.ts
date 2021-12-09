@@ -1,5 +1,5 @@
 import { Coordinates, UUID } from './util';
-import { AccessPoint, Stage, HasAssetId } from './base';
+import { AccessPoint, Stage, HasAssetId, AccessPointKind } from './base';
 
 /**
  * Represents an active drag.
@@ -16,7 +16,8 @@ import { AccessPoint, Stage, HasAssetId } from './base';
 export interface Drag {
   offset: Coordinates;
   cursor: Coordinates;
-  element: Stage | AccessPoint;
+  stage: Stage;
+  port: AccessPointKind | null;
 }
 
 /**

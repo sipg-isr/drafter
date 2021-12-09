@@ -4,6 +4,9 @@ import { List, Map, Set } from 'immutable';
 import  { v4 as uuid } from 'uuid';
 import { dump } from 'js-yaml';
 import JSZip from 'jszip';
+import {
+  truncate
+} from 'lodash';
 import equal from 'fast-deep-equal';
 import {
   AccessPoint,
@@ -19,7 +22,9 @@ import {
   Requester,
   Responder,
   HasAssetId,
-  HasRemoteMethodId
+  HasRemoteMethodId,
+  Coordinates,
+  AccessPointKind
 } from './types';
 
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
@@ -111,9 +116,12 @@ export function instantiateAsset(
 
   if (method.kind === 'RemoteMethod') {
     const { requester, responder } = methodToRequesterAndResponder(method);
+    const name = truncate(`${asset.name}-${method.name}`, { length: 25 });
+    const rx = Math.max(name.length * 6, 50);
+    const ry = rx * 0.65;
     return {
       kind: 'Stage',
-      name: asset.name, // TODO make htis better
+      name,
       methodName: method.name,
       requester,
       responder,
@@ -121,7 +129,9 @@ export function instantiateAsset(
       assetId: asset.assetId,
       volumes: List(),
       x: 0,
-      y: 0
+      y: 0,
+      rx,
+      ry
     };
   } else {
     return method;
@@ -134,13 +144,11 @@ export function methodToRequesterAndResponder({ requestType, responseType }: Rem
 } {
   return {
     requester: {
-      kind: 'AccessPoint',
-      role: 'Requester',
+      kind: 'Requester',
       type: requestType
     },
     responder: {
-      kind: 'AccessPoint',
-      role: 'Responder',
+      kind: 'Responder',
       type: responseType
     }
   };
@@ -151,11 +159,8 @@ export function methodToRequesterAndResponder({ requestType, responseType }: Rem
  * @param {AccessPoint} left, right - two `AccessPoint`s, representing two methods
  * @return {boolean} whether the tow can be connected
  */
-export function compatibleMethods(left: AccessPoint, right: AccessPoint): boolean {
-  const kinds = [left.role, right.role];
-  return kinds.includes('Requester') &&
-    kinds.includes('Responder') &&
-    equal(left.type, right.type);
+export function compatibleMethods(requester: Requester, responder: Responder): boolean {
+  return equal(requester.type, responder.type);
 }
 
 /**
@@ -167,6 +172,11 @@ export function objectToColor(obj: any): string {
   return `#${MD5(obj).slice(0,6)}`;
 }
 
+export function accessPointLocation({ rx, ry, x, y }: Stage, accessPointKind: AccessPointKind): Coordinates {
+  const theta = accessPointKind === 'Requester' ? 0 : Math.PI / 2;
+  return ellipsePolarToCartesian(theta, rx, ry, x, y);
+}
+
 /**
  * Calculate the x-y value of a point on an ellipse, based on radial coordinates
  * @param {number} theta - the angle of the point from the center, in radians
@@ -174,7 +184,7 @@ export function objectToColor(obj: any): string {
  * @param {number} ry - the y-axis radius of the ellipse
  * @param {number} cx - the x-coordinate of the center of the ellipse
  * @param {number} cy - the y-coordinate of the center of the ellipse
- * @return {[number, number]} the Cartesian coordinates of the point on the ellipse
+ * @return {Coordinates} the Cartesian coordinates of the point on the ellipse
  */
 export function ellipsePolarToCartesian(
   theta: number,
@@ -182,12 +192,12 @@ export function ellipsePolarToCartesian(
   ry: number,
   cx = 0,
   cy = 0
-): [number, number] {
+): Coordinates {
   const { sin, cos } = Math;
-  return [
-    rx * cos(theta) + cx,
-    ry * sin(theta) + cy
-  ];
+  return {
+    x: rx * cos(theta) + cx,
+    y: ry * sin(theta) + cy
+  };
 }
 
 /**
@@ -352,8 +362,8 @@ export function findAsset(assets: Set<Asset>, id: UUID): Result<Asset> {
  * @param {UUID} id - the id to search for
  * @return {Result<Asset>} the found stage, or an error if not found
  */
-export function findStage(state: State, id: UUID): Result<Stage> {
-  const stage = state.stages.find(({ stageId }) => stageId === id);
+export function findStage(stages: Set<Stage>, id: UUID): Result<Stage> {
+  const stage = stages.find(({ stageId }) => stageId === id);
   if (stage) {
     return stage;
   } else {

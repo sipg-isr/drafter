@@ -26,13 +26,30 @@ interface AccessPointSVGProps {
 }
 export default function AccessPointSVG({
   accessPoint,
-  location
+  location,
+  drag,
+  setDrag,
 }: AccessPointSVGProps) {
   const color = objectToColor({accessPoint});
   const { x, y } = location;
 
   return (
-    <g>
+    <g
+        onMouseDown={({ clientX, clientY }) => {
+          setDrag({
+            offset: {
+              x: x - clientX,
+              y: y - clientY
+            },
+            cursor: {
+              x: clientX,
+              y: clientY
+            },
+            stage,
+            port: 'Requester'
+          })
+        }}
+    >
       {accessPoint.type.streamed ?  <>{
         [1, 2].map(idx =>
           <circle
@@ -50,7 +67,7 @@ export default function AccessPointSVG({
         r={outerRadius}
         cx={x}
         cy={y}
-        fill={accessPoint.role === 'Requester' ? color : 'white'}
+        fill={accessPoint.kind === 'Requester' ? color : 'white'}
         stroke='black'
         strokeWidth='1px'
       />
@@ -58,7 +75,7 @@ export default function AccessPointSVG({
         r={innerRadius}
         cx={x}
         cy={y}
-        fill={accessPoint.role === 'Responder' ? color : 'white'}
+        fill={accessPoint.kind === 'Responder' ? color : 'white'}
         stroke='black'
       />
     </g>

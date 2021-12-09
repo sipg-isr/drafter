@@ -77,13 +77,13 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
   case 'SetStages':
     return { stages: action.stages };
   case 'DeleteStage':
-    const stageToDelete = findStage(state, action.stage.stageId);
+    const stageToDelete = findStage(state.stages, action.stage.stageId);
     // If finding the stage gave us an error, return that error
     if (stageToDelete.kind === 'Error') { return stageToDelete; }
     return { stages: state.stages.remove(stageToDelete) };
   case 'UpdateStage':
     // Find the current stage in the set that has the given Id
-    const stageToUpdate = findStage(state, action.stage.stageId);
+    const stageToUpdate = findStage(state.stages, action.stage.stageId);
     // If we've got an error, return it
     if (stageToUpdate.kind === 'Error' ) { return stageToUpdate; }
     // If the stage exists...
@@ -91,7 +91,7 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
       stages: state.stages.remove(stageToUpdate).add({ ...stageToUpdate, ...action.stage })
     };
   case 'AddVolume':
-    const stageToAddVolume = findStage(state, action.stageId);
+    const stageToAddVolume = findStage(state.stages, action.stageId);
     if (stageToAddVolume.kind === 'Error') { return stageToAddVolume; }
     const stageWithUpdatedVolumes = {
       ...stageToAddVolume,

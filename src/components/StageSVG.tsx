@@ -3,9 +3,6 @@ import {
   Set
 } from 'immutable';
 import {
-  truncate
-} from 'lodash';
-import {
   Drag,
   Edge,
   Stage
@@ -33,24 +30,7 @@ export default function StageSVG({
   restartSimulation
 } : StageSVGProps) {
   const { PI, max } = Math;
-  const { name, x, y } = stage;
-
-  const displayName = truncate(name, { length: 25 });
-  // The radii of the ellipse
-  const rx = max(displayName.length * 6, 50);
-  const ry = rx * 0.65;
-
-  // const interval = (2 * PI) / stage.accessPoints.size;
-
-  /*useEffect(() => {
-    stage
-      .accessPoints
-      .forEach((accessPoint, idx) => {
-        [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
-          idx * interval, rx, ry, x, y
-        );
-      });
-  }, [x, y]);*/
+  const { name, x, y, rx, ry } = stage;
 
   return (
     <g>
@@ -64,16 +44,17 @@ export default function StageSVG({
         stroke='#000'
         strokeWidth='1px'
         cursor={drag ? 'grabbing' : 'grab'}
-        onMouseDown={(e) => {
+        onMouseDown={({clientX, clientY}) => {
           setDrag({
             offset: {
-              x: x - e.clientX,
-              y: y - e.clientY
+              x: x - clientX,
+              y: y - clientY
             },
             cursor: {
-              x: e.clientX, y: e.clientY
+              x: clientX, y: clientY
             },
-            element: stage
+            stage,
+            port: null
           });
           restartSimulation();
         }}
@@ -88,17 +69,23 @@ export default function StageSVG({
         fontSize='16px'
         x={x}
         y={y}
-      >{displayName}</text>
-      {/*stage.accessPoints.map(ap =>
-        (
-          <AccessPointSVG
-            accessPoint={ap}
-            drag={drag}
-            setDrag={setDrag}
-            key={ap.accessPointId}
-          />
-        )
-      )*/}
-    </g>
+      >{name}</text>
+      <AccessPointSVG
+        drag={drag}
+        setDrag={setDrag}
+        location={ellipsePolarToCartesian(
+          PI / 2, rx, ry, x, y
+        )}
+        accessPoint={stage.requester}
+      />
+      <AccessPointSVG
+        drag={drag}
+        setDrag={setDrag}
+        location={ellipsePolarToCartesian(
+          3 * PI / 2, rx, ry, x, y
+        )}
+        accessPoint={stage.responder}
+      />
+      </g>
   );
 }

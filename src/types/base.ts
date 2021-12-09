@@ -127,21 +127,23 @@ export interface Stage extends SimulationNodeDatumWithRequiredCoordinates, HasSt
   requester: Requester;
   responder: Responder;
   volumes: List<Volume>;
+  // The radii of the ellipse
+  rx: number;
+  ry: number;
 }
 
 export interface Requester {
-  kind: 'AccessPoint';
-  role: 'Requester';
+  kind: 'Requester';
   type: MessageType;
 }
 
 export interface Responder {
-  kind: 'AccessPoint';
-  role: 'Responder';
+  kind: 'Responder';
   type: MessageType;
 }
 
 export type AccessPoint = Requester | Responder;
+export type AccessPointKind = 'Requester' | 'Responder';
 
 /**
  * A simple enum specifying what kind of volume binding will be used. Currently, only bind is
