@@ -334,8 +334,8 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
  * @param {UUID} id - the id to search for
  * @return {Result<Asset>} the found asset, or an error if not found
  */
-export function findAsset(state: State, id: UUID): Result<Asset> {
-  const asset = state.assets.find(({ assetId }) => assetId === id);
+export function findAsset(assets: Set<Asset>, id: UUID): Result<Asset> {
+  const asset = assets.find(({ assetId }) => assetId === id);
   if (asset) {
     return asset;
   } else {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Button,
   ButtonGroup,
@@ -13,60 +13,112 @@ import { FaCheck, FaEllipsisH, FaPlus, FaTrash } from 'react-icons/fa';
 import {
   Asset,
   Stage,
-  UUID
+  UUID,
+  HasAssetId
 } from '../types';
-import { instantiateAsset } from '../utils';
+import {
+  instantiateAsset,
+  findAsset,
+  findRemoteMethod,
+  reportError
+} from '../utils';
 import {
   useAssets,
   useStages,
+  useAddStage,
   useUpdateStage
 } from '../state';
 import EditField from './EditField';
 import VolumeEditor from './VolumeEditor';
 
+// This is a hack-- the select element won't accept null as a value, so we define an alternate
+// null value-- nil. This hack isn't comprehensive. If the user somehow gets a UUID that is
+// equal to '0', then this will fail. However, this shouldn't happen for a UUID
+const nil = '0';
+type Nil = typeof nil;
+export type MethodSelection = (HasAssetId & {
+  remoteMethodId: UUID | Nil;
+}) | Nil;
+
 function StageAddingForm() {
+
+
+  const [methodSelection, setMethodSelection] = useState<MethodSelection>(nil);
   const [assets] = useAssets();
-
-  // This is a hack-- the select element won't accept null as a value, so we define an alternate
-  // null value-- nil. This hack isn't comprehensive. If the user somehow gets a UUID that is
-  // equal to '0', then this will fail. However, this shouldn't happen for a UUID
-  const nil = '0';
-
-
-  const [selectedAssetId, setSelectedAssetId] = useState<UUID | typeof nil>(nil);
-
-  const [stages, setStages] = useStages();
-
-  /*const addAssetToEditor = (asset: Asset) => {
-    const stage = instantiateAsset(asset, asset.name);
-    setStages(stages.add(stage));
-  };*/
+  const addStage = useAddStage();
 
   // Whenever assets change, set back to nil
   useEffect(() => {
-    setSelectedAssetId(nil);
+    setMethodSelection(nil);
   }, [assets]);
+
+  // Deduce the currently-selected asset from the methodSelection object
+  const selectedAsset = useMemo(() => {
+    if (methodSelection !== nil) {
+      const asset = findAsset(assets, methodSelection.assetId);
+      if (asset.kind === 'Asset') {
+        return asset;
+      } else {
+        reportError(asset);
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }, [methodSelection]);
 
   return (
     <tr>
-      <td colSpan={2}>
+      <td colSpan={methodSelection !== nil ? 1 : 2}>
         <FloatingLabel controlId='floatingSelectGrid' label='Add asset' defaultValue={nil}>
-          <Form.Select aria-label='Add another asset' onChange={({ target: { value } }) => setSelectedAssetId(value)}>
+          <Form.Select
+            aria-label='Add another asset'
+            onChange={({ target: { value } }) => {
+              if (value !== nil) {
+                setMethodSelection({
+                  assetId: value,
+                  remoteMethodId: nil
+                });
+              } else {
+                setMethodSelection(nil);
+              }
+            }}>
             <option value={nil}>Select Asset to add</option>
             {assets.map(({ assetId, name }) =>
-              <option key={assetId }value={assetId}>{name}</option>
+              <option key={assetId} value={assetId}>{name}</option>
             )}
           </Form.Select>
         </FloatingLabel>
       </td>
+      {methodSelection !== nil ?
+        <td>
+          <FloatingLabel controlId='floatingSelectGrid' label='Select method'>
+            <Form.Select
+              aria-label='Select method'
+              onChange={({ target: { value }}) => {
+                setMethodSelection({
+                  ...methodSelection,
+                  remoteMethodId: value
+                })
+              }}>
+              <option value={nil}>Select method from asset</option>
+              {selectedAsset!.methods.map(({ name, remoteMethodId }) =>
+                <option key={remoteMethodId} value={remoteMethodId}>{name}</option>
+              )}
+            </Form.Select>
+          </FloatingLabel>
+        </td>
+        : null}
       <td>
         <Button
-          disabled={ selectedAssetId === nil }
+          disabled={methodSelection === nil || methodSelection.remoteMethodId === nil}
           variant='primary'
           onClick={() => {
-            const asset = assets.find(({ assetId }) => assetId === selectedAssetId);
-            if (asset) {
-              // addAssetToEditor(asset);
+            if (methodSelection !== nil && methodSelection.remoteMethodId !== nil) {
+              const stage = instantiateAsset(selectedAsset!, methodSelection)
+              if (stage.kind === 'Stage') {
+                addStage(stage);
+              }
             }
           }}
         >
@@ -104,25 +156,25 @@ export default function Sidebar() {
         </thead>
         <tbody>
           {stages.toList().map(stage =>
-            <tr key={stage.stageId}>
-              <td><EditField value={stage.name} setValue={name => updateStage({ ...stage, name })} /></td>
-              <td>{assets.find(({ assetId }) => stage.assetId === assetId)?.name || 'No asset found'}</td>
-              <td>
-                <ButtonGroup>
-                  <Button
-                    variant='primary'
-                    onClick={() => selectStageId(stage.stageId)}
-                  >
-                    <FaEllipsisH />
-                  </Button>
-                  <Button
-                    variant='danger'
-                    onClick={() => removeStage(stage)}>
-                    <FaTrash />
-                  </Button>
-                </ButtonGroup>
-              </td>
-            </tr>
+          <tr key={stage.stageId}>
+            <td><EditField value={stage.name} setValue={name => updateStage({ ...stage, name })} /></td>
+            <td>{assets.find(({ assetId }) => stage.assetId === assetId)?.name || 'No asset found'}</td>
+            <td>
+              <ButtonGroup>
+                <Button
+                  variant='primary'
+                  onClick={() => selectStageId(stage.stageId)}
+                >
+                  <FaEllipsisH />
+                </Button>
+                <Button
+                  variant='danger'
+                  onClick={() => removeStage(stage)}>
+                  <FaTrash />
+                </Button>
+              </ButtonGroup>
+            </td>
+          </tr>
           )}
           <StageAddingForm />
         </tbody>

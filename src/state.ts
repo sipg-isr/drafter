@@ -65,13 +65,15 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
     return { ...state, assets: action.assets };
   case 'UpdateAsset':
     // Try to find the asset
-    const asset = findAsset(state, action.asset.assetId);
+    const asset = findAsset(state.assets, action.asset.assetId);
     // If finding the asset returned an error, then just propagate that error
     if (asset.kind === 'Error') { return asset; }
     // If we can find the current asset, remove and replace it
     return {
       assets: state.assets.remove(asset).add(action.asset)
     };
+  case 'AddStage':
+    return { stages: state.stages.add(action.stage) };
   case 'SetStages':
     return { stages: action.stages };
   case 'DeleteStage':
@@ -169,4 +171,7 @@ export function useActions(): List<[Date, Action]> {
 }
 export function useRestoreState() {
   return useStore(({ dispatch }) => (state: State) => dispatch({type: 'RestoreState', state }));
+}
+export function useAddStage() {
+  return useStore(({ dispatch }) => (stage: Stage) => dispatch({ type: 'AddStage', stage }));
 }

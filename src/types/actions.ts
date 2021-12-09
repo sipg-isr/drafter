@@ -55,6 +55,16 @@ export interface SetStages {
 }
 
 /**
+ * An action to add a stage to the editor
+ * @interface
+ * @property {Stage} stage - the stage to add
+ */
+export interface AddStage {
+  type: 'AddStage';
+  stage: Stage;
+}
+
+/**
  * An action to delete the given stage
  * @interface
  * @property {Stage} stage - the stage to delete
@@ -125,6 +135,7 @@ export type Action =
   CreateAsset  |
   SetAssets    |
   UpdateAsset  |
+  AddStage     |
   SetStages    |
   DeleteStage  |
   UpdateStage  |
