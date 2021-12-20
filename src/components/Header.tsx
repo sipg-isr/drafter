@@ -7,6 +7,9 @@ import {
 import EditMenu from './EditMenu';
 import { name, version } from '../../package.json';
 
+/**
+ * Component containing the Header and navigation of the application
+ */
 export default function Header() {
   return (
     <Navbar>

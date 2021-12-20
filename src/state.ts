@@ -6,17 +6,14 @@ import {
   Action,
   Asset,
   Edge,
-  ErrorKind,
   Result,
   Stage,
   State
 } from './types';
 import {
-  error,
   findAsset,
   findStage,
-  protobufToRemoteMethods,
-  success
+  protobufToRemoteMethods
 } from './utils';
 
 /**
@@ -24,6 +21,7 @@ import {
  * and restoring to this first state
  */
 const initialState: State = {
+  kind: 'State',
   assets: Set(),
   stages: Set(),
   edges: Set(),
@@ -32,14 +30,24 @@ const initialState: State = {
 
 /**
  * This is the fundamental state management function for the application. It takes a state, and an
- * action and returns a new state
+ * action and returns a new state.
+ *
+ * The core of all Drafter Application logic is defined in this function
+ *
+ * @param {State} state -
+ *   The initial state, before any action takes place. If any failure occurs,
+ *   this state will be restored
+ * @param {Action} action - An action, which will be applied as a a modification against the State
+ * @return {Result<Partial<State>>}
+ *   A partial state object. This will define some properties of State, and the missing ones will
+ *   be filled in from the initial State.
  */
 function reducer(state: State, action: Action): Result<Partial<State>> {
   switch (action.type) {
   case 'CreateAsset':
     const methods = protobufToRemoteMethods(action.protobufCode);
-    if (methods) {
-      return success({
+    if (!('errorKind' in methods)) {
+      return {
         assets: state.assets.add({
           kind: 'Asset',
           assetId: uuid(),
@@ -47,72 +55,92 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
           image: action.image,
           methods
         })
-      });
+      };
     } else {
-      return error(
-        ErrorKind.ParsingError,
-        'Refusing to update state: Could not parse protobuf code'
-      );
+      // If this is an error, than just return the error
+      return methods;
     }
   case 'SetAssets':
-    return success({ ...state, assets: action.assets });
+    return { ...state, assets: action.assets };
   case 'UpdateAsset':
     // Try to find the asset
-    const findAssetResult = findAsset(state, action.asset.assetId);
-    // If you can't find it, quit
-    if (findAssetResult.kind === 'Error') { return findAssetResult; }
+    const asset = findAsset(state.assets, action.asset.assetId);
+    // If finding the asset returned an error, then just propagate that error
+    if (asset.kind === 'Error') { return asset; }
     // If we can find the current asset, remove and replace it
-    const currentAsset = findAssetResult.value;
-    return success({
-      assets: state.assets.remove(currentAsset).add(action.asset)
-    });
+    return {
+      assets: state.assets.remove(asset).add(action.asset)
+    };
+  case 'DeleteAsset':
+    // Try to find the asset
+    const assetToDelete = findAsset(state.assets, action.asset.assetId);
+    // If finding the asset returned an error, then just propagate that error
+    if (assetToDelete.kind === 'Error') { return assetToDelete; }
+    // Now delete the asset and all associated stages and edges
+    const newAssets = state.assets.remove(assetToDelete);
+    const newStages = state.stages.filter(({ assetId }) => assetToDelete.assetId !== assetId);
+    const newEdges = state.edges.filter(({ requesterId, responderId }) =>
+      findStage(newStages, requesterId).kind !== 'Error' &&
+      findStage(newStages, responderId).kind !== 'Error'
+    );
+    return {
+      assets: newAssets,
+      stages: newStages,
+      edges:  newEdges
+    };
+  case 'AddStage':
+    return { stages: state.stages.add(action.stage) };
   case 'SetStages':
-    return success({ stages: action.stages });
+    return { stages: action.stages };
   case 'DeleteStage':
-    const findStageResult = findStage(state, action.stage.stageId);
-    // If we can't find the given stage, fail with an error
-    if (findStageResult.kind === 'Error') { return findStageResult; }
-    const stageToDelete = findStageResult.value;
-    return success({ stages: state.stages.remove(stageToDelete) });
+    const stageToDelete = findStage(state.stages, action.stage.stageId);
+    // If finding the stage gave us an error, return that error
+    if (stageToDelete.kind === 'Error') { return stageToDelete; }
+    return {
+      stages: state.stages.remove(stageToDelete),
+      // Filter out all edges that have the give stage Id
+      edges: state.edges.filter(({ requesterId, responderId }) =>
+        stageToDelete.stageId !== requesterId && stageToDelete.stageId !== responderId
+      )
+    };
   case 'UpdateStage':
     // Find the current stage in the set that has the given Id
-    const findStageResult_ = findStage(state, action.stage.stageId);
-    // This name is supposed to be findStageResult. It is called findStageResult_ in protest of
-    // Javascript insisting that a switch/case not introduce a new block scope, meaning that
-    // naming the variable findStageResult would be considered a name collision. ECMAScript
-    // committee, please implement a proper [match expression](https://doc.rust-lang.org/book/ch06-02-match.html)
-    if (findStageResult_.kind === 'Error') { return findStageResult_; }
-    const currentStage = findStageResult_.value;
+    const stageToUpdate = findStage(state.stages, action.stage.stageId);
+    // If we've got an error, return it
+    if (stageToUpdate.kind === 'Error' ) { return stageToUpdate; }
     // If the stage exists...
-    return success({
-      stages: state.stages.remove(currentStage).add({ ...currentStage, ...action.stage })
-    });
-  case 'AddVolume':
-    const findStageResult__ = findStage(state, action.stageId);
-    if (findStageResult__.kind === 'Error') { return findStageResult__; }
-    const stage = findStageResult__.value;
-    const stageWithUpdatedVolumes = {
-      ...stage,
-      volumes: stage.volumes.push(action.volume)
+    return {
+      stages: state.stages.remove(stageToUpdate).add({ ...stageToUpdate, ...action.stage })
     };
-    const stages = state.stages.remove(stage).add(stageWithUpdatedVolumes);
-    return success({
-      stages
-    });
+  case 'AddVolume':
+    const stageToAddVolume = findStage(state.stages, action.stageId);
+    if (stageToAddVolume.kind === 'Error') { return stageToAddVolume; }
+    const stageWithUpdatedVolumes = {
+      ...stageToAddVolume,
+      volumes: stageToAddVolume.volumes.push(action.volume)
+    };
+    const stages = state.stages.remove(stageToAddVolume).add(stageWithUpdatedVolumes);
+    return { stages };
   case 'SetEdges':
-    return success({ edges: action.edges });
+    return { edges: action.edges };
+  case 'AddEdge':
+    return { edges: state.edges.add(action.edge) };
+  case 'DeleteEdge':
+    return { edges: state.edges.remove(action.edge) };
   case 'RestoreState':
-    return success(action.state);
+    return action.state;
   case 'ClearState':
-    return success(initialState);
+    return initialState;
   }
 }
 
+/**
+ * A React Hook to bring the application State into scope
+ */
 export const useStore = create(redux(
   (state: State, action: Action) => {
-    const result = reducer(state, action);
-    if (result.kind === 'Success') {
-      const partialState = result.value;
+    const partialState = reducer(state, action);
+    if (partialState.kind !== 'Error') {
       if (partialState.actions) {
         // If the reducer actually specified or changed the actions, then use those
         return { ...state, ...partialState };
@@ -121,7 +149,12 @@ export const useStore = create(redux(
         return { ...state, ...partialState, actions: state.actions.push([new Date(), action]) };
       }
     } else {
-      console.error(`Error ${result.errorKind} in ${action.type}: ${result.message}`);
+      // If our reducer returned an error:
+      // Pull out the kind of error and message...
+      const { errorKind, message } = partialState;
+      // Log them to console
+      console.error(`Error ${errorKind} in ${action.type}: ${message}`);
+      // And keep the existing state
       return state;
     }
   }, initialState));
@@ -153,15 +186,18 @@ export function useUpdateStage() {
 export function useAssets(): [Set<Asset>, (assets: Set<Asset>) => void] {
   return useStore(state => [state.assets, ((assets: Set<Asset>) => state.dispatch({ type: 'SetAssets', assets }))]);
 }
-export function useStages(): [Set<Stage>, (stages: Set<Stage>) => void] {
-  return useStore(state => [state.stages, ((stages: Set<Stage>) => state.dispatch({ type: 'SetStages', stages }))]);
+export function useStages(): Set<Stage> {
+  return useStore(state => state.stages);
 }
-export function useEdges(): [Set<Edge>, (edges: Set<Edge>) => void] {
-  return useStore(state => [state.edges, ((edges: Set<Edge>) => state.dispatch({ type: 'SetEdges', edges }))]);
+export function useEdges(): Set<Edge> {
+  return useStore(state => state.edges);
 }
 export function useActions(): List<[Date, Action]> {
   return useStore(state => state.actions);
 }
 export function useRestoreState() {
   return useStore(({ dispatch }) => (state: State) => dispatch({type: 'RestoreState', state }));
+}
+export function useAddStage() {
+  return useStore(({ dispatch }) => (stage: Stage) => dispatch({ type: 'AddStage', stage }));
 }

@@ -4,27 +4,81 @@ import { List, Map, Set } from 'immutable';
 import  { v4 as uuid } from 'uuid';
 import { dump } from 'js-yaml';
 import JSZip from 'jszip';
-import equal from 'fast-deep-equal';
 import {
-  AccessPoint,
+  truncate
+} from 'lodash';
+import equal from 'fast-deep-equal';
+import { DEFAULT_Y_RADIUS } from './constants';
+import {
+  AccessPointKind,
   Asset,
+  Coordinates,
+  DockerCompose,
   Error,
   ErrorKind,
-  HasAccessPointId,
-  HasStageId,
+  HasRemoteMethodId,
+  OutputConfig,
   RemoteMethod,
+  Requester,
+  Responder,
   Result,
   Stage,
   State,
-  Success,
   UUID
 } from './types';
+
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
 
 /**
- * Convert literal ProtoBuf code into a list of RemoteMethod's
+ * Create an error with an ErrorKind and message
+ * @param {ErrorKind} errorKind
+ * @param {string} message
  */
-export function protobufToRemoteMethods(code: string): Set<RemoteMethod> | null {
+export function error(errorKind: ErrorKind, message: string): Error {
+  return {
+    kind: 'Error',
+    errorKind,
+    message
+  };
+}
+
+/**
+ * Attempt to find the stage with the given ID
+ * @param {State} state - the application state containing the stages to search
+ * @param {UUID} id - the id to search for
+ * @return {Result<Asset>} the found stage, or an error if not found
+ */
+export function findStage(stages: Set<Stage>, id: UUID): Result<Stage> {
+  const stage = stages.find(({ stageId }) => stageId === id);
+  if (stage) {
+    return stage;
+  } else {
+    return error(
+      ErrorKind.StageNotFound,
+      `Cannot find Stage with id ${id}`
+    );
+  }
+}
+
+export function findRemoteMethod(asset: Asset, remoteMethodId: UUID): Result<RemoteMethod> {
+  const method = asset.methods.find(method => method.remoteMethodId === remoteMethodId);
+  if (method) {
+    return method;
+  } else {
+    return error(
+      ErrorKind.RemoteMethodNotFound,
+      `Cannot find Remote Method with id ${remoteMethodId} in asset ${asset}`
+    );
+  }
+}
+
+/**
+ * Convert literal ProtoBuf code into a list of RemoteMethod's
+ * @param {string} code - the source code of a protobuf file
+ * @returns {Set<RemoteMethod>} - a set of RemoteMethod objects representing the methods of the
+ * node's interface
+ */
+export function protobufToRemoteMethods(code: string): Result<Set<RemoteMethod>> {
   try {
     // Parse out the root object from the ProtoBuf code
     const { root } = parse(code);
@@ -37,9 +91,11 @@ export function protobufToRemoteMethods(code: string): Set<RemoteMethod> | null 
       .filter(reflectionObject => reflectionObject.toJSON().methods)
       .map(obj => obj as Service);
 
+    // FlatMap all services' methodsArray's into one Set of RemoteMethods
     return Set(services.flatMap(service => service
       .methodsArray
       .map(method => ({
+        kind: 'RemoteMethod',
         name: method.name,
         requestType: {
           ...root.lookupType(method.requestType).toJSON(),
@@ -55,114 +111,130 @@ export function protobufToRemoteMethods(code: string): Set<RemoteMethod> | null 
       })))
     );
   } catch (e: any) {
-    // I really hate exceptions, so we just return null here. TODO make this more sophisticated
-    return null;
+    // If we get an exception at any point, return a ParsingError
+    return error(ErrorKind.ParsingError, e.message);
   }
 }
 
 /**
  * Convert a Remote Method to a human-readable string
+ * @param {RemoteMethod} method - a remote method
+ * @return {string} a human-readable string
  */
 export function remoteMethodToString({ name, requestType, responseType }: RemoteMethod): string {
   return `${name}(${requestType.name}): ${responseType.name}`;
 }
 
-/**
- * Keeps track of how many of each asset have been instantiated
- */
-let idCounter: Map<UUID, number> = Map();
-/**
- * Given a asset, instantiate it so that it can be used in the simulation
- */
-export function instantiateAsset(
-  { assetId, methods }: Asset, name: string
-): Stage {
-  const stageId = uuid();
-  const accessPoints = methods.reduce<List<AccessPoint>>((acc, { name, requestType, responseType, remoteMethodId}) => {
-    const requesterId = uuid();
-    const responderId = uuid();
-    return acc
-      .push({
-        kind:         'AccessPoint',
-        role:         'Requester',
-        name:          name,
-        type:          requestType,
-        accessPointId: requesterId,
-        remoteMethodId,
-        stageId,
-        x: 0,
-        y: 0
-      })
-      .push({
-        kind:         'AccessPoint',
-        role:         'Responder',
-        name:          name,
-        type:          responseType,
-        accessPointId: responderId,
-        stageId,
-        remoteMethodId,
-        x: 0,
-        y: 0
-      });
-  }, List());
-
-  // Get the number for this stage
-  const stageNumber = (idCounter.get(assetId) || 1);
-  // Increment the number for the assetId
-  idCounter = idCounter.set(assetId,
-    stageNumber + 1
-  );
-
+export function methodToRequesterAndResponder({ requestType, responseType }: RemoteMethod): {
+  requester: Requester,
+  responder: Responder
+} {
   return {
-    kind: 'Stage',
-    name: `${name} ${stageNumber}`,
-    stageId,
-    assetId,
-    accessPoints: accessPoints.filter(({ type: { name, fields } }) =>
-      name !== 'Empty' || Object.keys(fields).length > 0
-    ),
-    volumes: List(),
-    x: 0,
-    y: 0
+    requester: {
+      kind: 'Requester',
+      type: requestType
+    },
+    responder: {
+      kind: 'Responder',
+      type: responseType
+    }
   };
 }
 
 /**
- * Can two methods be connected?
+ * Given a asset, instantiate it so that it can be used in the simulation
+ * @param {Asset} asset
+ * @param {string} name - the name to give the asset when it is instantiated
+ * @return {Stage} a stage object created from the given `asset`, and named `name`
  */
-export function compatibleMethods(left: AccessPoint, right: AccessPoint): boolean {
-  const kinds = [left.role, right.role];
-  return kinds.includes('Requester') &&
-    kinds.includes('Responder') &&
-    equal(left.type, right.type);
+export function instantiateAsset(
+  asset: Asset,
+  { remoteMethodId }: HasRemoteMethodId
+): Result<Stage> {
+  const stageId = uuid();
+
+  const method = findRemoteMethod(asset, remoteMethodId);
+
+  if (method.kind === 'RemoteMethod') {
+    const { requester, responder } = methodToRequesterAndResponder(method);
+    const name = truncate(`${asset.name}-${method.name}`, { length: 25 });
+    const rx = Math.max(name.length * 6, 50);
+    // TODO make this configurable somewhere
+    return {
+      kind: 'Stage',
+      name,
+      methodName: method.name,
+      requester,
+      responder,
+      stageId,
+      assetId: asset.assetId,
+      volumes: List(),
+      x: 0,
+      y: 0,
+      rx,
+      ry: DEFAULT_Y_RADIUS
+    };
+  } else {
+    return method;
+  }
+}
+
+/**
+ * Can two methods be connected?
+ * @param {AccessPoint} left, right - two `AccessPoint`s, representing two methods
+ * @return {boolean} whether the tow can be connected
+ */
+export function compatibleMethods(requester: Requester, responder: Responder): boolean {
+  return equal(requester.type, responder.type);
 }
 
 /**
  * Given an object, return a color value for it
+ * @param {any} obj - any object
+ * @return {string} a hex code of the form '#XXXXXX' representing a color for the object
  */
 export function objectToColor(obj: any): string {
   return `#${MD5(obj).slice(0,6)}`;
 }
 
+export function accessPointLocation({ x, y }: Coordinates, accessPointKind: AccessPointKind): Coordinates {
+  return {
+    x,
+    y: accessPointKind === 'Requester' ? y + DEFAULT_Y_RADIUS : y - DEFAULT_Y_RADIUS
+  };
+}
+
+/**
+ * Calculate the x-y value of a point on an ellipse, based on radial coordinates
+ * @param {number} theta - the angle of the point from the center, in radians
+ * @param {number} rx - the x-axis radius of the ellipse
+ * @param {number} ry - the y-axis radius of the ellipse
+ * @param {number} cx - the x-coordinate of the center of the ellipse
+ * @param {number} cy - the y-coordinate of the center of the ellipse
+ * @return {Coordinates} the Cartesian coordinates of the point on the ellipse
+ */
 export function ellipsePolarToCartesian(
   theta: number,
   rx: number,
   ry: number,
   cx = 0,
   cy = 0
-): [number, number] {
+): Coordinates {
   const { sin, cos } = Math;
-  return [
-    rx * cos(theta) + cx,
-    ry * sin(theta) + cy
-  ];
+  return {
+    x: rx * cos(theta) + cx,
+    y: ry * sin(theta) + cy
+  };
 }
 
 /**
  * A function that takes a react ref to a file input tag and outputs the plain-text value of the
  * currently-uploaded file
+ * @param {HTMLInputElement} element - an HTML tag representing the file input element
+ * @return {Promise<Result<string>>} a promise containing either the content of the file or an
+ * error if the number of files attached was not exactly one
  */
-export async function fileContent(element: HTMLInputElement): Promise<string | null> {
+export async function fileContent(element: HTMLInputElement): Promise<Result<string>> {
   // Get the set of files associated with the current file input
   // Note that we coerce to undefined in case of a falsy value here because the `Set`
   // constructor does not accept null.
@@ -171,17 +243,30 @@ export async function fileContent(element: HTMLInputElement): Promise<string | n
   if (files.size === 1) {
     // We can assert-nonnull here because we know the files list has a first element
     const file = files.first()!;
-    return file.text();
+    // Get the content of the file
+    const text = await file.text();
+    return text;
   } else {
-    console.error(`Didn't find exactly one protobuf file for the asset. Files were [${files.map(file => file.name).join(', ')}]}`);
-    return null;
+    return error(ErrorKind.FileInputError, `Didn't find exactly one protobuf file for the asset. Files were [${files.map(file => file.name).join(', ')}]}`);
   }
 }
 
+/**
+ * Given the state of the application, serialize it into a string
+ * @param {State} state
+ * @return {string} a string containing all state information of the application
+ */
 export function serializeState(state: State): string {
   return JSON.stringify(state);
 }
 
+/**
+ * Given a string, reconstitute it into application state
+ * FIXME this function does not perform any validation, it just naïvely JSON-parses
+ * @param {string} serialized - a string containing application state, as produced by the function
+ * above
+ * @return {State} the reconstituted state
+ */
 export function deserializeState(serialized: string): State {
   const parsed = JSON.parse(serialized, (key, value) => {
     if (
@@ -204,35 +289,29 @@ export function deserializeState(serialized: string): State {
   return parsed;
 }
 
-export function lookupAccessPoint(
-  stages: Set<Stage>,
-  { stageId, accessPointId }: HasStageId & HasAccessPointId): AccessPoint | null {
-  return stages
-    .find(stage => stage.stageId === stageId)
-    ?.accessPoints
-    .find(ap => ap.accessPointId === accessPointId) || null;
-}
-
+/**
+ * Convert the current application state into a docker-compose format
+ * that can be used with https://github.com/DuarteMRAlves/Pipeline-Orchestrator
+ * @param {State} state - the application state
+ * @return {Promise<Blob>} a ZIP file containing the docker-compose.yml and config.yml files
+ */
 export async function exportState({ assets, stages, edges }: State): Promise<Blob> {
   const zip = new JSZip();
 
-  // This object represents the docker-compose file
-  // We don't have a schema for this yet, so we effectively disable type-checking by giving it the
-  // `any` type
-  const dockerCompose: any = {
+  const dockerCompose: DockerCompose = {
     version: '3',
     services: {
-      'orchestrator-stage': {
+      'orchestrator-node': {
         image: 'sipgisr/grpc-orchestrator:latest',
-        volumes: [{
-          type: 'bind',
-          source: './config.yml',
-          target: '/app/config/config.yml'
-        }],
-        environment: {
-          CONFIG_FILE: 'config/config.yml'
-        }
+        volumes: [
+          {
+            type: 'bind',
+            source: './config.yml',
+            target: '/app/config/config.yml'
+          }
+        ]
       }
+
     }
   };
 
@@ -249,23 +328,32 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
     }
   });
 
-  // This object represents the `config.yml` file
-  const config: any = {
-    stages: stages.map(({ name, assetId }) => ({
+  const config: OutputConfig = {
+    stages: stages.map(({ name }) => ({
       name,
-      host: assets.find(asset => asset.assetId === assetId)?.name || 'Asset not found',
+      host: name.replaceAll(/\s+/g, '-'),
       port: 8061
     })).toArray(),
-    links: edges.map(({ requesterId, responderId }) => ({
-      source: {
-        stage: stages.find(({ stageId }) => stageId === responderId.stageId)?.name || 'Stage not found',
-        field: lookupAccessPoint(stages, responderId)?.name || 'Method not found'
-      },
-      target: {
-        stage: stages.find(({ stageId }) => stageId === requesterId.stageId)?.name || 'Stage not found',
-        field: lookupAccessPoint(stages, requesterId)?.name || 'Method not found'
+    links: edges.map(({ requesterId, responderId }) => {
+      const requester = findStage(stages, requesterId);
+      const responder = findStage(stages, responderId);
+      if (requester.kind === 'Error') {
+        throw requester;
+      } else if (responder.kind === 'Error') {
+        throw responder;
+      } else {
+        return {
+          source: {
+            stage: requester.name,
+            field: requester.methodName
+          },
+          target: {
+            stage: responder.name,
+            field: responder.methodName
+          }
+        };
       }
-    })).toArray()
+    }).toArray()
   };
 
   // Add the data to the zip as yaml
@@ -277,33 +365,15 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
 }
 
 /**
- * Given a value, wrap it in a success object
- */
-export function success<T>(value: T): Success<T> {
-  return {
-    kind: 'Success',
-    value
-  };
-}
-
-/**
- * Simple error constructor
- */
-export function error(errorKind: ErrorKind, message: string): Error {
-  return {
-    kind: 'Error',
-    errorKind,
-    message
-  };
-}
-
-/**
  * Attempt to find the asset with the given ID
+ * @param {State} state - the application state containing the assets to search
+ * @param {UUID} id - the id to search for
+ * @return {Result<Asset>} the found asset, or an error if not found
  */
-export function findAsset(state: State, id: UUID): Result<Asset> {
-  const asset = state.assets.find(({ assetId }) => assetId === id);
+export function findAsset(assets: Set<Asset>, id: UUID): Result<Asset> {
+  const asset = assets.find(({ assetId }) => assetId === id);
   if (asset) {
-    return success(asset);
+    return asset;
   } else {
     return error(
       ErrorKind.AssetNotFound,
@@ -313,16 +383,9 @@ export function findAsset(state: State, id: UUID): Result<Asset> {
 }
 
 /**
- * Attempt to find the stage with the given ID
+ * Given an error, print it to the console
+ * @param {Error}
  */
-export function findStage(state: State, id: UUID): Result<Stage> {
-  const stage = state.stages.find(({ stageId }) => stageId === id);
-  if (stage) {
-    return success(stage);
-  } else {
-    return error(
-      ErrorKind.StageNotFound,
-      `Cannot find Stage with id ${id}`
-    );
-  }
+export function reportError({ errorKind, message }: Error) {
+  console.error(`${errorKind}: ${message}`);
 }

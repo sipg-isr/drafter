@@ -9,14 +9,18 @@ const unit = 5;
 
 interface ListingProps {
   content: string
+  language: string
 }
-export default function Listing({ content }: ListingProps) {
+/**
+ * A simple utility component that displays syntax-highlighted source code
+ */
+export default function Listing({ content, language }: ListingProps) {
   // TODO make this div style configurable based on the current theme?
   // TODO add syntax highlighting?
   return <div style={{
     position: 'relative'
   }}>
-    <SyntaxHighlighter language='json' style={dark} customStyle={{
+    <SyntaxHighlighter language={language} style={dark} customStyle={{
       padding: `${2 * unit}px`,
       borderRadius: `${unit}px`
     }}>

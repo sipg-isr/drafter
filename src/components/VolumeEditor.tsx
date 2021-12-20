@@ -82,8 +82,11 @@ interface VolumeEditorProps {
   selectStageId: (id: UUID) => void;
   close: () => void;
 }
+/**
+ * This component is a modal that allows users to add and remove mounted volumes from stages
+ */
 export default function VolumeEditor({ stageId, selectStageId, close }: VolumeEditorProps) {
-  const [stages] = useStages();
+  const stages = useStages();
   const updateStage = useUpdateStage();
   const stage = stages.find(stage => stage.stageId === stageId);
   if (!stage) { return null; }

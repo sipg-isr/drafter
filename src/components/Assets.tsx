@@ -1,13 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Button,
   Form,
   Table
 } from 'react-bootstrap';
-import { List, Map, Set } from 'immutable';
 import { FaPlus, FaTrash } from 'react-icons/fa';
-import { fileContent, remoteMethodToString } from '../utils';
-import { useAssets, useCreateAsset, useUpdateAsset } from '../state';
+import { fileContent, remoteMethodToString, reportError } from '../utils';
+import { useAssets, useCreateAsset, useDispatch, useUpdateAsset } from '../state';
 import EditField from './EditField';
 
 function AssetAddingForm() {
@@ -44,11 +43,16 @@ function AssetAddingForm() {
           onClick={async () => {
             const inputElement = filesRef.current;
             if (inputElement) {
-              createAsset({
-                name,
-                image,
-                protobufCode: await fileContent(inputElement) || ''
-              });
+              const content = await fileContent(inputElement);
+              if (typeof content === 'string') {
+                createAsset({
+                  name,
+                  image,
+                  protobufCode: content
+                });
+              } else {
+                reportError(content);
+              }
 
               setName('');
               setImage('');
@@ -61,8 +65,12 @@ function AssetAddingForm() {
   );
 }
 
+/**
+ * This component lists the current Assets and allows you to modify them, delete them, or add more
+ */
 export default function Assets() {
   // Keep a list of the state assets
+  const dispatch = useDispatch();
   const [assets] = useAssets();
   const updateAsset = useUpdateAsset();
 
@@ -81,7 +89,16 @@ export default function Assets() {
           <td><EditField value={asset.name} setValue={name => updateAsset({ ...asset, name })} /></td>
           <td><EditField value={asset.image} setValue={image => updateAsset({ ...asset, image })} /></td>
           <td>{asset.methods.map(method => <pre key={method.remoteMethodId}>{remoteMethodToString(method)}</pre>)}</td>
-          <td><Button variant='danger'><FaTrash /></Button></td>
+          <td>
+            <Button
+              variant='danger'
+              onClick={() => dispatch({
+                type: 'DeleteAsset',
+                asset
+              })}>
+              <FaTrash />
+            </Button>
+          </td>
         </tr>)}
         <AssetAddingForm />
       </tbody>

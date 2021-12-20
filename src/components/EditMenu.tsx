@@ -12,6 +12,9 @@ import {
   SaveDialog
 } from './modals';
 
+/**
+ * This component represents the menu at the top of the page which offers various utilities
+ */
 export default function EditMenu() {
   const [currentDialog, setCurrentDialog] = useState<DialogOption | null>(null);
 

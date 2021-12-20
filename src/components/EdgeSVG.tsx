@@ -1,19 +1,21 @@
 import React from 'react';
+import { Coordinates } from '../types';
 
 interface EdgeSVGProps {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
+  origin: Coordinates;
+  destination: Coordinates;
 }
+/**
+ * A simple SVG component for rendering edges between stages
+ */
 export default function EdgeSVG({
-  x1, x2, y1, y2
+  origin, destination
 }: EdgeSVGProps) {
   return <line
-    x1={x1}
-    y1={y1}
-    x2={x2}
-    y2={y2}
+    x1={origin.x}
+    y1={origin.y}
+    x2={destination.x}
+    y2={destination.y}
     stroke='#999'
     strokeOpacity='0.6'
     strokeWidth='10'

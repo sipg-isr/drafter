@@ -4,11 +4,11 @@ import {
   ButtonGroup,
   Form
 } from 'react-bootstrap';
-import { List, Set } from 'immutable';
+import { Set } from 'immutable';
 import { v4 as uuid } from 'uuid';
 import { FaCheck, FaPen, FaTimes, FaTrash } from 'react-icons/fa';
 import { Asset } from '../types';
-import { fileContent, protobufToRemoteMethods, remoteMethodToString } from '../utils';
+import { fileContent, protobufToRemoteMethods, remoteMethodToString, reportError } from '../utils';
 
 interface Edit {
   kind: 'Edit';
@@ -105,17 +105,23 @@ function EditAsset({ entry: { asset }, setEntry, removeEntry }: EditAssetProps) 
             <Button
               variant='success'
               onClick={async () => {
-                setEntry({
-                  kind: 'Display',
-                  asset: {
-                    kind: 'Asset',
-                    name,
-                    image,
-                    // TODO show an error message and abort if this is null
-                    methods: protobufToRemoteMethods(await fileContent(filesRef!.current!) || '') || Set(),
-                    assetId: asset ? asset.assetId : uuid()
-                  }
-                });
+                const content = await fileContent(filesRef!.current!);
+                if (typeof content === 'string') {
+                  const methods = protobufToRemoteMethods(content);
+                  setEntry({
+                    kind: 'Display',
+                    asset: {
+                      kind: 'Asset',
+                      name,
+                      image,
+                      // TODO show an error message and abort if this is null
+                      methods: 'errorKind' in methods ? Set() : methods,
+                      assetId: asset ? asset.assetId : uuid()
+                    }
+                  });
+                } else {
+                  reportError(content);
+                }
               }}><FaCheck /></Button>
             <Button
               variant='danger'
@@ -133,6 +139,9 @@ interface AssetViewProps {
   setEntry: (entry: AssetEntry) => void;
   removeEntry: () => void;
 }
+/**
+ * A component that displays a given asset and allows the user to edit it
+ */
 export default function AssetView({ entry, setEntry, removeEntry }: AssetViewProps) {
   if (entry.kind === 'Display') {
     return <DisplayAsset entry={entry} setEntry={setEntry} removeEntry={removeEntry} />;
