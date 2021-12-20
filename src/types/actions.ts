@@ -45,6 +45,16 @@ export interface UpdateAsset {
 }
 
 /**
+ * Delete the given asset
+ * @interface
+ * @property {Asset} asset - the asset to delete
+ */
+export interface DeleteAsset {
+  type: 'DeleteAsset';
+  asset: Asset;
+}
+
+/**
  * An action to set the stages. Used when stages are added or removed from the editor
  * @interface
  * @property {Set<Stage>} stages - the stages to use
@@ -145,6 +155,7 @@ export type Action =
   CreateAsset  |
   SetAssets    |
   UpdateAsset  |
+  DeleteAsset  |
   AddStage     |
   SetStages    |
   DeleteStage  |

@@ -72,6 +72,23 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
     return {
       assets: state.assets.remove(asset).add(action.asset)
     };
+  case 'DeleteAsset':
+    // Try to find the asset
+    const assetToDelete = findAsset(state.assets, action.asset.assetId);
+    // If finding the asset returned an error, then just propagate that error
+    if (assetToDelete.kind === 'Error') { return assetToDelete; }
+    // Now delete the asset and all associated stages and edges
+    const newAssets = state.assets.remove(assetToDelete);
+    const newStages = state.stages.filter(({ assetId }) => assetToDelete.assetId !== assetId);
+    const newEdges = state.edges.filter(({ requesterId, responderId }) =>
+      findStage(newStages, requesterId).kind !== 'Error' &&
+      findStage(newStages, responderId).kind !== 'Error'
+    );
+    return {
+      assets: newAssets,
+      stages: newStages,
+      edges:  newEdges
+    }
   case 'AddStage':
     return { stages: state.stages.add(action.stage) };
   case 'SetStages':
