@@ -107,8 +107,8 @@ export default function Graph() {
             responder.kind !== 'Error') {
           return <EdgeSVG
             key={`edge-${requester.stageId}-${responder.stageId}`}
-            origin={requester}
-            destination={responder}
+            origin={accessPointLocation(requester, 'Requester')}
+            destination={accessPointLocation(responder, 'Responder')}
           />;
         } else {
           return null;
