@@ -1,17 +1,8 @@
-import React from 'react';
-import { v4 as uuid } from 'uuid';
-import { sortBy } from 'lodash';
 import {
-  Requester,
-  Responder,
-  Drag,
-  Edge,
   AccessPoint,
   Coordinates
 } from '../types';
-import { useEdges, useStages } from '../state';
 import {
-  compatibleMethods,
   objectToColor
 } from '../utils';
 
@@ -19,16 +10,12 @@ const outerRadius = 12;
 const innerRadius = outerRadius / 2;
 
 interface AccessPointSVGProps {
-  setDrag: (drag: Drag) => void;
-  drag: Drag | null;
   location: Coordinates;
   accessPoint: AccessPoint;
 }
 export default function AccessPointSVG({
   accessPoint,
   location,
-  drag,
-  setDrag,
 }: AccessPointSVGProps) {
   const color = objectToColor({accessPoint});
   const { x, y } = location;

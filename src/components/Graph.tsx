@@ -125,10 +125,10 @@ export default function Graph() {
           const eloc = accessPointLocation(stage, dragKind);
           return <EdgeSVG
             origin={eloc}
-            destination={{
-              x: cursor.x + offset.x,
-              y: cursor.y + offset.y
-            }}
+            destination={accessPointLocation(
+              { x: cursor.x + offset.x, y: cursor.y + offset.y },
+              dragKind
+            )}
           />;
         }})()}
       {stages.valueSeq().map(stage => <StageSVG

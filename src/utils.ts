@@ -170,7 +170,7 @@ export function objectToColor(obj: any): string {
   return `#${MD5(obj).slice(0,6)}`;
 }
 
-export function accessPointLocation({ x, y }: Stage, accessPointKind: AccessPointKind): Coordinates {
+export function accessPointLocation({ x, y }: Coordinates, accessPointKind: AccessPointKind): Coordinates {
   return {
     x,
     y: accessPointKind === 'Requester' ? y + DEFAULT_Y_RADIUS : y - DEFAULT_Y_RADIUS

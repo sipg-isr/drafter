@@ -87,8 +87,6 @@ export default function StageSVG({
         }}
     >
       <AccessPointSVG
-        drag={drag}
-        setDrag={setDrag}
         location={accessPointLocation(stage, 'Requester')}
         accessPoint={stage.requester}
       />
@@ -110,8 +108,6 @@ export default function StageSVG({
         }}
     >
       <AccessPointSVG
-        drag={drag}
-        setDrag={setDrag}
         location={accessPointLocation(stage, 'Responder')}
         accessPoint={stage.responder}
       />
