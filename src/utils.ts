@@ -8,12 +8,11 @@ import {
   truncate
 } from 'lodash';
 import equal from 'fast-deep-equal';
+import { DEFAULT_Y_RADIUS } from './constants';
 import {
-  AccessPoint,
   Asset,
   Error,
   ErrorKind,
-  HasStageId,
   RemoteMethod,
   Result,
   Stage,
@@ -21,7 +20,6 @@ import {
   UUID,
   Requester,
   Responder,
-  HasAssetId,
   HasRemoteMethodId,
   Coordinates,
   AccessPointKind
@@ -118,7 +116,7 @@ export function instantiateAsset(
     const { requester, responder } = methodToRequesterAndResponder(method);
     const name = truncate(`${asset.name}-${method.name}`, { length: 25 });
     const rx = Math.max(name.length * 6, 50);
-    const ry = rx * 0.65;
+    // TODO make this configurable somewhere
     return {
       kind: 'Stage',
       name,
@@ -131,7 +129,7 @@ export function instantiateAsset(
       x: 0,
       y: 0,
       rx,
-      ry
+      ry: DEFAULT_Y_RADIUS
     };
   } else {
     return method;
