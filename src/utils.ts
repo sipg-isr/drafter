@@ -10,19 +10,19 @@ import {
 import equal from 'fast-deep-equal';
 import { DEFAULT_Y_RADIUS } from './constants';
 import {
+  AccessPointKind,
   Asset,
+  Coordinates,
   Error,
   ErrorKind,
+  HasRemoteMethodId,
   RemoteMethod,
+  Requester,
+  Responder,
   Result,
   Stage,
   State,
-  UUID,
-  Requester,
-  Responder,
-  HasRemoteMethodId,
-  Coordinates,
-  AccessPointKind
+  UUID
 } from './types';
 
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
@@ -96,7 +96,7 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
 /**
  * Keeps track of how many of each asset have been instantiated
  */
-let idCounter: Map<UUID, number> = Map();
+const idCounter: Map<UUID, number> = Map();
 
 /**
  * Given a asset, instantiate it so that it can be used in the simulation
@@ -174,7 +174,7 @@ export function accessPointLocation({ x, y }: Coordinates, accessPointKind: Acce
   return {
     x,
     y: accessPointKind === 'Requester' ? y + DEFAULT_Y_RADIUS : y - DEFAULT_Y_RADIUS
-  }
+  };
 }
 
 /**
@@ -297,8 +297,8 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
       dockerCompose.services[name.replaceAll(/\s+/g, '-')] = {
         image: asset.image,
         volumes: volumes
-        .map(({ source, target, type }) => ({ source, target, type }))
-        .toArray(),
+          .map(({ source, target, type }) => ({ source, target, type }))
+          .toArray(),
         ports: [`${8061 + idx}:8062`]
       };
     }
@@ -312,7 +312,7 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
       host: name.replaceAll(/\s+/g, '-'),
       port: 8061
       // method
-    })).toArray(),
+    })).toArray()
 
     /*links: edges.map(({ requesterId, responderId }) => {
       const sourceField = lookupAccessPoint(stages, responderId);

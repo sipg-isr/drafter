@@ -9,7 +9,7 @@ import {
   Drag,
   Stage
 } from '../types';
-import { findStage, accessPointLocation } from '../utils';
+import { accessPointLocation, findStage } from '../utils';
 import { useEdges, useStages } from '../state';
 import EdgeSVG from './EdgeSVG';
 import StageSVG from './StageSVG';
@@ -83,9 +83,9 @@ export default function Graph() {
           if (drag.dragKind === 'Stage') {
             const { stage } = drag;
             stage.fx = stage.fy = null;
+            restartSimulation();
           }
           setDrag(null);
-          restartSimulation();
         }
       }}
       onMouseLeave={() => {
@@ -93,16 +93,16 @@ export default function Graph() {
           if (drag.dragKind === 'Stage') {
             const { stage } = drag;
             stage.fx = stage.fy = null;
+            restartSimulation();
           }
           setDrag(null);
-          restartSimulation();
         }
       }}
     >
       {edges.map(({ requesterId, responderId }) => {
         // Look up each id
-        const requester = findStage(stages, requesterId)
-        const responder = findStage(stages, responderId)
+        const requester = findStage(stages, requesterId);
+        const responder = findStage(stages, responderId);
         if (requester.kind !== 'Error' &&
             responder.kind !== 'Error') {
           return <EdgeSVG

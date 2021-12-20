@@ -15,9 +15,9 @@ interface AccessPointSVGProps {
 }
 export default function AccessPointSVG({
   accessPoint,
-  location,
+  location
 }: AccessPointSVGProps) {
-  const color = objectToColor({accessPoint});
+  const color = objectToColor(accessPoint.type);
   const { x, y } = location;
 
   return (
@@ -34,7 +34,7 @@ export default function AccessPointSVG({
             fillOpacity='0'
           />
         )
-        }</> : null}
+      }</> : null}
       <circle
         r={outerRadius}
         cx={x}

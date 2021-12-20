@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Button,
   ButtonGroup,
@@ -12,20 +12,20 @@ import {
 import { FaCheck, FaEllipsisH, FaPlus, FaTrash } from 'react-icons/fa';
 import {
   Asset,
+  HasAssetId,
   Stage,
-  UUID,
-  HasAssetId
+  UUID
 } from '../types';
 import {
-  instantiateAsset,
   findAsset,
   findRemoteMethod,
+  instantiateAsset,
   reportError
 } from '../utils';
 import {
+  useAddStage,
   useAssets,
   useStages,
-  useAddStage,
   useUpdateStage
 } from '../state';
 import EditField from './EditField';
@@ -99,7 +99,7 @@ function StageAddingForm() {
                 setMethodSelection({
                   ...methodSelection,
                   remoteMethodId: value
-                })
+                });
               }}>
               <option value={nil}>Select method from asset</option>
               {selectedAsset!.methods.map(({ name, remoteMethodId }) =>
@@ -115,7 +115,7 @@ function StageAddingForm() {
           variant='primary'
           onClick={() => {
             if (methodSelection !== nil && methodSelection.remoteMethodId !== nil && selectedAsset) {
-              const stage = instantiateAsset(selectedAsset, methodSelection)
+              const stage = instantiateAsset(selectedAsset, methodSelection);
               if (stage.kind === 'Stage') {
                 addStage(stage);
               }
@@ -156,25 +156,25 @@ export default function Sidebar() {
         </thead>
         <tbody>
           {stages.toList().map(stage =>
-          <tr key={stage.stageId}>
-            <td><EditField value={stage.name} setValue={name => updateStage({ ...stage, name })} /></td>
-            <td>{assets.find(({ assetId }) => stage.assetId === assetId)?.name || 'No asset found'}</td>
-            <td>
-              <ButtonGroup>
-                <Button
-                  variant='primary'
-                  onClick={() => selectStageId(stage.stageId)}
-                >
-                  <FaEllipsisH />
-                </Button>
-                <Button
-                  variant='danger'
-                  onClick={() => removeStage(stage)}>
-                  <FaTrash />
-                </Button>
-              </ButtonGroup>
-            </td>
-          </tr>
+            <tr key={stage.stageId}>
+              <td><EditField value={stage.name} setValue={name => updateStage({ ...stage, name })} /></td>
+              <td>{assets.find(({ assetId }) => stage.assetId === assetId)?.name || 'No asset found'}</td>
+              <td>
+                <ButtonGroup>
+                  <Button
+                    variant='primary'
+                    onClick={() => selectStageId(stage.stageId)}
+                  >
+                    <FaEllipsisH />
+                  </Button>
+                  <Button
+                    variant='danger'
+                    onClick={() => removeStage(stage)}>
+                    <FaTrash />
+                  </Button>
+                </ButtonGroup>
+              </td>
+            </tr>
           )}
           <StageAddingForm />
         </tbody>

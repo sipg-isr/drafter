@@ -70,7 +70,7 @@ export default function StageSVG({
         x={x}
         y={y}
       >{name}</text>
-    <g
+      <g
         onMouseDown={({ clientX, clientY }) => {
           setDrag({
             offset: {
@@ -83,15 +83,15 @@ export default function StageSVG({
             },
             stage,
             dragKind: 'Requester'
-          })
+          });
         }}
-    >
-      <AccessPointSVG
-        location={accessPointLocation(stage, 'Requester')}
-        accessPoint={stage.requester}
-      />
-    </g>
-    <g
+      >
+        <AccessPointSVG
+          location={accessPointLocation(stage, 'Requester')}
+          accessPoint={stage.requester}
+        />
+      </g>
+      <g
         onMouseDown={({ clientX, clientY }) => {
           setDrag({
             offset: {
@@ -104,14 +104,14 @@ export default function StageSVG({
             },
             stage,
             dragKind: 'Responder'
-          })
+          });
         }}
-    >
-      <AccessPointSVG
-        location={accessPointLocation(stage, 'Responder')}
-        accessPoint={stage.responder}
-      />
-    </g>
+      >
+        <AccessPointSVG
+          location={accessPointLocation(stage, 'Responder')}
+          accessPoint={stage.responder}
+        />
+      </g>
     </g>
   );
 }

@@ -1,5 +1,5 @@
 import { Coordinates, UUID } from './util';
-import { AccessPoint, Stage, HasAssetId, AccessPointKind } from './base';
+import { AccessPoint, AccessPointKind, HasAssetId, Stage } from './base';
 
 /**
  * Represents an active drag.

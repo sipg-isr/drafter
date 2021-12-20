@@ -52,8 +52,8 @@ export default function Editor() {
   useEffect(() => {
     // Whenever the stages are changed, keep only the edges with surviving points
     // setEdges(edges.filter(({ requesterId, responderId }) =>
-      // lookupAccessPoint(stages, requesterId) !== null &&
-      // lookupAccessPoint(stages, responderId) !== null)
+    // lookupAccessPoint(stages, requesterId) !== null &&
+    // lookupAccessPoint(stages, responderId) !== null)
     // );
   }, [stages]);
 
