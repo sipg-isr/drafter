@@ -80,7 +80,13 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
     const stageToDelete = findStage(state.stages, action.stage.stageId);
     // If finding the stage gave us an error, return that error
     if (stageToDelete.kind === 'Error') { return stageToDelete; }
-    return { stages: state.stages.remove(stageToDelete) };
+    return {
+      stages: state.stages.remove(stageToDelete),
+      // Filter out all edges that have the give stage Id
+      edges: state.edges.filter(({ requesterId, responderId }) =>
+        stageToDelete.stageId !== requesterId && stageToDelete.stageId !== responderId
+      )
+    };
   case 'UpdateStage':
     // Find the current stage in the set that has the given Id
     const stageToUpdate = findStage(state.stages, action.stage.stageId);
