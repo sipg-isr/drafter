@@ -79,6 +79,8 @@ export default function StageSVG({
       >{name}</text>
       {
         [stage.requester, stage.responder].map(accessPoint => {
+          // Skip empty accessPoint's. See https://github.com/ndrewtl/drafter/issues/8
+          if (accessPoint.type.name === 'Empty') { return null; }
           const loc = accessPointLocation(stage, accessPoint.kind)
           return <g
             key={accessPoint.kind}
