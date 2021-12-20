@@ -26,7 +26,8 @@ import {
   useAddStage,
   useAssets,
   useStages,
-  useUpdateStage
+  useUpdateStage,
+  useDispatch
 } from '../state';
 import EditField from './EditField';
 import VolumeEditor from './VolumeEditor';
@@ -134,11 +135,11 @@ function StageAddingForm() {
  */
 export default function Sidebar() {
   const [assets] = useAssets();
-  const [stages, setStages] = useStages();
+  const stages = useStages();
   // This function updates a stage in-place
   const updateStage = useUpdateStage();
 
-  const removeStage = (stage: Stage) => setStages(stages.remove(stage));
+  const dispatch = useDispatch();
 
   const [selectedStageId, selectStageId] = useState<UUID | null>(null);
   const close = () => selectStageId(null);
@@ -169,7 +170,10 @@ export default function Sidebar() {
                   </Button>
                   <Button
                     variant='danger'
-                    onClick={() => removeStage(stage)}>
+                    onClick={() => dispatch({
+                      type: 'DeleteStage',
+                      stage
+                    })}>
                     <FaTrash />
                   </Button>
                 </ButtonGroup>

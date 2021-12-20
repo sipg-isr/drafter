@@ -7,10 +7,13 @@ import {
 } from '../types';
 import {
   accessPointLocation,
-  compatibleMethods
+  compatibleMethods,
+  findStage
 } from '../utils';
 import {
-  useDispatch
+  useDispatch,
+  useStages,
+  useEdges
 } from '../state';
 import AccessPointSVG from './AccessPointSVG';
 
@@ -32,7 +35,8 @@ export default function StageSVG({
   restartSimulation
 } : StageSVGProps) {
   const { name, x, y, rx, ry } = stage;
-
+  const stages = useStages();
+  const edges = useEdges();
   const dispatch = useDispatch();
 
   return (
@@ -78,18 +82,44 @@ export default function StageSVG({
           <g
             key={accessPoint.kind}
             onMouseDown={({ clientX, clientY }) => {
-              setDrag({
-                offset: {
-                  x: x - clientX,
-                  y: y - clientY
-                },
-                cursor: {
-                  x: clientX,
-                  y: clientY
-                },
-                stage,
-                dragKind: accessPoint.kind
-              });
+              const edge = edges.find(({ requesterId, responderId }) =>
+                accessPoint.kind === 'Requester' ?
+                  requesterId === stage.stageId :
+                  responderId === stage.stageId
+              );
+              if (edge) {
+                dispatch({ type: 'DeleteEdge', edge });
+                const oppositeStage = findStage(
+                  stages,
+                  accessPoint.kind === 'Requester' ? edge.responderId : edge.requesterId
+                );
+                if (oppositeStage.kind === 'Error') { throw oppositeStage; }
+                setDrag({
+                  offset: {
+                    x: x - clientX,
+                    y: y - clientY
+                  },
+                  cursor: {
+                    x: clientX,
+                    y: clientY
+                  },
+                  stage: oppositeStage,
+                  dragKind: accessPoint.kind === 'Requester' ? 'Responder' : 'Requester'
+                });
+              } else {
+                setDrag({
+                  offset: {
+                    x: x - clientX,
+                    y: y - clientY
+                  },
+                  cursor: {
+                    x: clientX,
+                    y: clientY
+                  },
+                  stage,
+                  dragKind: accessPoint.kind
+                });
+              }
             }}
             onMouseUp={() => {
               if (drag) {
@@ -102,9 +132,9 @@ export default function StageSVG({
                     type: 'AddEdge',
                     edge: { edgeId: uuid(), requesterId: stage.stageId, responderId: drag.stage.stageId }
                   });
-                } else if (accessPoint.kind === 'Requester' &&
-                    drag.dragKind === 'Responder' &&
-                    compatibleMethods(accessPoint, drag.stage.responder)
+                } else if (accessPoint.kind === 'Responder' &&
+                    drag.dragKind === 'Requester' &&
+                    compatibleMethods(drag.stage.requester, accessPoint)
                 ) {
                   // Add edge
                   dispatch({

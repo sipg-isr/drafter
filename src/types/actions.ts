@@ -129,6 +129,16 @@ export interface AddEdge {
 }
 
 /**
+ * Delete an edge
+ * @interface
+ * @property {Edge} edge - the edge to delete
+ */
+export interface DeleteEdge {
+  type: 'DeleteEdge';
+  edge: Edge;
+}
+
+/**
  * An action to set the entire state to a given value. This is used when loading state from a
  * saved or serialized version
  * @interface
@@ -163,5 +173,6 @@ export type Action =
   AddVolume    |
   SetEdges     |
   AddEdge      |
+  DeleteEdge   |
   RestoreState |
   ClearState;

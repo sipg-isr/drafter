@@ -6,7 +6,6 @@ import {
   Action,
   Asset,
   Edge,
-  ErrorKind,
   Result,
   Stage,
   State
@@ -125,7 +124,9 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
   case 'SetEdges':
     return { edges: action.edges };
   case 'AddEdge':
-      return { edges: state.edges.add(action.edge) }
+      return { edges: state.edges.add(action.edge) };
+  case 'DeleteEdge':
+      return { edges: state.edges.remove(action.edge) };
   case 'RestoreState':
     return action.state;
   case 'ClearState':
@@ -185,11 +186,11 @@ export function useUpdateStage() {
 export function useAssets(): [Set<Asset>, (assets: Set<Asset>) => void] {
   return useStore(state => [state.assets, ((assets: Set<Asset>) => state.dispatch({ type: 'SetAssets', assets }))]);
 }
-export function useStages(): [Set<Stage>, (stages: Set<Stage>) => void] {
-  return useStore(state => [state.stages, ((stages: Set<Stage>) => state.dispatch({ type: 'SetStages', stages }))]);
+export function useStages(): Set<Stage> {
+  return useStore(state => state.stages);
 }
-export function useEdges(): [Set<Edge>, (edges: Set<Edge>) => void] {
-  return useStore(state => [state.edges, ((edges: Set<Edge>) => state.dispatch({ type: 'SetEdges', edges }))]);
+export function useEdges(): Set<Edge> {
+  return useStore(state => state.edges);
 }
 export function useActions(): List<[Date, Action]> {
   return useStore(state => state.actions);
