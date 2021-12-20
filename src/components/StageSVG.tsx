@@ -8,7 +8,8 @@ import {
   Stage
 } from '../types';
 import {
-  accessPointLocation
+  accessPointLocation,
+  compatibleMethods
 } from '../utils';
 import AccessPointSVG from './AccessPointSVG';
 
@@ -88,7 +89,22 @@ export default function StageSVG({
                 dragKind: accessPoint.kind
               });
             }}
-          >
+            onMouseUp={() => {
+              if (drag) {
+                if (accessPoint.kind === 'Requester' &&
+                    drag.dragKind === 'Responder' &&
+                    compatibleMethods(accessPoint, drag.stage.responder)
+                ) {
+                  // Add edge
+                } else if (accessPoint.kind === 'Requester' &&
+                    drag.dragKind === 'Responder' &&
+                    compatibleMethods(accessPoint, drag.stage.responder)
+                ) {
+                  // Add edge
+                }
+              }
+            }}
+        >
             <AccessPointSVG
               location={accessPointLocation(stage, accessPoint.kind)}
               accessPoint={accessPoint}
