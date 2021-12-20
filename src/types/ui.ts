@@ -17,7 +17,7 @@ export interface Drag {
   offset: Coordinates;
   cursor: Coordinates;
   stage: Stage;
-  port: AccessPointKind | null;
+  dragKind: 'Stage' | AccessPointKind;
 }
 
 /**

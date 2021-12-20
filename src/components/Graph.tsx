@@ -55,8 +55,8 @@ export default function Graph() {
 
   useEffect(() => {
     if (drag) {
-      const {cursor, offset, stage, port} = drag;
-      if (port === null) {
+      const {cursor, offset, stage, dragKind} = drag;
+      if (dragKind === 'Stage') {
         stage.fx! = cursor.x + offset.x;
         stage.fy! = cursor.y + offset.y;
       }
@@ -79,7 +79,7 @@ export default function Graph() {
         }
       }}
       onMouseUp={() => {
-        if (drag && drag.port === null) {
+        if (drag && drag.dragKind === 'Stage') {
           const { stage } = drag;
           stage.fx = stage.fy = null;
           setDrag(null);
@@ -87,7 +87,7 @@ export default function Graph() {
         }
       }}
       onMouseLeave={() => {
-        if (drag && drag.port === null) {
+        if (drag && drag.dragKind === 'Stage') {
           const { stage } = drag;
           stage.fx = stage.fy = null;
           setDrag(null);
@@ -116,10 +116,10 @@ export default function Graph() {
             offset,
             cursor,
             stage,
-            port
+            dragKind
           } = drag;
-          if (port !== null) {
-            const eloc = accessPointLocation(stage, port);
+          if (dragKind !== 'Stage') {
+            const eloc = accessPointLocation(stage, dragKind);
             return <EdgeSVG
               origin={eloc}
               destination={{

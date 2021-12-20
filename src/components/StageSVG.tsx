@@ -54,7 +54,7 @@ export default function StageSVG({
               x: clientX, y: clientY
             },
             stage,
-            port: null
+            dragKind: 'Stage'
           });
           restartSimulation();
         }}
@@ -82,7 +82,7 @@ export default function StageSVG({
               y: clientY
             },
             stage,
-            port: 'Requester'
+            dragKind: 'Requester'
           })
         }}
     >
@@ -107,7 +107,7 @@ export default function StageSVG({
               y: clientY
             },
             stage,
-            port: 'Requester'
+            dragKind: 'Requester'
           })
         }}
     >
