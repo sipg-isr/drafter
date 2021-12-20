@@ -23,7 +23,7 @@ export function LoadDialog({ show, close }: LoadDialogProps) {
       </Modal.Header>
       <Modal.Body>
         <Form.Label>Solution file</Form.Label>
-        <Form.Control type='file' ref={fileUploadRef} />
+        <Form.Control type='file' ref={fileUploadRef} accept='.json' />
         <br />
         <Button onClick={async () => {
           const content = await fileContent(fileUploadRef!.current!);

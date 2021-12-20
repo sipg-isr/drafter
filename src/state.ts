@@ -6,7 +6,6 @@ import {
   Action,
   Asset,
   Edge,
-  ErrorKind,
   Result,
   Stage,
   State
@@ -65,23 +64,48 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
     return { ...state, assets: action.assets };
   case 'UpdateAsset':
     // Try to find the asset
-    const asset = findAsset(state, action.asset.assetId);
+    const asset = findAsset(state.assets, action.asset.assetId);
     // If finding the asset returned an error, then just propagate that error
     if (asset.kind === 'Error') { return asset; }
     // If we can find the current asset, remove and replace it
     return {
       assets: state.assets.remove(asset).add(action.asset)
     };
+  case 'DeleteAsset':
+    // Try to find the asset
+    const assetToDelete = findAsset(state.assets, action.asset.assetId);
+    // If finding the asset returned an error, then just propagate that error
+    if (assetToDelete.kind === 'Error') { return assetToDelete; }
+    // Now delete the asset and all associated stages and edges
+    const newAssets = state.assets.remove(assetToDelete);
+    const newStages = state.stages.filter(({ assetId }) => assetToDelete.assetId !== assetId);
+    const newEdges = state.edges.filter(({ requesterId, responderId }) =>
+      findStage(newStages, requesterId).kind !== 'Error' &&
+      findStage(newStages, responderId).kind !== 'Error'
+    );
+    return {
+      assets: newAssets,
+      stages: newStages,
+      edges:  newEdges
+    };
+  case 'AddStage':
+    return { stages: state.stages.add(action.stage) };
   case 'SetStages':
     return { stages: action.stages };
   case 'DeleteStage':
-    const stageToDelete = findStage(state, action.stage.stageId);
+    const stageToDelete = findStage(state.stages, action.stage.stageId);
     // If finding the stage gave us an error, return that error
     if (stageToDelete.kind === 'Error') { return stageToDelete; }
-    return { stages: state.stages.remove(stageToDelete) };
+    return {
+      stages: state.stages.remove(stageToDelete),
+      // Filter out all edges that have the give stage Id
+      edges: state.edges.filter(({ requesterId, responderId }) =>
+        stageToDelete.stageId !== requesterId && stageToDelete.stageId !== responderId
+      )
+    };
   case 'UpdateStage':
     // Find the current stage in the set that has the given Id
-    const stageToUpdate = findStage(state, action.stage.stageId);
+    const stageToUpdate = findStage(state.stages, action.stage.stageId);
     // If we've got an error, return it
     if (stageToUpdate.kind === 'Error' ) { return stageToUpdate; }
     // If the stage exists...
@@ -89,7 +113,7 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
       stages: state.stages.remove(stageToUpdate).add({ ...stageToUpdate, ...action.stage })
     };
   case 'AddVolume':
-    const stageToAddVolume = findStage(state, action.stageId);
+    const stageToAddVolume = findStage(state.stages, action.stageId);
     if (stageToAddVolume.kind === 'Error') { return stageToAddVolume; }
     const stageWithUpdatedVolumes = {
       ...stageToAddVolume,
@@ -99,6 +123,10 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
     return { stages };
   case 'SetEdges':
     return { edges: action.edges };
+  case 'AddEdge':
+    return { edges: state.edges.add(action.edge) };
+  case 'DeleteEdge':
+    return { edges: state.edges.remove(action.edge) };
   case 'RestoreState':
     return action.state;
   case 'ClearState':
@@ -158,15 +186,18 @@ export function useUpdateStage() {
 export function useAssets(): [Set<Asset>, (assets: Set<Asset>) => void] {
   return useStore(state => [state.assets, ((assets: Set<Asset>) => state.dispatch({ type: 'SetAssets', assets }))]);
 }
-export function useStages(): [Set<Stage>, (stages: Set<Stage>) => void] {
-  return useStore(state => [state.stages, ((stages: Set<Stage>) => state.dispatch({ type: 'SetStages', stages }))]);
+export function useStages(): Set<Stage> {
+  return useStore(state => state.stages);
 }
-export function useEdges(): [Set<Edge>, (edges: Set<Edge>) => void] {
-  return useStore(state => [state.edges, ((edges: Set<Edge>) => state.dispatch({ type: 'SetEdges', edges }))]);
+export function useEdges(): Set<Edge> {
+  return useStore(state => state.edges);
 }
 export function useActions(): List<[Date, Action]> {
   return useStore(state => state.actions);
 }
 export function useRestoreState() {
   return useStore(({ dispatch }) => (state: State) => dispatch({type: 'RestoreState', state }));
+}
+export function useAddStage() {
+  return useStore(({ dispatch }) => (stage: Stage) => dispatch({ type: 'AddStage', stage }));
 }

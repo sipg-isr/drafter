@@ -1,18 +1,20 @@
 import React, { useEffect } from 'react';
-import {
-  Set
-} from 'immutable';
-import {
-  truncate
-} from 'lodash';
+import { v4 as uuid } from 'uuid';
 import {
   Drag,
   Edge,
   Stage
 } from '../types';
 import {
-  ellipsePolarToCartesian
+  accessPointLocation,
+  compatibleMethods,
+  findStage
 } from '../utils';
+import {
+  useDispatch,
+  useEdges,
+  useStages
+} from '../state';
 import AccessPointSVG from './AccessPointSVG';
 
 interface StageSVGProps {
@@ -32,25 +34,10 @@ export default function StageSVG({
   setDrag,
   restartSimulation
 } : StageSVGProps) {
-  const { PI, max } = Math;
-  const { name, x, y } = stage;
-
-  const displayName = truncate(name, { length: 25 });
-  // The radii of the ellipse
-  const rx = max(displayName.length * 6, 50);
-  const ry = rx * 0.65;
-
-  const interval = (2 * PI) / stage.accessPoints.size;
-
-  useEffect(() => {
-    stage
-      .accessPoints
-      .forEach((accessPoint, idx) => {
-        [accessPoint.x, accessPoint.y] = ellipsePolarToCartesian(
-          idx * interval, rx, ry, x, y
-        );
-      });
-  }, [x, y]);
+  const { name, x, y, rx, ry } = stage;
+  const stages = useStages();
+  const edges = useEdges();
+  const dispatch = useDispatch();
 
   return (
     <g>
@@ -64,16 +51,17 @@ export default function StageSVG({
         stroke='#000'
         strokeWidth='1px'
         cursor={drag ? 'grabbing' : 'grab'}
-        onMouseDown={(e) => {
+        onMouseDown={({clientX, clientY}) => {
           setDrag({
             offset: {
-              x: x - e.clientX,
-              y: y - e.clientY
+              x: x - clientX,
+              y: y - clientY
             },
             cursor: {
-              x: e.clientX, y: e.clientY
+              x: clientX, y: clientY
             },
-            element: stage
+            stage,
+            dragKind: 'Stage'
           });
           restartSimulation();
         }}
@@ -88,17 +76,85 @@ export default function StageSVG({
         fontSize='16px'
         x={x}
         y={y}
-      >{displayName}</text>
-      {stage.accessPoints.map(ap =>
-        (
-          <AccessPointSVG
-            accessPoint={ap}
-            drag={drag}
-            setDrag={setDrag}
-            key={ap.accessPointId}
-          />
-        )
-      )}
+      >{name}</text>
+      {
+        [stage.requester, stage.responder].map(accessPoint => {
+          // Skip empty accessPoint's. See https://github.com/ndrewtl/drafter/issues/8
+          if (accessPoint.type.name === 'Empty') { return null; }
+          const loc = accessPointLocation(stage, accessPoint.kind);
+          return <g
+            key={accessPoint.kind}
+            onMouseDown={({ clientX, clientY }) => {
+              const edge = edges.find(({ requesterId, responderId }) =>
+                accessPoint.kind === 'Requester' ?
+                  requesterId === stage.stageId :
+                  responderId === stage.stageId
+              );
+              if (edge) {
+                dispatch({ type: 'DeleteEdge', edge });
+                const oppositeStage = findStage(
+                  stages,
+                  accessPoint.kind === 'Requester' ? edge.responderId : edge.requesterId
+                );
+                if (oppositeStage.kind === 'Error') { throw oppositeStage; }
+                setDrag({
+                  offset: {
+                    x: loc.x - clientX,
+                    y: loc.y - clientY
+                  },
+                  cursor: {
+                    x: clientX,
+                    y: clientY
+                  },
+                  stage: oppositeStage,
+                  dragKind: accessPoint.kind === 'Requester' ? 'Responder' : 'Requester'
+                });
+              } else {
+                setDrag({
+                  offset: {
+                    x: loc.x - clientX,
+                    y: loc.y - clientY
+                  },
+                  cursor: {
+                    x: clientX,
+                    y: clientY
+                  },
+                  stage,
+                  dragKind: accessPoint.kind
+                });
+              }
+            }}
+            onMouseUp={() => {
+              if (drag) {
+                if (accessPoint.kind === 'Requester' &&
+                    drag.dragKind === 'Responder' &&
+                    compatibleMethods(accessPoint, drag.stage.responder)
+                ) {
+                  // Add edge
+                  dispatch({
+                    type: 'AddEdge',
+                    edge: { edgeId: uuid(), requesterId: stage.stageId, responderId: drag.stage.stageId }
+                  });
+                } else if (accessPoint.kind === 'Responder' &&
+                    drag.dragKind === 'Requester' &&
+                    compatibleMethods(drag.stage.requester, accessPoint)
+                ) {
+                  // Add edge
+                  dispatch({
+                    type: 'AddEdge',
+                    edge: { edgeId: uuid(), requesterId: drag.stage.stageId, responderId: stage.stageId }
+                  });
+                }
+              }
+            }}
+          >
+            <AccessPointSVG
+              location={loc}
+              accessPoint={accessPoint}
+            />
+          </g>;
+        })
+      }
     </g>
   );
 }

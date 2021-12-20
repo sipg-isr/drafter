@@ -4,15 +4,23 @@ import { List, Map, Set } from 'immutable';
 import  { v4 as uuid } from 'uuid';
 import { dump } from 'js-yaml';
 import JSZip from 'jszip';
-import equal from 'fast-deep-equal';
 import {
-  AccessPoint,
+  truncate
+} from 'lodash';
+import equal from 'fast-deep-equal';
+import { DEFAULT_Y_RADIUS } from './constants';
+import {
+  AccessPointKind,
   Asset,
+  Coordinates,
+  DockerCompose,
   Error,
   ErrorKind,
-  HasAccessPointId,
-  HasStageId,
+  HasRemoteMethodId,
+  OutputConfig,
   RemoteMethod,
+  Requester,
+  Responder,
   Result,
   Stage,
   State,
@@ -32,6 +40,36 @@ export function error(errorKind: ErrorKind, message: string): Error {
     errorKind,
     message
   };
+}
+
+/**
+ * Attempt to find the stage with the given ID
+ * @param {State} state - the application state containing the stages to search
+ * @param {UUID} id - the id to search for
+ * @return {Result<Asset>} the found stage, or an error if not found
+ */
+export function findStage(stages: Set<Stage>, id: UUID): Result<Stage> {
+  const stage = stages.find(({ stageId }) => stageId === id);
+  if (stage) {
+    return stage;
+  } else {
+    return error(
+      ErrorKind.StageNotFound,
+      `Cannot find Stage with id ${id}`
+    );
+  }
+}
+
+export function findRemoteMethod(asset: Asset, remoteMethodId: UUID): Result<RemoteMethod> {
+  const method = asset.methods.find(method => method.remoteMethodId === remoteMethodId);
+  if (method) {
+    return method;
+  } else {
+    return error(
+      ErrorKind.RemoteMethodNotFound,
+      `Cannot find Remote Method with id ${remoteMethodId} in asset ${asset}`
+    );
+  }
 }
 
 /**
@@ -57,6 +95,7 @@ export function protobufToRemoteMethods(code: string): Result<Set<RemoteMethod>>
     return Set(services.flatMap(service => service
       .methodsArray
       .map(method => ({
+        kind: 'RemoteMethod',
         name: method.name,
         requestType: {
           ...root.lookupType(method.requestType).toJSON(),
@@ -86,10 +125,21 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
   return `${name}(${requestType.name}): ${responseType.name}`;
 }
 
-/**
- * Keeps track of how many of each asset have been instantiated
- */
-let idCounter: Map<UUID, number> = Map();
+export function methodToRequesterAndResponder({ requestType, responseType }: RemoteMethod): {
+  requester: Requester,
+  responder: Responder
+} {
+  return {
+    requester: {
+      kind: 'Requester',
+      type: requestType
+    },
+    responder: {
+      kind: 'Responder',
+      type: responseType
+    }
+  };
+}
 
 /**
  * Given a asset, instantiate it so that it can be used in the simulation
@@ -98,56 +148,35 @@ let idCounter: Map<UUID, number> = Map();
  * @return {Stage} a stage object created from the given `asset`, and named `name`
  */
 export function instantiateAsset(
-  { assetId, methods }: Asset, name: string
-): Stage {
+  asset: Asset,
+  { remoteMethodId }: HasRemoteMethodId
+): Result<Stage> {
   const stageId = uuid();
-  const accessPoints = methods.reduce<List<AccessPoint>>((acc, { name, requestType, responseType, remoteMethodId}) => {
-    const requesterId = uuid();
-    const responderId = uuid();
-    return acc
-      .push({
-        kind:         'AccessPoint',
-        role:         'Requester',
-        name:          name,
-        type:          requestType,
-        accessPointId: requesterId,
-        remoteMethodId,
-        stageId,
-        x: 0,
-        y: 0
-      })
-      .push({
-        kind:         'AccessPoint',
-        role:         'Responder',
-        name:          name,
-        type:          responseType,
-        accessPointId: responderId,
-        stageId,
-        remoteMethodId,
-        x: 0,
-        y: 0
-      });
-  }, List());
 
-  // Get the number for this stage
-  const stageNumber = (idCounter.get(assetId) || 1);
-  // Increment the number for the assetId
-  idCounter = idCounter.set(assetId,
-    stageNumber + 1
-  );
+  const method = findRemoteMethod(asset, remoteMethodId);
 
-  return {
-    kind: 'Stage',
-    name: `${name} ${stageNumber}`,
-    stageId,
-    assetId,
-    accessPoints: accessPoints.filter(({ type: { name, fields } }) =>
-      name !== 'Empty' || Object.keys(fields).length > 0
-    ),
-    volumes: List(),
-    x: 0,
-    y: 0
-  };
+  if (method.kind === 'RemoteMethod') {
+    const { requester, responder } = methodToRequesterAndResponder(method);
+    const name = truncate(`${asset.name}-${method.name}`, { length: 25 });
+    const rx = Math.max(name.length * 6, 50);
+    // TODO make this configurable somewhere
+    return {
+      kind: 'Stage',
+      name,
+      methodName: method.name,
+      requester,
+      responder,
+      stageId,
+      assetId: asset.assetId,
+      volumes: List(),
+      x: 0,
+      y: 0,
+      rx,
+      ry: DEFAULT_Y_RADIUS
+    };
+  } else {
+    return method;
+  }
 }
 
 /**
@@ -155,11 +184,8 @@ export function instantiateAsset(
  * @param {AccessPoint} left, right - two `AccessPoint`s, representing two methods
  * @return {boolean} whether the tow can be connected
  */
-export function compatibleMethods(left: AccessPoint, right: AccessPoint): boolean {
-  const kinds = [left.role, right.role];
-  return kinds.includes('Requester') &&
-    kinds.includes('Responder') &&
-    equal(left.type, right.type);
+export function compatibleMethods(requester: Requester, responder: Responder): boolean {
+  return equal(requester.type, responder.type);
 }
 
 /**
@@ -171,6 +197,13 @@ export function objectToColor(obj: any): string {
   return `#${MD5(obj).slice(0,6)}`;
 }
 
+export function accessPointLocation({ x, y }: Coordinates, accessPointKind: AccessPointKind): Coordinates {
+  return {
+    x,
+    y: accessPointKind === 'Requester' ? y + DEFAULT_Y_RADIUS : y - DEFAULT_Y_RADIUS
+  };
+}
+
 /**
  * Calculate the x-y value of a point on an ellipse, based on radial coordinates
  * @param {number} theta - the angle of the point from the center, in radians
@@ -178,7 +211,7 @@ export function objectToColor(obj: any): string {
  * @param {number} ry - the y-axis radius of the ellipse
  * @param {number} cx - the x-coordinate of the center of the ellipse
  * @param {number} cy - the y-coordinate of the center of the ellipse
- * @return {[number, number]} the Cartesian coordinates of the point on the ellipse
+ * @return {Coordinates} the Cartesian coordinates of the point on the ellipse
  */
 export function ellipsePolarToCartesian(
   theta: number,
@@ -186,12 +219,12 @@ export function ellipsePolarToCartesian(
   ry: number,
   cx = 0,
   cy = 0
-): [number, number] {
+): Coordinates {
   const { sin, cos } = Math;
-  return [
-    rx * cos(theta) + cx,
-    ry * sin(theta) + cy
-  ];
+  return {
+    x: rx * cos(theta) + cx,
+    y: ry * sin(theta) + cy
+  };
 }
 
 /**
@@ -257,38 +290,6 @@ export function deserializeState(serialized: string): State {
 }
 
 /**
- * Given a set of stages, a `stageId` and an `accessPointId`, find the `AccessPoint`
- * @param {Set<Stage>} stages - the stages to search
- * @param {HasStageId & HasAccessPointId} id's - the stageId and accessPointId to find the given AccessPoint
- * @return {Result<AccessPoint>} The `AccessPoint`, if it is found, or an error if it is not
- */
-export function lookupAccessPoint(
-  stages: Set<Stage>,
-  { stageId, accessPointId }: HasStageId & HasAccessPointId
-): Result<AccessPoint> {
-  const stage = stages.find(stage => stage.stageId === stageId);
-  if (stage) {
-    const accessPoint =
-      stage
-        .accessPoints
-        .find(ap => ap.accessPointId === accessPointId);
-    if (accessPoint) {
-      return accessPoint;
-    } else {
-      return error(
-        ErrorKind.AccessPointNotFound,
-        `Unable to find accessPoint on stage ${stage} with id ${accessPointId}`
-      );
-    }
-  } else {
-    return error(
-      ErrorKind.StageNotFound,
-      `Unable to find stage with id ${stageId}`
-    );
-  }
-}
-
-/**
  * Convert the current application state into a docker-compose format
  * that can be used with https://github.com/DuarteMRAlves/Pipeline-Orchestrator
  * @param {State} state - the application state
@@ -297,23 +298,20 @@ export function lookupAccessPoint(
 export async function exportState({ assets, stages, edges }: State): Promise<Blob> {
   const zip = new JSZip();
 
-  // This object represents the docker-compose file
-  // We don't have a schema for this yet, so we effectively disable type-checking by giving it the
-  // `any` type
-  const dockerCompose: any = {
+  const dockerCompose: DockerCompose = {
     version: '3',
     services: {
-      'orchestrator-stage': {
+      'orchestrator-node': {
         image: 'sipgisr/grpc-orchestrator:latest',
-        volumes: [{
-          type: 'bind',
-          source: './config.yml',
-          target: '/app/config/config.yml'
-        }],
-        environment: {
-          CONFIG_FILE: 'config/config.yml'
-        }
+        volumes: [
+          {
+            type: 'bind',
+            source: './config.yml',
+            target: '/app/config/config.yml'
+          }
+        ]
       }
+
     }
   };
 
@@ -330,29 +328,31 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
     }
   });
 
-  // This object represents the `config.yml` file
-  const config: any = {
-    stages: stages.map(({ name, assetId }) => ({
+  const config: OutputConfig = {
+    stages: stages.map(({ name }) => ({
       name,
-      // This must be the same as the name of the service, which is used as the key above
       host: name.replaceAll(/\s+/g, '-'),
       port: 8061
-      // method
     })).toArray(),
-
     links: edges.map(({ requesterId, responderId }) => {
-      const sourceField = lookupAccessPoint(stages, responderId);
-      const targetField = lookupAccessPoint(stages, requesterId);
-      return ({
-        source: {
-          stage: stages.find(({ stageId }) => stageId === responderId.stageId)?.name || 'Stage not found',
-          field: sourceField.kind === 'AccessPoint' ? sourceField : 'Method not found'
-        },
-        target: {
-          stage: stages.find(({ stageId }) => stageId === requesterId.stageId)?.name || 'Stage not found',
-          field: targetField.kind === 'AccessPoint' ? targetField : 'Method not found'
-        }
-      });
+      const requester = findStage(stages, requesterId);
+      const responder = findStage(stages, responderId);
+      if (requester.kind === 'Error') {
+        throw requester;
+      } else if (responder.kind === 'Error') {
+        throw responder;
+      } else {
+        return {
+          source: {
+            stage: requester.name,
+            field: requester.methodName
+          },
+          target: {
+            stage: responder.name,
+            field: responder.methodName
+          }
+        };
+      }
     }).toArray()
   };
 
@@ -370,32 +370,14 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
  * @param {UUID} id - the id to search for
  * @return {Result<Asset>} the found asset, or an error if not found
  */
-export function findAsset(state: State, id: UUID): Result<Asset> {
-  const asset = state.assets.find(({ assetId }) => assetId === id);
+export function findAsset(assets: Set<Asset>, id: UUID): Result<Asset> {
+  const asset = assets.find(({ assetId }) => assetId === id);
   if (asset) {
     return asset;
   } else {
     return error(
       ErrorKind.AssetNotFound,
       `Cannot find Asset with id ${id}`
-    );
-  }
-}
-
-/**
- * Attempt to find the stage with the given ID
- * @param {State} state - the application state containing the stages to search
- * @param {UUID} id - the id to search for
- * @return {Result<Asset>} the found stage, or an error if not found
- */
-export function findStage(state: State, id: UUID): Result<Stage> {
-  const stage = state.stages.find(({ stageId }) => stageId === id);
-  if (stage) {
-    return stage;
-  } else {
-    return error(
-      ErrorKind.StageNotFound,
-      `Cannot find Stage with id ${id}`
     );
   }
 }

@@ -9,7 +9,7 @@ import {
   Drag,
   Stage
 } from '../types';
-import { lookupAccessPoint } from '../utils';
+import { accessPointLocation, findStage } from '../utils';
 import { useEdges, useStages } from '../state';
 import EdgeSVG from './EdgeSVG';
 import StageSVG from './StageSVG';
@@ -21,15 +21,17 @@ import StageSVG from './StageSVG';
 export default function Graph() {
   const [simulation] = useState(forceSimulation<Stage>().stop());
   const [drag, setDrag] = useState<Drag | null>(null);
-  const [stages ] = useStages();
+  const stages = useStages();
   // TODO move these into state container
-  const [edges ] = useEdges();
+  const edges = useEdges();
 
   const [, update] = useReducer(x => x + 1, 0);
 
   // TODO make these configurable?
   const width = 600;
   const height = 800;
+  const initialAlpha = 0.5;
+  const alphaTarget = 0;
 
   useEffect(() => {
     simulation.nodes(stages.valueSeq().toArray());
@@ -37,8 +39,8 @@ export default function Graph() {
       .force('vertical-center', forceX(width / 2).strength(0.01))
       .force('horizontal-center', forceY(height / 2).strength(0.01))
       .force('charge', forceManyBody().strength(-100));
-    simulation.alpha(0.5);
-    simulation.alphaTarget(0.0).restart();
+    simulation.alpha(initialAlpha);
+    simulation.alphaTarget(alphaTarget).restart();
   }, [stages, edges]);
 
   simulation.on('tick', () => {
@@ -46,15 +48,17 @@ export default function Graph() {
   });
 
   const restartSimulation = () => {
-    simulation.alphaTarget(0.0).restart();
+    simulation
+      .alpha(initialAlpha)
+      .restart();
   };
 
   useEffect(() => {
     if (drag) {
-      const {cursor, offset, element} = drag;
-      if (element.kind === 'Stage') {
-        element.fx! = cursor.x + offset.x;
-        element.fy! = cursor.y + offset.y;
+      const {cursor, offset, stage, dragKind} = drag;
+      if (dragKind === 'Stage') {
+        stage.fx! = cursor.x + offset.x;
+        stage.fy! = cursor.y + offset.y;
       }
     }
   }, [drag]);
@@ -66,63 +70,65 @@ export default function Graph() {
         border: '1px solid black'
       }}
       viewBox={`0 0 ${width} ${height}`}
-      onMouseMove={(e) => {
+      onMouseMove={({ clientX, clientY }) => {
         if (drag) {
           setDrag({
             ...drag,
-            cursor: { x: e.clientX, y: e.clientY }
+            cursor: { x: clientX, y: clientY }
           });
         }
       }}
       onMouseUp={() => {
         if (drag) {
-          const { element } = drag;
-          element.fx = element.fy = null;
+          if (drag.dragKind === 'Stage') {
+            const { stage } = drag;
+            stage.fx = stage.fy = null;
+            restartSimulation();
+          }
           setDrag(null);
-          restartSimulation();
         }
       }}
       onMouseLeave={() => {
         if (drag) {
-          const { element } = drag;
-          element.fx = element.fy = null;
+          if (drag.dragKind === 'Stage') {
+            const { stage } = drag;
+            stage.fx = stage.fy = null;
+            restartSimulation();
+          }
           setDrag(null);
-          restartSimulation();
         }
       }}
     >
       {edges.map(({ requesterId, responderId }) => {
         // Look up each id
-        const [requester, responder] = [requesterId, responderId]
-          .map(id => lookupAccessPoint(stages, id));
+        const requester = findStage(stages, requesterId);
+        const responder = findStage(stages, responderId);
         if (requester.kind !== 'Error' &&
             responder.kind !== 'Error') {
           return <EdgeSVG
-            key={`edge-${requester.accessPointId}-${responder.accessPointId}`}
-            x1={requester.x}
-            y1={requester.y}
-            x2={responder.x}
-            y2={responder.y}
+            key={`edge-${requester.stageId}-${responder.stageId}`}
+            origin={accessPointLocation(requester, 'Requester')}
+            destination={accessPointLocation(responder, 'Responder')}
           />;
         } else {
           return null;
         }
       })}
       {(() => {
-        if (drag) {
+        if (drag && drag.dragKind !== 'Stage') {
           const {
             offset,
             cursor,
-            element
+            stage,
+            dragKind
           } = drag;
-          if (element.kind === 'AccessPoint') {
-            return <EdgeSVG
-              x1={element.x!}
-              y1={element.y!}
-              x2={cursor.x + offset.x}
-              y2={cursor.y + offset.y}
-            />;
-          }
+          const eloc = accessPointLocation(stage, dragKind);
+          return <EdgeSVG
+            origin={eloc}
+            destination={
+              { x: cursor.x + offset.x, y: cursor.y + offset.y }
+            }
+          />;
         }})()}
       {stages.valueSeq().map(stage => <StageSVG
         stage={stage}
