@@ -170,9 +170,11 @@ export function objectToColor(obj: any): string {
   return `#${MD5(obj).slice(0,6)}`;
 }
 
-export function accessPointLocation({ rx, ry, x, y }: Stage, accessPointKind: AccessPointKind): Coordinates {
-  const theta = accessPointKind === 'Requester' ? Math.PI / 2 : 3 * Math.PI / 2;
-  return ellipsePolarToCartesian(theta, rx, ry, x, y);
+export function accessPointLocation({ x, y }: Stage, accessPointKind: AccessPointKind): Coordinates {
+  return {
+    x,
+    y: accessPointKind === 'Requester' ? y + DEFAULT_Y_RADIUS : y - DEFAULT_Y_RADIUS
+  }
 }
 
 /**

@@ -114,8 +114,8 @@ function StageAddingForm() {
           disabled={methodSelection === nil || methodSelection.remoteMethodId === nil}
           variant='primary'
           onClick={() => {
-            if (methodSelection !== nil && methodSelection.remoteMethodId !== nil) {
-              const stage = instantiateAsset(selectedAsset!, methodSelection)
+            if (methodSelection !== nil && methodSelection.remoteMethodId !== nil && selectedAsset) {
+              const stage = instantiateAsset(selectedAsset, methodSelection)
               if (stage.kind === 'Stage') {
                 addStage(stage);
               }
