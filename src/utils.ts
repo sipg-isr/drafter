@@ -22,7 +22,9 @@ import {
   Result,
   Stage,
   State,
-  UUID
+  UUID,
+  DockerCompose,
+  OutputConfig
 } from './types';
 
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
@@ -271,23 +273,20 @@ export function deserializeState(serialized: string): State {
 export async function exportState({ assets, stages, edges }: State): Promise<Blob> {
   const zip = new JSZip();
 
-  // This object represents the docker-compose file
-  // We don't have a schema for this yet, so we effectively disable type-checking by giving it the
-  // `any` type
-  const dockerCompose: any = {
+  const dockerCompose: DockerCompose = {
     version: '3',
     services: {
-      'orchestrator-stage': {
+      'orchestrator-node': {
         image: 'sipgisr/grpc-orchestrator:latest',
-        volumes: [{
-          type: 'bind',
-          source: './config.yml',
-          target: '/app/config/config.yml'
-        }],
-        environment: {
-          CONFIG_FILE: 'config/config.yml'
-        }
-      }
+        volumes: [
+          {
+            type: 'bind',
+            source: './config.yml',
+            target: '/app/config/config.yml'
+          }
+        ]
+      },
+
     }
   };
 
@@ -304,31 +303,33 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
     }
   });
 
-  // This object represents the `config.yml` file
-  const config: any = {
-    stages: stages.map(({ name, assetId }) => ({
+  const config: OutputConfig = {
+    stages: stages.map(({ name }) => ({
       name,
-      // This must be the same as the name of the service, which is used as the key above
       host: name.replaceAll(/\s+/g, '-'),
       port: 8061
-      // method
-    })).toArray()
-
-    /*links: edges.map(({ requesterId, responderId }) => {
-      const sourceField = lookupAccessPoint(stages, responderId);
-      const targetField = lookupAccessPoint(stages, requesterId);
-      return ({
-        source: {
-          stage: stages.find(({ stageId }) => stageId === responderId.stageId)?.name || 'Stage not found',
-          field: sourceField.kind === 'AccessPoint' ? sourceField : 'Method not found'
-        },
-        target: {
-          stage: stages.find(({ stageId }) => stageId === requesterId.stageId)?.name || 'Stage not found',
-          field: targetField.kind === 'AccessPoint' ? targetField : 'Method not found'
+    })).toArray(),
+    links: edges.map(({ requesterId, responderId }) => {
+      const requester = findStage(stages, requesterId);
+      const responder = findStage(stages, responderId);
+      if (requester.kind === 'Error') {
+        throw requester;
+      } else if (responder.kind === 'Error') {
+        throw responder;
+      } else {
+        return {
+          source: {
+            stage: requester.name,
+            field: requester.methodName
+          },
+          target: {
+            stage: responder.name,
+            field: responder.methodName
+          }
         }
-      });
-    }).toArray()*/
-  };
+      }
+    }).toArray()
+  }
 
   // Add the data to the zip as yaml
   zip.file('docker-compose.yml', dump(dockerCompose));

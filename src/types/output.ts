@@ -3,8 +3,8 @@
  */
 export interface DockerCompose {
   version: '3'
-  services: [
-    string :
+  services: Record<
+    string,
     {
       image: string
       volumes: {
@@ -12,10 +12,10 @@ export interface DockerCompose {
         source: string
         target: string
       }[]
-      environment?: [string : string]
-      ports: string[]
+      environment?: Record<string, string>
+      ports?: string[]
     }
-  ]
+  >
 }
 
 /**
