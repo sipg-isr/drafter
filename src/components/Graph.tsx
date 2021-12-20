@@ -79,17 +79,21 @@ export default function Graph() {
         }
       }}
       onMouseUp={() => {
-        if (drag && drag.dragKind === 'Stage') {
-          const { stage } = drag;
-          stage.fx = stage.fy = null;
+        if (drag) {
+          if (drag.dragKind === 'Stage') {
+            const { stage } = drag;
+            stage.fx = stage.fy = null;
+          }
           setDrag(null);
           restartSimulation();
         }
       }}
       onMouseLeave={() => {
-        if (drag && drag.dragKind === 'Stage') {
-          const { stage } = drag;
-          stage.fx = stage.fy = null;
+        if (drag) {
+          if (drag.dragKind === 'Stage') {
+            const { stage } = drag;
+            stage.fx = stage.fy = null;
+          }
           setDrag(null);
           restartSimulation();
         }
@@ -97,8 +101,8 @@ export default function Graph() {
     >
       {edges.map(({ requesterId, responderId }) => {
         // Look up each id
-        const requester = findStage(stages, requesterId.stageId)
-        const responder = findStage(stages, responderId.stageId)
+        const requester = findStage(stages, requesterId)
+        const responder = findStage(stages, responderId)
         if (requester.kind !== 'Error' &&
             responder.kind !== 'Error') {
           return <EdgeSVG

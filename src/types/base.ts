@@ -165,14 +165,16 @@ export interface Volume extends HasVolumeId {
 /**
  * An edge connecting two matching AccessPoint's
  * @interface
- * @property {HasStageId & HasAccessPointId} requesterId -
- *   A stageId, accessPointId pair that identifies a stage and the accessPoint in that stage that
+ * @property {UUID} requesterId -
+ *   A stageId, that identifies a stage and the accessPoint in that stage that
  *   will be the requester
- * @property {HasStageId & HasAccessPointId} responderId -
+ * @property {UUID} responderId -
  *   Same as above, but for the responder
  */
 export interface Edge extends HasEdgeId {
-  // TODO - use newtype pattern here?
-  requesterId: HasStageId & HasRequesterId;
-  responderId: HasStageId & HasResponderId;
+  /**
+   * Both UUID's represent Stage's
+   */
+  requesterId: UUID;
+  responderId: UUID;
 }
