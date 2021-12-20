@@ -101,6 +101,8 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
     return { stages };
   case 'SetEdges':
     return { edges: action.edges };
+  case 'AddEdge':
+      return { edges: state.edges.add(action.edge) }
   case 'RestoreState':
     return action.state;
   case 'ClearState':

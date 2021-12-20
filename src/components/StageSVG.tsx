@@ -1,7 +1,5 @@
 import React, { useEffect } from 'react';
-import {
-  Set
-} from 'immutable';
+import { v4 as uuid } from 'uuid';
 import {
   Drag,
   Edge,
@@ -11,6 +9,9 @@ import {
   accessPointLocation,
   compatibleMethods
 } from '../utils';
+import {
+  useDispatch
+} from '../state';
 import AccessPointSVG from './AccessPointSVG';
 
 interface StageSVGProps {
@@ -30,8 +31,9 @@ export default function StageSVG({
   setDrag,
   restartSimulation
 } : StageSVGProps) {
-  const { PI } = Math;
   const { name, x, y, rx, ry } = stage;
+
+  const dispatch = useDispatch();
 
   return (
     <g>
@@ -96,11 +98,19 @@ export default function StageSVG({
                     compatibleMethods(accessPoint, drag.stage.responder)
                 ) {
                   // Add edge
+                  dispatch({
+                    type: 'AddEdge',
+                    edge: { edgeId: uuid(), requesterId: stage.stageId, responderId: drag.stage.stageId }
+                  });
                 } else if (accessPoint.kind === 'Requester' &&
                     drag.dragKind === 'Responder' &&
                     compatibleMethods(accessPoint, drag.stage.responder)
                 ) {
                   // Add edge
+                  dispatch({
+                    type: 'AddEdge',
+                    edge: { edgeId: uuid(), requesterId: drag.stage.stageId, responderId: stage.stageId }
+                  });
                 }
               }
             }}

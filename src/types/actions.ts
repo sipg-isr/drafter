@@ -109,6 +109,16 @@ export interface SetEdges {
 }
 
 /**
+ * Add an edge
+ * @interface
+ * @property {Edge} edge - the edge to add
+ */
+export interface AddEdge {
+  type: 'AddEdge';
+  edge: Edge;
+}
+
+/**
  * An action to set the entire state to a given value. This is used when loading state from a
  * saved or serialized version
  * @interface
@@ -141,5 +151,6 @@ export type Action =
   UpdateStage  |
   AddVolume    |
   SetEdges     |
+  AddEdge      |
   RestoreState |
   ClearState;
