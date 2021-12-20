@@ -78,8 +78,9 @@ export default function StageSVG({
         y={y}
       >{name}</text>
       {
-        [stage.requester, stage.responder].map(accessPoint =>
-          <g
+        [stage.requester, stage.responder].map(accessPoint => {
+          const loc = accessPointLocation(stage, accessPoint.kind)
+          return <g
             key={accessPoint.kind}
             onMouseDown={({ clientX, clientY }) => {
               const edge = edges.find(({ requesterId, responderId }) =>
@@ -96,8 +97,8 @@ export default function StageSVG({
                 if (oppositeStage.kind === 'Error') { throw oppositeStage; }
                 setDrag({
                   offset: {
-                    x: x - clientX,
-                    y: y - clientY
+                    x: loc.x - clientX,
+                    y: loc.y - clientY
                   },
                   cursor: {
                     x: clientX,
@@ -109,8 +110,8 @@ export default function StageSVG({
               } else {
                 setDrag({
                   offset: {
-                    x: x - clientX,
-                    y: y - clientY
+                    x: loc.x - clientX,
+                    y: loc.y - clientY
                   },
                   cursor: {
                     x: clientX,
@@ -146,11 +147,11 @@ export default function StageSVG({
             }}
         >
             <AccessPointSVG
-              location={accessPointLocation(stage, accessPoint.kind)}
+              location={loc}
               accessPoint={accessPoint}
             />
           </g>
-        )
+        })
     }
       </g>
   );
