@@ -8,7 +8,7 @@ import {
   Stage
 } from '../types';
 import {
-  ellipsePolarToCartesian
+  accessPointLocation
 } from '../utils';
 import AccessPointSVG from './AccessPointSVG';
 
@@ -89,9 +89,7 @@ export default function StageSVG({
       <AccessPointSVG
         drag={drag}
         setDrag={setDrag}
-        location={ellipsePolarToCartesian(
-          PI / 2, rx, ry, x, y
-        )}
+        location={accessPointLocation(stage, 'Requester')}
         accessPoint={stage.requester}
       />
     </g>
@@ -107,19 +105,17 @@ export default function StageSVG({
               y: clientY
             },
             stage,
-            dragKind: 'Requester'
+            dragKind: 'Responder'
           })
         }}
     >
       <AccessPointSVG
         drag={drag}
         setDrag={setDrag}
-        location={ellipsePolarToCartesian(
-          3 * PI / 2, rx, ry, x, y
-        )}
+        location={accessPointLocation(stage, 'Responder')}
         accessPoint={stage.responder}
       />
     </g>
-      </g>
+    </g>
   );
 }

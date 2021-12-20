@@ -171,7 +171,7 @@ export function objectToColor(obj: any): string {
 }
 
 export function accessPointLocation({ rx, ry, x, y }: Stage, accessPointKind: AccessPointKind): Coordinates {
-  const theta = accessPointKind === 'Requester' ? 0 : Math.PI / 2;
+  const theta = accessPointKind === 'Requester' ? Math.PI / 2 : 3 * Math.PI / 2;
   return ellipsePolarToCartesian(theta, rx, ry, x, y);
 }
 
