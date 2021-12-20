@@ -13,18 +13,18 @@ import {
   AccessPointKind,
   Asset,
   Coordinates,
+  DockerCompose,
   Error,
   ErrorKind,
   HasRemoteMethodId,
+  OutputConfig,
   RemoteMethod,
   Requester,
   Responder,
   Result,
   Stage,
   State,
-  UUID,
-  DockerCompose,
-  OutputConfig
+  UUID
 } from './types';
 
 // TODO perhaps move this type into types.ts to avoid a circular dependency?
@@ -40,6 +40,36 @@ export function error(errorKind: ErrorKind, message: string): Error {
     errorKind,
     message
   };
+}
+
+/**
+ * Attempt to find the stage with the given ID
+ * @param {State} state - the application state containing the stages to search
+ * @param {UUID} id - the id to search for
+ * @return {Result<Asset>} the found stage, or an error if not found
+ */
+export function findStage(stages: Set<Stage>, id: UUID): Result<Stage> {
+  const stage = stages.find(({ stageId }) => stageId === id);
+  if (stage) {
+    return stage;
+  } else {
+    return error(
+      ErrorKind.StageNotFound,
+      `Cannot find Stage with id ${id}`
+    );
+  }
+}
+
+export function findRemoteMethod(asset: Asset, remoteMethodId: UUID): Result<RemoteMethod> {
+  const method = asset.methods.find(method => method.remoteMethodId === remoteMethodId);
+  if (method) {
+    return method;
+  } else {
+    return error(
+      ErrorKind.RemoteMethodNotFound,
+      `Cannot find Remote Method with id ${remoteMethodId} in asset ${asset}`
+    );
+  }
 }
 
 /**
@@ -95,10 +125,21 @@ export function remoteMethodToString({ name, requestType, responseType }: Remote
   return `${name}(${requestType.name}): ${responseType.name}`;
 }
 
-/**
- * Keeps track of how many of each asset have been instantiated
- */
-const idCounter: Map<UUID, number> = Map();
+export function methodToRequesterAndResponder({ requestType, responseType }: RemoteMethod): {
+  requester: Requester,
+  responder: Responder
+} {
+  return {
+    requester: {
+      kind: 'Requester',
+      type: requestType
+    },
+    responder: {
+      kind: 'Responder',
+      type: responseType
+    }
+  };
+}
 
 /**
  * Given a asset, instantiate it so that it can be used in the simulation
@@ -136,22 +177,6 @@ export function instantiateAsset(
   } else {
     return method;
   }
-}
-
-export function methodToRequesterAndResponder({ requestType, responseType }: RemoteMethod): {
-  requester: Requester,
-  responder: Responder
-} {
-  return {
-    requester: {
-      kind: 'Requester',
-      type: requestType
-    },
-    responder: {
-      kind: 'Responder',
-      type: responseType
-    }
-  };
 }
 
 /**
@@ -285,7 +310,7 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
             target: '/app/config/config.yml'
           }
         ]
-      },
+      }
 
     }
   };
@@ -326,10 +351,10 @@ export async function exportState({ assets, stages, edges }: State): Promise<Blo
             stage: responder.name,
             field: responder.methodName
           }
-        }
+        };
       }
     }).toArray()
-  }
+  };
 
   // Add the data to the zip as yaml
   zip.file('docker-compose.yml', dump(dockerCompose));
@@ -353,36 +378,6 @@ export function findAsset(assets: Set<Asset>, id: UUID): Result<Asset> {
     return error(
       ErrorKind.AssetNotFound,
       `Cannot find Asset with id ${id}`
-    );
-  }
-}
-
-/**
- * Attempt to find the stage with the given ID
- * @param {State} state - the application state containing the stages to search
- * @param {UUID} id - the id to search for
- * @return {Result<Asset>} the found stage, or an error if not found
- */
-export function findStage(stages: Set<Stage>, id: UUID): Result<Stage> {
-  const stage = stages.find(({ stageId }) => stageId === id);
-  if (stage) {
-    return stage;
-  } else {
-    return error(
-      ErrorKind.StageNotFound,
-      `Cannot find Stage with id ${id}`
-    );
-  }
-}
-
-export function findRemoteMethod(asset: Asset, remoteMethodId: UUID): Result<RemoteMethod> {
-  const method = asset.methods.find(method => method.remoteMethodId === remoteMethodId);
-  if (method) {
-    return method;
-  } else {
-    return error(
-      ErrorKind.RemoteMethodNotFound,
-      `Cannot find Remote Method with id ${remoteMethodId} in asset ${asset}`
     );
   }
 }

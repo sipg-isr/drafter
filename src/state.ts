@@ -87,7 +87,7 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
       assets: newAssets,
       stages: newStages,
       edges:  newEdges
-    }
+    };
   case 'AddStage':
     return { stages: state.stages.add(action.stage) };
   case 'SetStages':
@@ -124,9 +124,9 @@ function reducer(state: State, action: Action): Result<Partial<State>> {
   case 'SetEdges':
     return { edges: action.edges };
   case 'AddEdge':
-      return { edges: state.edges.add(action.edge) };
+    return { edges: state.edges.add(action.edge) };
   case 'DeleteEdge':
-      return { edges: state.edges.remove(action.edge) };
+    return { edges: state.edges.remove(action.edge) };
   case 'RestoreState':
     return action.state;
   case 'ClearState':

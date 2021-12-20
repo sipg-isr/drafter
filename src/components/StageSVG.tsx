@@ -12,8 +12,8 @@ import {
 } from '../utils';
 import {
   useDispatch,
-  useStages,
-  useEdges
+  useEdges,
+  useStages
 } from '../state';
 import AccessPointSVG from './AccessPointSVG';
 
@@ -81,7 +81,7 @@ export default function StageSVG({
         [stage.requester, stage.responder].map(accessPoint => {
           // Skip empty accessPoint's. See https://github.com/ndrewtl/drafter/issues/8
           if (accessPoint.type.name === 'Empty') { return null; }
-          const loc = accessPointLocation(stage, accessPoint.kind)
+          const loc = accessPointLocation(stage, accessPoint.kind);
           return <g
             key={accessPoint.kind}
             onMouseDown={({ clientX, clientY }) => {
@@ -147,14 +147,14 @@ export default function StageSVG({
                 }
               }
             }}
-        >
+          >
             <AccessPointSVG
               location={loc}
               accessPoint={accessPoint}
             />
-          </g>
+          </g>;
         })
-    }
-      </g>
+      }
+    </g>
   );
 }

@@ -6,7 +6,7 @@ import {
 } from 'react-bootstrap';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import { fileContent, remoteMethodToString, reportError } from '../utils';
-import { useAssets, useCreateAsset, useUpdateAsset, useDispatch } from '../state';
+import { useAssets, useCreateAsset, useDispatch, useUpdateAsset } from '../state';
 import EditField from './EditField';
 
 function AssetAddingForm() {

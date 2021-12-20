@@ -25,9 +25,9 @@ import {
 import {
   useAddStage,
   useAssets,
+  useDispatch,
   useStages,
-  useUpdateStage,
-  useDispatch
+  useUpdateStage
 } from '../state';
 import EditField from './EditField';
 import VolumeEditor from './VolumeEditor';
