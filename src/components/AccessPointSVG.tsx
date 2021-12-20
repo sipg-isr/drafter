@@ -34,22 +34,7 @@ export default function AccessPointSVG({
   const { x, y } = location;
 
   return (
-    <g
-        onMouseDown={({ clientX, clientY }) => {
-          setDrag({
-            offset: {
-              x: x - clientX,
-              y: y - clientY
-            },
-            cursor: {
-              x: clientX,
-              y: clientY
-            },
-            stage,
-            port: 'Requester'
-          })
-        }}
-    >
+    <>
       {accessPoint.type.streamed ?  <>{
         [1, 2].map(idx =>
           <circle
@@ -78,6 +63,6 @@ export default function AccessPointSVG({
         fill={accessPoint.kind === 'Responder' ? color : 'white'}
         stroke='black'
       />
-    </g>
+    </>
   );
 }

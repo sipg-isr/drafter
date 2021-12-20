@@ -29,7 +29,7 @@ export default function StageSVG({
   setDrag,
   restartSimulation
 } : StageSVGProps) {
-  const { PI, max } = Math;
+  const { PI } = Math;
   const { name, x, y, rx, ry } = stage;
 
   return (
@@ -70,6 +70,22 @@ export default function StageSVG({
         x={x}
         y={y}
       >{name}</text>
+    <g
+        onMouseDown={({ clientX, clientY }) => {
+          setDrag({
+            offset: {
+              x: x - clientX,
+              y: y - clientY
+            },
+            cursor: {
+              x: clientX,
+              y: clientY
+            },
+            stage,
+            port: 'Requester'
+          })
+        }}
+    >
       <AccessPointSVG
         drag={drag}
         setDrag={setDrag}
@@ -78,6 +94,23 @@ export default function StageSVG({
         )}
         accessPoint={stage.requester}
       />
+    </g>
+    <g
+        onMouseDown={({ clientX, clientY }) => {
+          setDrag({
+            offset: {
+              x: x - clientX,
+              y: y - clientY
+            },
+            cursor: {
+              x: clientX,
+              y: clientY
+            },
+            stage,
+            port: 'Requester'
+          })
+        }}
+    >
       <AccessPointSVG
         drag={drag}
         setDrag={setDrag}
@@ -86,6 +119,7 @@ export default function StageSVG({
         )}
         accessPoint={stage.responder}
       />
+    </g>
       </g>
   );
 }
