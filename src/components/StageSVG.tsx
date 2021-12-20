@@ -70,48 +70,32 @@ export default function StageSVG({
         x={x}
         y={y}
       >{name}</text>
-      <g
-        onMouseDown={({ clientX, clientY }) => {
-          setDrag({
-            offset: {
-              x: x - clientX,
-              y: y - clientY
-            },
-            cursor: {
-              x: clientX,
-              y: clientY
-            },
-            stage,
-            dragKind: 'Requester'
-          });
-        }}
-      >
-        <AccessPointSVG
-          location={accessPointLocation(stage, 'Requester')}
-          accessPoint={stage.requester}
-        />
+      {
+        [stage.requester, stage.responder].map(accessPoint =>
+          <g
+            key={accessPoint.kind}
+            onMouseDown={({ clientX, clientY }) => {
+              setDrag({
+                offset: {
+                  x: x - clientX,
+                  y: y - clientY
+                },
+                cursor: {
+                  x: clientX,
+                  y: clientY
+                },
+                stage,
+                dragKind: accessPoint.kind
+              });
+            }}
+          >
+            <AccessPointSVG
+              location={accessPointLocation(stage, accessPoint.kind)}
+              accessPoint={accessPoint}
+            />
+          </g>
+        )
+    }
       </g>
-      <g
-        onMouseDown={({ clientX, clientY }) => {
-          setDrag({
-            offset: {
-              x: x - clientX,
-              y: y - clientY
-            },
-            cursor: {
-              x: clientX,
-              y: clientY
-            },
-            stage,
-            dragKind: 'Responder'
-          });
-        }}
-      >
-        <AccessPointSVG
-          location={accessPointLocation(stage, 'Responder')}
-          accessPoint={stage.responder}
-        />
-      </g>
-    </g>
   );
 }
