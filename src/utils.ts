@@ -185,7 +185,7 @@ export function instantiateAsset(
  * @return {boolean} whether the tow can be connected
  */
 export function compatibleMethods(requester: Requester, responder: Responder): boolean {
-  return equal(requester.type, responder.type);
+  return equal(requester.type.fields, responder.type.fields);
 }
 
 /**

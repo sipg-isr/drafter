@@ -18,7 +18,7 @@ export default function AccessPointSVG({
   accessPoint,
   location
 }: AccessPointSVGProps) {
-  const color = objectToColor(accessPoint.type);
+  const color = objectToColor(accessPoint.type.fields);
   const { x, y } = location;
 
   return (
